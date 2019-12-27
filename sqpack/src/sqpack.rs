@@ -36,13 +36,12 @@ struct SqPackIndexSegment<'a> {
     hash: &'a [u8],    // 8
     padding: &'a [u8], // 20
 }
-const SQPACK_INDEX_SEGMENT_SIZE: usize = 72;
 
 #[rustfmt::skip]
 named!(parse_sqpack_index_segment<SqPackIndexSegment>,
     do_parse!(
-        offset:     le_u32      >>
-        size:       le_u32      >>
+        offset:     le_u32       >>
+        size:       le_u32       >>
         hash:       take!(12)    >>
         padding:    take!(52)    >>
         (SqPackIndexSegment {
@@ -93,8 +92,8 @@ pub struct SqPack {}
 
 impl SqPack {
     pub fn mount(&self, path: &str) -> Result<()> {
-        let indexPath = format!("{}.index", path);
-        let f = File::open(indexPath)?;
+        let index_path = format!("{}.index", path);
+        let f = File::open(index_path)?;
         let mut r = BufReader::new(f);
         let header_length = SqPack::read_header_length(&mut r)?;
 
@@ -127,6 +126,7 @@ mod tests {
     #[test]
     fn test_read() {
         let pack = SqPack {};
-        pack.mount("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack\\ffxiv\\0a0000.win32");
+        pack.mount("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack\\ffxiv\\0a0000.win32")
+            .unwrap();
     }
 }
