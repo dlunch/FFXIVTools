@@ -44,7 +44,7 @@ named!(sqpack_index_segment<SqPackIndexSegment>,
     )
 );
 
-pub struct SqPackIndexSegmentHeader {
+pub struct SqPackIndexHeader {
     pub header_length: u32,
     pub unk: u32,
     pub file_segment: SqPackIndexSegment,
@@ -54,11 +54,11 @@ pub struct SqPackIndexSegmentHeader {
     pub folder_segment: SqPackIndexSegment,
 }
 
-impl SqPackIndexSegmentHeader {
+impl SqPackIndexHeader {
     pub const SIZE: usize = 300;
 
     #[rustfmt::skip]
-    named!(pub parse<SqPackIndexSegmentHeader>,
+    named!(pub parse<SqPackIndexHeader>,
         do_parse!(
             header_length:      le_u32                  >>
             unk:                le_u32                  >>
@@ -67,7 +67,7 @@ impl SqPackIndexSegmentHeader {
             segment2:           sqpack_index_segment    >>
             segment3:           sqpack_index_segment    >>
             folder_segment:     sqpack_index_segment    >>
-            (SqPackIndexSegmentHeader {
+            (SqPackIndexHeader {
                 header_length,
                 unk,
                 file_segment,
@@ -97,19 +97,4 @@ pub struct FolderSegment {
     file_list_offset: u32,
     file_list_size: u32,
     padding: u32,
-}
-
-macro_rules! parse {
-    ($reader: ident, $type: ty) => {{
-        parse!($reader, $type, 0u32)
-    }};
-
-    ($reader: ident, $type: ty, $offset: expr) => {{
-        let mut buf = [0u8; <$type>::SIZE];
-        $reader.seek(SeekFrom::Start($offset as u64))?;
-        $reader.read_exact(&mut buf)?;
-        let (_, result) = <$type>::parse(&buf).unwrap();
-
-        result
-    }};
 }
