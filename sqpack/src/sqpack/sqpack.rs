@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
-use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 
 use crate::package::Package;
 
+use super::ext::ReadExt;
 use super::parser::*;
 
 #[derive(Eq, PartialEq, Hash, Default)]
@@ -103,7 +103,6 @@ pub struct SqPack {
 }
 
 impl SqPack {
-    #[allow(clippy::new_without_default)]
     pub fn new() -> SqPack {
         SqPack {
             archives: HashMap::new(),
@@ -115,16 +114,22 @@ impl SqPack {
         let index_path = format!("{}.index", path_str);
         let mut f = File::open(index_path)?;
 
-        let sqpack_header = parse!(f, SqPackHeader);
-        let index_header = parse!(f, SqPackIndexSegmentHeader, sqpack_header.header_length);
+        let sqpack_header_data = f.read_to_vec(0, SqPackHeader::SIZE)?;
+        let sqpack_header = SqPackHeader::parse(&sqpack_header_data).unwrap().1;
 
-        let mut folder_segment = vec![0; index_header.folder_segment.size as usize];
-        f.seek(SeekFrom::Start(index_header.folder_segment.offset as u64))?;
-        f.read_exact(folder_segment.as_mut_slice())?;
+        let index_header_data =
+            f.read_to_vec(sqpack_header.header_length as u64, SqPackIndexHeader::SIZE)?;
+        let index_header = SqPackIndexHeader::parse(&index_header_data).unwrap().1;
 
-        let mut file_segment = vec![0; index_header.file_segment.size as usize];
-        f.seek(SeekFrom::Start(index_header.file_segment.offset as u64))?;
-        f.read_exact(file_segment.as_mut_slice())?;
+        let folder_segment = f.read_to_vec(
+            index_header.folder_segment.offset as u64,
+            index_header.folder_segment.size as usize,
+        )?;
+
+        let file_segment = f.read_to_vec(
+            index_header.file_segment.offset as u64,
+            index_header.file_segment.size as usize,
+        )?;
 
         let mut data = Vec::with_capacity(index_header.dat_count as usize);
         for i in 0..index_header.dat_count {
