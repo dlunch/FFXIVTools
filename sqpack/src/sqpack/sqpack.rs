@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Result, Seek, SeekFrom};
+use std::io;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 
 use crate::package::Package;
@@ -16,9 +17,85 @@ struct SqPackArchiveId {
 
 #[derive(Default)]
 struct SqPackArchive {
-    folder_segment: Vec<u8>,
-    file_segment: Vec<u8>,
-    data: Vec<File>,
+    pub folder_segment: Vec<u8>,
+    pub file_segment: Vec<u8>,
+    pub data: Vec<File>,
+}
+
+struct SqPackFileReference {
+    archive_id: SqPackArchiveId,
+    path_hash: u32,
+    folder_hash: u32,
+    file_hash: u32,
+
+    #[cfg(debug_assertions)]
+    path: String,
+}
+
+#[allow(dead_code)] // rustc bug?
+static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
+    "common" => 0,
+    "bgcommon" => 1,
+    "bg" => 2,
+    "cut" => 3,
+    "chara" => 4,
+    "shader" => 5,
+    "ui" => 6,
+    "sound" => 7,
+    "vfx" => 8,
+    "ui_script" => 9,
+    "exd" => 10,
+    "game_script" => 11,
+    "music" => 12,
+};
+
+impl SqPackFileReference {
+    pub fn new(path: &Path) -> Option<SqPackFileReference> {
+        let path_str = path.to_str()?.to_ascii_lowercase();
+        let folder_str = path.parent()?.to_str()?.to_ascii_lowercase();
+        let file_str = path.file_name()?.to_str()?.to_ascii_lowercase();
+
+        let path_hash = SqPackFileReference::hash(&path_str);
+        let folder_hash = SqPackFileReference::hash(&folder_str);
+        let file_hash = SqPackFileReference::hash(&file_str);
+
+        let mut path_iter = path.iter();
+
+        let root = ROOT_INDICES[path_iter.next()?.to_str()?];
+        let mut ex = 0;
+        let mut part = 0;
+
+        if root == 2 || root == 3 || root == 12 {
+            let ex_path = path_iter.next()?.to_str()?;
+            ex = if ex_path == "ffxiv" {
+                0
+            } else {
+                ex_path[2..].parse().unwrap()
+            };
+
+            if root == 2 && ex > 0 {
+                let part_path = path_iter.next()?.to_str()?;
+                if part_path.starts_with(char::is_numeric) {
+                    part = part_path[..2].parse().unwrap();
+                }
+            }
+        }
+
+        Some(SqPackFileReference {
+            archive_id: SqPackArchiveId { root, ex, part },
+            path_hash,
+            folder_hash,
+            file_hash,
+            #[cfg(debug_assertions)]
+            path: path_str,
+        })
+    }
+
+    fn hash(value: &str) -> u32 {
+        let mut hasher = crc32fast::Hasher::new();
+        hasher.update(value.as_bytes());
+        hasher.finalize()
+    }
 }
 
 pub struct SqPack {
@@ -33,7 +110,7 @@ impl SqPack {
         }
     }
 
-    pub fn mount(&mut self, path: &Path) -> Result<()> {
+    pub fn mount(&mut self, path: &Path) -> io::Result<()> {
         let path_str = path.to_str().unwrap();
         let index_path = format!("{}.index", path_str);
         let mut f = File::open(index_path)?;
@@ -67,6 +144,10 @@ impl SqPack {
         Ok(())
     }
 
+    fn do_read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+        Ok(Vec::new())
+    }
+
     fn get_archive_id(path: &Path) -> SqPackArchiveId {
         let file_name = path.file_stem().unwrap().to_str().unwrap();
         let archive_id = u32::from_str_radix(file_name, 16).unwrap();
@@ -81,20 +162,32 @@ impl SqPack {
 }
 
 impl Package for SqPack {
-    fn read_file(&self, filename: &Path) -> Result<Vec<u8>> {
-        Ok(Vec::new())
+    fn read_file(&self, path: &Path) -> io::Result<Vec<u8>> {
+        self.do_read_file(&SqPackFileReference::new(path).unwrap())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::SqPack;
+    use crate::package::Package;
     use std::path::Path;
     #[test]
     fn test_read() {
-        let path =
-            Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack\\ffxiv\\0a0000.win32");
         let mut pack = SqPack::new();
-        pack.mount(path).unwrap();
+        pack.mount(Path::new(
+            "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack\\ffxiv\\0a0000.win32",
+        ))
+        .unwrap();
+        pack.mount(Path::new(
+            "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack\\ex1\\020101.win32",
+        ))
+        .unwrap();
+
+        pack.read_file(Path::new("exd/item.exd")).unwrap();
+        pack.read_file(Path::new(
+            "bg/ex1/01_roc_02/common/bgparts/r200_a0_bari1.mdl",
+        ))
+        .unwrap();
     }
 }
