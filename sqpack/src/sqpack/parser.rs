@@ -1,6 +1,5 @@
 use nom::number::complete::le_u32;
 
-#[allow(dead_code)]
 pub struct SqPackHeader {
     pub header_length: u32,
     pub unk1: u32,
@@ -26,7 +25,6 @@ impl SqPackHeader {
     );
 }
 
-#[allow(dead_code)]
 pub struct SqPackIndexSegment {
     pub offset: u32, // 0
     pub size: u32,   // 4
@@ -46,7 +44,6 @@ named!(sqpack_index_segment<SqPackIndexSegment>,
     )
 );
 
-#[allow(dead_code)]
 pub struct SqPackIndexSegmentHeader {
     pub header_length: u32,
     pub unk: u32,
@@ -81,6 +78,25 @@ impl SqPackIndexSegmentHeader {
             })
         )
     );
+}
+
+pub struct FileSegment {
+    name_hash: u32,
+    folder_hash: u32,
+    data_offset: u32,
+    padding: u32,
+}
+
+pub struct FileSegment2 {
+    name_hash: u32,
+    data_offset: u32,
+}
+
+pub struct FolderSegment {
+    name_hash: u32,
+    file_list_offset: u32,
+    file_list_size: u32,
+    padding: u32,
 }
 
 macro_rules! parse {
