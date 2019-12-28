@@ -106,7 +106,7 @@ macro_rules! parse {
 
     ($reader: ident, $type: ty, $offset: expr) => {{
         let mut buf = [0u8; <$type>::SIZE];
-        $reader.seek(SeekFrom::Start($offset.into()))?;
+        $reader.seek(SeekFrom::Start($offset as u64))?;
         $reader.read_exact(&mut buf)?;
         let (_, result) = <$type>::parse(&buf).unwrap();
 
