@@ -141,9 +141,8 @@ impl SqPack {
         let file_segments = read_segment!(f, index_header.file_segment, FileSegment);
 
         let data = (0..index_header.dat_count)
-            .map(|x| File::open(format!("{}.dat{}", path_str, x)).unwrap())
-            .collect();
-
+            .map(|x| File::open(format!("{}.dat{}", path_str, x)))
+            .collect::<Result<Vec<_>, _>>()?;
         self.archives.insert(
             SqPack::get_archive_id(path),
             SqPackArchive {
