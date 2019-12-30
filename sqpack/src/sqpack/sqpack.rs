@@ -17,8 +17,8 @@ struct SqPackArchiveId {
 
 #[derive(Default)]
 struct SqPackArchive {
-    pub folder_segment: Vec<u8>,
-    pub file_segment: Vec<u8>,
+    pub folder_segments: Vec<FolderSegment>,
+    pub file_segments: Vec<FileSegment>,
     pub data: Vec<File>,
 }
 
@@ -98,6 +98,21 @@ impl SqPackFileReference {
     }
 }
 
+macro_rules! read_segment {
+    ($file: expr, $segment: expr, $type: ty) => {{
+        let segment_count = $segment.size / <$type>::SIZE as u32;
+        let data = $file.read_to_vec($segment.offset as u64, $segment.size as usize)?;
+        let mut result = Vec::with_capacity(segment_count as usize);
+        for i in 0..segment_count {
+            let begin = (i as usize) * <$type>::SIZE;
+            let end = begin + <$type>::SIZE;
+            result.push(<$type>::parse(&data[begin..end]).unwrap().1);
+        }
+
+        result
+    }};
+}
+
 pub struct SqPack {
     archives: HashMap<SqPackArchiveId, SqPackArchive>,
 }
@@ -121,15 +136,8 @@ impl SqPack {
             f.read_to_vec(sqpack_header.header_length as u64, SqPackIndexHeader::SIZE)?;
         let index_header = SqPackIndexHeader::parse(&index_header_data).unwrap().1;
 
-        let folder_segment = f.read_to_vec(
-            index_header.folder_segment.offset as u64,
-            index_header.folder_segment.size as usize,
-        )?;
-
-        let file_segment = f.read_to_vec(
-            index_header.file_segment.offset as u64,
-            index_header.file_segment.size as usize,
-        )?;
+        let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment);
+        let file_segments = read_segment!(f, index_header.file_segment, FileSegment);
 
         let mut data = Vec::with_capacity(index_header.dat_count as usize);
         for i in 0..index_header.dat_count {
@@ -140,8 +148,8 @@ impl SqPack {
         self.archives.insert(
             SqPack::get_archive_id(path),
             SqPackArchive {
-                folder_segment,
-                file_segment,
+                folder_segments,
+                file_segments,
                 data,
             },
         );

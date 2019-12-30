@@ -35,8 +35,8 @@ named!(sqpack_index_segment<SqPackIndexSegment>,
     do_parse!(
         offset:         le_u32       >>
         size:           le_u32       >>
-        /* hash: */     take!(12)    >>
-        /* padding: */  take!(52)    >>
+        _hash:          take!(12)    >>
+        _padding:       take!(52)    >>
         (SqPackIndexSegment {
             offset,
             size,
@@ -84,7 +84,25 @@ pub struct FileSegment {
     name_hash: u32,
     folder_hash: u32,
     data_offset: u32,
-    padding: u32,
+}
+
+impl FileSegment {
+    pub const SIZE: usize = 16;
+
+    #[rustfmt::skip]
+    named!(pub parse<FileSegment>,
+        do_parse!(
+            name_hash:      le_u32  >>
+            folder_hash:    le_u32  >>
+            data_offset:    le_u32  >>
+            _padding:       le_u32  >>
+            (FileSegment {
+                name_hash,
+                folder_hash,
+                data_offset
+            })
+        )
+    );
 }
 
 pub struct FileSegment2 {
@@ -96,5 +114,23 @@ pub struct FolderSegment {
     name_hash: u32,
     file_list_offset: u32,
     file_list_size: u32,
-    padding: u32,
+}
+
+impl FolderSegment {
+    pub const SIZE: usize = 16;
+
+    #[rustfmt::skip]
+    named!(pub parse<FolderSegment>,
+        do_parse!(
+            name_hash:          le_u32  >>
+            file_list_offset:   le_u32  >>
+            file_list_size:     le_u32  >>
+            _padding:           le_u32  >>
+            (FolderSegment {
+                name_hash,
+                file_list_offset,
+                file_list_size
+            })
+        )
+    );
 }
