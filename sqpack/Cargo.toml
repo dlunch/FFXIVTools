@@ -4,7 +4,10 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
 
+[features]
+std = ["nom/std", "crc32fast/std"]
+
 [dependencies]
-nom = "^5.0.1"
-crc32fast = "^1.2.0"
-phf = { version = "^0.8.0", features = ["macros"] }
+nom = { version = "^5.0.1", default-features = false }
+crc32fast = { version = "^1.2.0", default-features = false }
+phf = { version = "^0.8.0", features = ["macros"], default-features = false }
