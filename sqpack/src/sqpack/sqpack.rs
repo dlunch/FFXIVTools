@@ -19,6 +19,7 @@ struct SqPackArchiveId {
 struct SqPackArchive {
     pub folder_segments: Vec<FolderSegment>,
     pub file_segments: Vec<FileSegment>,
+    pub file_segment_base: u32,
     pub data: Vec<File>,
 }
 
@@ -55,9 +56,9 @@ impl SqPackFileReference {
         let folder_str = path.parent()?.to_str()?.to_ascii_lowercase();
         let file_str = path.file_name()?.to_str()?.to_ascii_lowercase();
 
-        let path_hash = SqPackFileReference::hash(&path_str);
-        let folder_hash = SqPackFileReference::hash(&folder_str);
-        let file_hash = SqPackFileReference::hash(&file_str);
+        let path_hash = !SqPackFileReference::hash(&path_str);
+        let folder_hash = !SqPackFileReference::hash(&folder_str);
+        let file_hash = !SqPackFileReference::hash(&file_str);
 
         let mut path_iter = path.iter();
 
@@ -148,6 +149,7 @@ impl SqPack {
             SqPackArchive {
                 folder_segments,
                 file_segments,
+                file_segment_base: index_header.file_segment.offset,
                 data,
             },
         );
@@ -156,6 +158,28 @@ impl SqPack {
     }
 
     fn do_read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+        let archive = self
+            .archives
+            .get(&reference.archive_id)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No such archive"))?;
+
+        let folder_index = archive
+            .folder_segments
+            .binary_search_by_key(&reference.folder_hash, |x| x.folder_hash)
+            .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such folder"))?;
+        let folder = &archive.folder_segments[folder_index];
+
+        let file_begin =
+            (folder.file_list_offset - archive.file_segment_base) as usize / FileSegment::SIZE;
+        let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
+        let file_index = archive.file_segments[file_begin..file_end]
+            .binary_search_by_key(&reference.file_hash, |x| x.file_hash)
+            .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such file"))?;
+        let file = &archive.file_segments[file_index + file_begin];
+
+        let dat_index = (file.data_offset & 0x0f) >> 1;
+        let offset = (file.data_offset & 0xffff_fff0) << 3;
+
         Ok(Vec::new())
     }
 
@@ -195,9 +219,9 @@ mod tests {
         ))
         .unwrap();
 
-        pack.read_file(Path::new("exd/item.exd")).unwrap();
+        pack.read_file(Path::new("exd/item.exh")).unwrap();
         pack.read_file(Path::new(
-            "bg/ex1/01_roc_02/common/bgparts/r200_a0_bari1.mdl",
+            "bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl",
         ))
         .unwrap();
     }
