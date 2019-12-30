@@ -139,11 +139,9 @@ impl SqPack {
         let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment);
         let file_segments = read_segment!(f, index_header.file_segment, FileSegment);
 
-        let mut data = Vec::with_capacity(index_header.dat_count as usize);
-        for i in 0..index_header.dat_count {
-            let dat_path = format!("{}.dat{}", path_str, i);
-            data.push(File::open(dat_path)?);
-        }
+        let data = (0..index_header.dat_count)
+            .map(|x| File::open(format!("{}.dat{}", path_str, x)).unwrap())
+            .collect();
 
         self.archives.insert(
             SqPack::get_archive_id(path),
