@@ -73,8 +73,8 @@ impl SqPack {
 }
 
 impl Package for SqPack {
-    fn read_file(&self, path: &Path) -> io::Result<Vec<u8>> {
-        self.do_read_file(&SqPackFileReference::new(path).unwrap())
+    fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
+        self.do_read_file(&SqPackFileReference::new(path))
     }
 }
 
@@ -95,10 +95,8 @@ mod tests {
         ))
         .unwrap();
 
-        pack.read_file(Path::new("exd/item.exh")).unwrap();
-        pack.read_file(Path::new(
-            "bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl",
-        ))
-        .unwrap();
+        pack.read_file("exd/item.exh").unwrap();
+        pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl")
+            .unwrap();
     }
 }
