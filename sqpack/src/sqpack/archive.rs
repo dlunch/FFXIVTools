@@ -5,7 +5,7 @@ use std::path::Path;
 use super::index::SqPackIndex;
 use super::reference::SqPackFileReference;
 
-#[derive(Eq, PartialEq, Hash, Default)]
+#[derive(Eq, PartialEq, Hash, Default, Clone)]
 pub struct SqPackArchiveId {
     pub root: u8,
     pub ex: u8,
