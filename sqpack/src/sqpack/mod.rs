@@ -7,7 +7,7 @@ mod reference;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::package::Package;
 
@@ -15,6 +15,7 @@ use self::archive::{SqPackArchive, SqPackArchiveId};
 use self::reference::SqPackFileReference;
 
 pub struct SqPack {
+    archive_paths: HashMap<SqPackArchiveId, PathBuf>,
     archives: HashMap<SqPackArchiveId, SqPackArchive>,
 }
 
@@ -37,11 +38,21 @@ impl SqPack {
                 .filter(|y| y.extension().and_then(OsStr::to_str).unwrap() == "index")
         });
 
-        let archives = entries
-            .map(|x| Ok((SqPack::get_archive_id(&x), SqPackArchive::new(&x)?)))
-            .collect::<io::Result<HashMap<_, _>>>()?;
+        let archive_paths = entries
+            .map(|x| (SqPack::get_archive_id(&x), x))
+            .collect::<HashMap<_, _>>();
 
-        Ok(SqPack { archives })
+        Ok(SqPack {
+            archive_paths,
+            archives: HashMap::new(),
+        })
+    }
+
+    fn get_archive(&mut self, archive_id: &SqPackArchiveId) -> &SqPackArchive {
+        let archive_paths = &self.archive_paths;
+        self.archives
+            .entry(archive_id.to_owned())
+            .or_insert_with(|| SqPackArchive::new(archive_paths.get(archive_id).unwrap()).unwrap())
     }
 
     fn get_archive_id(path: &Path) -> SqPackArchiveId {
@@ -59,12 +70,9 @@ impl SqPack {
 }
 
 impl Package for SqPack {
-    fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
+    fn read_file(&mut self, path: &str) -> io::Result<Vec<u8>> {
         let reference = SqPackFileReference::new(path);
-        let archive = self
-            .archives
-            .get(&reference.archive_id)
-            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No such archive"))?;
+        let archive = self.get_archive(&reference.archive_id);
 
         archive.read_file(&SqPackFileReference::new(path))
     }
@@ -77,7 +85,7 @@ mod tests {
     use std::path::Path;
     #[test]
     fn test_read() {
-        let pack = SqPack::new(Path::new(
+        let mut pack = SqPack::new(Path::new(
             "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack",
         ))
         .unwrap();
