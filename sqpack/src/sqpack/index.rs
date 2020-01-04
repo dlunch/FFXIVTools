@@ -7,10 +7,10 @@ use super::parser::*;
 use super::reference::SqPackFileReference;
 
 pub struct SqPackIndex {
-    pub folder_segments: Vec<FolderSegment>,
-    pub file_segments: Vec<FileSegment>,
-    pub file_segment_base: u32,
     pub dat_count: u32,
+    folder_segments: Vec<FolderSegment>,
+    file_segments: Vec<FileSegment>,
+    file_segment_base: u32,
 }
 
 macro_rules! read_segment {
