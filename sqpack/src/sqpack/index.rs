@@ -32,12 +32,8 @@ impl SqPackIndex {
     pub fn new(path: &Path) -> io::Result<SqPackIndex> {
         let mut f = File::open(path)?;
 
-        let sqpack_header_data = f.read_to_vec(0, SqPackHeader::SIZE)?;
-        let sqpack_header = SqPackHeader::parse(&sqpack_header_data).unwrap().1;
-
-        let index_header_data =
-            f.read_to_vec(sqpack_header.header_length as u64, SqPackIndexHeader::SIZE)?;
-        let index_header = SqPackIndexHeader::parse(&index_header_data).unwrap().1;
+        let sqpack_header = read_and_parse!(f, 0, SqPackHeader);
+        let index_header = read_and_parse!(f, sqpack_header.header_length, SqPackIndexHeader);
 
         let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment);
         let file_segments = read_segment!(f, index_header.file_segment, FileSegment);

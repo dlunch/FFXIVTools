@@ -136,3 +136,34 @@ impl FolderSegment {
         )
     );
 }
+
+pub struct FileHeader {
+    header_length: u32,
+    file_type: u32,
+    uncompressed_size: u32,
+    block_size: u32,
+    block_count: u32,
+}
+
+impl FileHeader {
+    pub const SIZE: usize = 24;
+
+    #[rustfmt::skip]
+    named!(pub parse<FileHeader>,
+        do_parse!(
+            header_length:      le_u32  >>
+            file_type:          le_u32  >>
+            uncompressed_size:  le_u32  >>
+            _unk:               le_u32  >>
+            block_size:         le_u32  >>
+            block_count:        le_u32  >>
+            (FileHeader {
+                header_length,
+                file_type,
+                uncompressed_size,
+                block_size,
+                block_count
+            })
+        )
+    );
+}

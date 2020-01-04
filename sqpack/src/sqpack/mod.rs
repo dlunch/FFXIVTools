@@ -1,6 +1,9 @@
+#[macro_use]
+mod ext;
+
 mod archive;
 mod archive_container;
-mod ext;
+mod data;
 mod index;
 mod parser;
 mod reference;

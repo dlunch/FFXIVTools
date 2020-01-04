@@ -39,7 +39,7 @@ impl SqPackArchiveContainer {
         })
     }
 
-    pub fn get_archive(&mut self, archive_id: &SqPackArchiveId) -> &SqPackArchive {
+    pub fn get_archive(&mut self, archive_id: &SqPackArchiveId) -> &mut SqPackArchive {
         let archive_paths = &self.archive_paths;
         self.archives
             .entry(archive_id.to_owned())

@@ -1,7 +1,7 @@
-use std::fs::File;
 use std::io;
 use std::path::Path;
 
+use super::data::SqPackData;
 use super::index::SqPackIndex;
 use super::reference::SqPackFileReference;
 
@@ -14,7 +14,7 @@ pub struct SqPackArchiveId {
 
 pub struct SqPackArchive {
     pub index: SqPackIndex,
-    pub data: Vec<File>,
+    pub data: Vec<SqPackData>,
 }
 
 impl SqPackArchive {
@@ -24,17 +24,20 @@ impl SqPackArchive {
         let index = SqPackIndex::new(index_path)?;
 
         let data = (0..index.dat_count)
-            .map(|x| File::open(format!("{}.dat{}", base_path, x)))
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|x| {
+                let path_str = format!("{}.dat{}", base_path, x);
+                Ok(SqPackData::new(Path::new(&path_str))?)
+            })
+            .collect::<io::Result<Vec<_>>>()?;
         Ok(SqPackArchive { index, data })
     }
 
-    pub fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub fn read_file(&mut self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;
         let offset = (file_offset & 0xffff_fff0) << 3;
 
-        Ok(Vec::new())
+        Ok(self.data[dat_index as usize].read(offset)?)
     }
 }
