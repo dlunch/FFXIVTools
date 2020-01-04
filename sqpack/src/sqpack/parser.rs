@@ -105,10 +105,12 @@ impl FileSegment {
     );
 }
 
+/*
 pub struct FileSegment2 {
     file_hash: u32,
     data_offset: u32,
 }
+*/
 
 pub struct FolderSegment {
     pub folder_hash: u32,
