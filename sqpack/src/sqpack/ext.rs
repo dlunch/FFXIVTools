@@ -15,3 +15,10 @@ impl ReadExt for File {
         Ok(data)
     }
 }
+
+macro_rules! read_and_parse {
+    ($file: expr, $offset: expr, $type: ty) => {{
+        let data = $file.read_to_vec($offset as u64, <$type>::SIZE as usize)?;
+        <$type>::parse(&data).unwrap().1
+    }};
+}
