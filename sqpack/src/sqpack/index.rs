@@ -3,7 +3,7 @@ use std::io;
 use std::path::Path;
 
 use super::ext::ReadExt;
-use super::parser::*;
+use super::parser::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use super::reference::SqPackFileReference;
 
 pub struct SqPackIndex {
@@ -14,18 +14,14 @@ pub struct SqPackIndex {
 }
 
 macro_rules! read_segment {
-    ($file: expr, $segment: expr, $type: ty) => {{
-        let segment_count = $segment.size / <$type>::SIZE as u32;
-        let data = $file.read_to_vec($segment.offset as u64, $segment.size as usize)?;
-        let mut result = Vec::with_capacity(segment_count as usize);
-        for i in 0..segment_count {
-            let begin = (i as usize) * <$type>::SIZE;
-            let end = begin + <$type>::SIZE;
-            result.push(<$type>::parse(&data[begin..end]).unwrap().1);
-        }
-
-        result
-    }};
+    ($file: expr, $segment: expr, $type: ty) => {
+        read_and_parse!(
+            $file,
+            $segment.offset,
+            $segment.size as usize / <$type>::SIZE,
+            $type
+        )
+    };
 }
 
 impl SqPackIndex {
