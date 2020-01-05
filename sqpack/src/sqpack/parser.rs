@@ -1,4 +1,6 @@
-use nom::number::complete::le_u32;
+use nom::number::complete::{le_u16, le_u32};
+
+// TODO use nom-derive (https://github.com/rust-bakery/nom-derive)
 
 pub struct SqPackHeader {
     pub header_length: u32,
@@ -137,12 +139,15 @@ impl FolderSegment {
     );
 }
 
+pub const FILE_TYPE_DEFAULT: u32 = 2;
+pub const FILE_TYPE_MODEL: u32 = 3;
+pub const FILE_TYPE_IMAGE: u32 = 4;
+
 pub struct FileHeader {
-    header_length: u32,
-    file_type: u32,
-    uncompressed_size: u32,
-    block_size: u32,
-    block_count: u32,
+    pub header_length: u32,
+    pub file_type: u32,
+    pub uncompressed_size: u32,
+    pub block_count: u32,
 }
 
 impl FileHeader {
@@ -154,15 +159,63 @@ impl FileHeader {
             header_length:      le_u32  >>
             file_type:          le_u32  >>
             uncompressed_size:  le_u32  >>
-            _unk:               le_u32  >>
-            block_size:         le_u32  >>
+            _unk1:              le_u32  >>
+            _unk2:              le_u32  >>
             block_count:        le_u32  >>
             (FileHeader {
                 header_length,
                 file_type,
                 uncompressed_size,
-                block_size,
                 block_count
+            })
+        )
+    );
+}
+
+pub struct BlockHeader {
+    pub header_size: u32,
+    pub compressed_length: u32, // 32000 if not compressed
+    pub uncompressed_length: u32,
+}
+
+impl BlockHeader {
+    pub const SIZE: usize = 16;
+
+    #[rustfmt::skip]
+    named!(pub parse<BlockHeader>,
+        do_parse!(
+            header_size:            le_u32  >>
+            _unk:                   le_u32  >>
+            compressed_length:      le_u32  >>
+            uncompressed_length:    le_u32  >>
+            (BlockHeader {
+                header_size,
+                compressed_length,
+                uncompressed_length,
+            })
+        )
+    );
+}
+
+pub struct DefaultBlockHeader {
+    pub offset: u32,
+    pub block_size: u16,
+    pub uncompressed_size: u16,
+}
+
+impl DefaultBlockHeader {
+    pub const SIZE: usize = 8;
+
+    #[rustfmt::skip]
+    named!(pub parse<DefaultBlockHeader>,
+        do_parse!(
+            offset:             le_u32  >>
+            block_size:         le_u16  >>
+            uncompressed_size:  le_u16  >>
+            (DefaultBlockHeader {
+                offset,
+                block_size,
+                uncompressed_size,
             })
         )
     );
