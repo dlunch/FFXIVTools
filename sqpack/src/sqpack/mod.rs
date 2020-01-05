@@ -3,9 +3,10 @@ mod ext;
 
 mod archive;
 mod archive_container;
+mod archive_id;
 mod data;
+mod definition;
 mod index;
-mod parser;
 mod reference;
 
 use std::io;
