@@ -28,15 +28,15 @@ static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
 };
 
 impl SqPackFileReference {
-    pub fn new(path: &str) -> SqPackFileReference {
+    pub fn new(path: &str) -> Self {
         let path_str = path.to_ascii_lowercase();
         let folder_separator = path_str.rfind('/').unwrap();
         let folder_str = &path_str[..folder_separator];
         let file_str = &path_str[folder_separator + 1..];
 
-        let path_hash = !SqPackFileReference::hash(&path_str);
-        let folder_hash = !SqPackFileReference::hash(&folder_str);
-        let file_hash = !SqPackFileReference::hash(&file_str);
+        let path_hash = !Self::hash(&path_str);
+        let folder_hash = !Self::hash(&folder_str);
+        let file_hash = !Self::hash(&file_str);
 
         let path_splitted = path_str.split('/').collect::<Vec<&str>>();
 
@@ -60,7 +60,7 @@ impl SqPackFileReference {
             }
         }
 
-        SqPackFileReference {
+        Self {
             archive_id: SqPackArchiveId { root, ex, part },
             path_hash,
             folder_hash,

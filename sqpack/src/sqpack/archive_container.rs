@@ -11,7 +11,7 @@ pub struct SqPackArchiveContainer {
 }
 
 impl SqPackArchiveContainer {
-    pub fn new(base_dir: &Path) -> io::Result<SqPackArchiveContainer> {
+    pub fn new(base_dir: &Path) -> io::Result<Self> {
         let root_dirs = base_dir
             .read_dir()?
             .filter_map(Result::ok)
@@ -30,10 +30,10 @@ impl SqPackArchiveContainer {
         });
 
         let archive_paths = entries
-            .map(|x| (SqPackArchiveContainer::get_archive_id(&x), x))
+            .map(|x| (Self::get_archive_id(&x), x))
             .collect::<HashMap<_, _>>();
 
-        Ok(SqPackArchiveContainer {
+        Ok(Self {
             archive_paths,
             archives: HashMap::new(),
         })

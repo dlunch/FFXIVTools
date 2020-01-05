@@ -25,7 +25,7 @@ macro_rules! read_segment {
 }
 
 impl SqPackIndex {
-    pub fn new(path: &Path) -> io::Result<SqPackIndex> {
+    pub fn new(path: &Path) -> io::Result<Self> {
         let mut f = File::open(path)?;
 
         let sqpack_header = read_and_parse!(f, 0, SqPackHeader);
@@ -34,7 +34,7 @@ impl SqPackIndex {
         let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment);
         let file_segments = read_segment!(f, index_header.file_segment, FileSegment);
 
-        Ok(SqPackIndex {
+        Ok(Self {
             folder_segments,
             file_segments,
             file_segment_base: index_header.file_segment.offset,
