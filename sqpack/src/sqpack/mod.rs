@@ -21,8 +21,8 @@ pub struct SqPack {
 }
 
 impl SqPack {
-    pub fn new(base_dir: &Path) -> io::Result<SqPack> {
-        Ok(SqPack {
+    pub fn new(base_dir: &Path) -> io::Result<Self> {
+        Ok(Self {
             archives: SqPackArchiveContainer::new(base_dir)?,
         })
     }

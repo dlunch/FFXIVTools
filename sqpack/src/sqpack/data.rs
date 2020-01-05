@@ -15,10 +15,10 @@ pub struct SqPackData {
 }
 
 impl SqPackData {
-    pub fn new(path: &Path) -> io::Result<SqPackData> {
+    pub fn new(path: &Path) -> io::Result<Self> {
         let file = File::open(path)?;
 
-        Ok(SqPackData { file })
+        Ok(Self { file })
     }
 
     pub fn read(&mut self, offset: usize) -> io::Result<Vec<u8>> {

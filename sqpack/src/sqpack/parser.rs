@@ -12,13 +12,13 @@ impl SqPackHeader {
     pub const SIZE: usize = 24;
 
     #[rustfmt::skip]
-    named!(pub parse<SqPackHeader>,
+    named!(pub parse<Self>,
         do_parse!(
             /* signature: */    take!(12)   >>
             header_length:      le_u32      >>
             unk1:               le_u32      >>
             file_type:          le_u32      >>
-            (SqPackHeader {
+            (Self {
                 header_length,
                 unk1,
                 file_type,
@@ -60,7 +60,7 @@ impl SqPackIndexHeader {
     pub const SIZE: usize = 300;
 
     #[rustfmt::skip]
-    named!(pub parse<SqPackIndexHeader>,
+    named!(pub parse<Self>,
         do_parse!(
             header_length:      le_u32                  >>
             unk:                le_u32                  >>
@@ -69,7 +69,7 @@ impl SqPackIndexHeader {
             segment2:           sqpack_index_segment    >>
             segment3:           sqpack_index_segment    >>
             folder_segment:     sqpack_index_segment    >>
-            (SqPackIndexHeader {
+            (Self {
                 header_length,
                 unk,
                 file_segment,
@@ -92,13 +92,13 @@ impl FileSegment {
     pub const SIZE: usize = 16;
 
     #[rustfmt::skip]
-    named!(pub parse<FileSegment>,
+    named!(pub parse<Self>,
         do_parse!(
             file_hash:      le_u32  >>
             folder_hash:    le_u32  >>
             data_offset:    le_u32  >>
             _padding:       le_u32  >>
-            (FileSegment {
+            (Self {
                 file_hash,
                 folder_hash,
                 data_offset
@@ -124,13 +124,13 @@ impl FolderSegment {
     pub const SIZE: usize = 16;
 
     #[rustfmt::skip]
-    named!(pub parse<FolderSegment>,
+    named!(pub parse<Self>,
         do_parse!(
             folder_hash:        le_u32  >>
             file_list_offset:   le_u32  >>
             file_list_size:     le_u32  >>
             _padding:           le_u32  >>
-            (FolderSegment {
+            (Self {
                 folder_hash,
                 file_list_offset,
                 file_list_size
@@ -154,7 +154,7 @@ impl FileHeader {
     pub const SIZE: usize = 24;
 
     #[rustfmt::skip]
-    named!(pub parse<FileHeader>,
+    named!(pub parse<Self>,
         do_parse!(
             header_length:      le_u32  >>
             file_type:          le_u32  >>
@@ -162,7 +162,7 @@ impl FileHeader {
             _unk1:              le_u32  >>
             _unk2:              le_u32  >>
             block_count:        le_u32  >>
-            (FileHeader {
+            (Self {
                 header_length,
                 file_type,
                 uncompressed_size,
@@ -182,13 +182,13 @@ impl BlockHeader {
     pub const SIZE: usize = 16;
 
     #[rustfmt::skip]
-    named!(pub parse<BlockHeader>,
+    named!(pub parse<Self>,
         do_parse!(
             header_size:            le_u32  >>
             _unk:                   le_u32  >>
             compressed_length:      le_u32  >>
             uncompressed_length:    le_u32  >>
-            (BlockHeader {
+            (Self {
                 header_size,
                 compressed_length,
                 uncompressed_length,
@@ -207,12 +207,12 @@ impl DefaultBlockHeader {
     pub const SIZE: usize = 8;
 
     #[rustfmt::skip]
-    named!(pub parse<DefaultBlockHeader>,
+    named!(pub parse<Self>,
         do_parse!(
             offset:             le_u32  >>
             block_size:         le_u16  >>
             uncompressed_size:  le_u16  >>
-            (DefaultBlockHeader {
+            (Self {
                 offset,
                 block_size,
                 uncompressed_size,

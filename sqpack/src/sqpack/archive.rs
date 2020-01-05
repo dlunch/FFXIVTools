@@ -18,7 +18,7 @@ pub struct SqPackArchive {
 }
 
 impl SqPackArchive {
-    pub fn new(index_path: &Path) -> io::Result<SqPackArchive> {
+    pub fn new(index_path: &Path) -> io::Result<Self> {
         let index_path_str = index_path.to_str().unwrap();
         let base_path = index_path_str.trim_end_matches(".index");
         let index = SqPackIndex::new(index_path)?;
@@ -29,7 +29,7 @@ impl SqPackArchive {
                 Ok(SqPackData::new(Path::new(&path_str))?)
             })
             .collect::<io::Result<Vec<_>>>()?;
-        Ok(SqPackArchive { index, data })
+        Ok(Self { index, data })
     }
 
     pub fn read_file(&mut self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
