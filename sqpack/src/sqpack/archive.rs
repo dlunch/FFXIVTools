@@ -38,6 +38,6 @@ impl SqPackArchive {
         let dat_index = (file_offset & 0x0f) >> 1;
         let offset = (file_offset & 0xffff_fff0) << 3;
 
-        Ok(self.data[dat_index as usize].read(offset as usize)?)
+        Ok(self.data[dat_index as usize].read(offset as u64)?)
     }
 }

@@ -49,8 +49,12 @@ mod tests {
         ))
         .unwrap();
 
-        pack.read_file("exd/item.exh").unwrap();
-        pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl")
-            .unwrap();
+        let data = pack.read_file("exd/item.exh").unwrap();
+        assert_eq!(data[0], b'E');
+        assert_eq!(data[1], b'X');
+        assert_eq!(data[2], b'H');
+        assert_eq!(data[3], b'F');
+
+        // pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").unwrap();
     }
 }
