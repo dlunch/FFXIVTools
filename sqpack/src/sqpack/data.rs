@@ -34,7 +34,7 @@ impl SqPackData {
         file_header: &FileHeader,
     ) -> io::Result<Vec<usize>> {
         match file_header.file_type {
-            FILE_TYPE_DEFAULT => self.read_blocks_default(base_offset, &file_header),
+            FILE_TYPE_DEFAULT => self.read_block_offsets_default(base_offset, &file_header),
             _ => Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "Incorrect header",
@@ -42,7 +42,7 @@ impl SqPackData {
         }
     }
 
-    fn read_blocks_default(
+    fn read_block_offsets_default(
         &mut self,
         base_offset: usize,
         file_header: &FileHeader,
