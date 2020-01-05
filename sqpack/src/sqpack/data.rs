@@ -47,7 +47,7 @@ impl SqPackData {
         Ok(block_offsets
             .iter()
             .map(|x| {
-                let header = read_and_parse!(file, x.to_owned(), BlockHeader);
+                let header = read_and_parse!(file, *x, BlockHeader);
                 let length = if header.compressed_length >= 32000 {
                     header.uncompressed_length
                 } else {
