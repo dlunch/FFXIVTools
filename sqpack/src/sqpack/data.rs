@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
+use super::definition::{BlockHeader, DefaultBlockHeader, FileHeader, FILE_TYPE_DEFAULT};
 use super::ext::ReadExt;
-use super::parser::{BlockHeader, DefaultBlockHeader, FileHeader, FILE_TYPE_DEFAULT};
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 

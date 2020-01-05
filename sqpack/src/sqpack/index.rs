@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
+use super::definition::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use super::ext::ReadExt;
-use super::parser::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use super::reference::SqPackFileReference;
 
 pub struct SqPackIndex {

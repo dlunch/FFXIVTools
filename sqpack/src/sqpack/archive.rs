@@ -5,13 +5,6 @@ use super::data::SqPackData;
 use super::index::SqPackIndex;
 use super::reference::SqPackFileReference;
 
-#[derive(Eq, PartialEq, Hash, Default, Clone)]
-pub struct SqPackArchiveId {
-    pub root: u8,
-    pub ex: u8,
-    pub part: u8,
-}
-
 pub struct SqPackArchive {
     pub index: SqPackIndex,
     pub data: Vec<SqPackData>,
