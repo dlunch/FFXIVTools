@@ -2,7 +2,10 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
-use super::definition::{BlockHeader, DefaultBlockHeader, FileHeader, FILE_TYPE_DEFAULT};
+use super::definition::{
+    BlockHeader, DefaultBlockHeader, FileHeader, ModelBlockHeader, FILE_TYPE_DEFAULT,
+    FILE_TYPE_MODEL,
+};
 use super::ext::ReadExt;
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
@@ -37,6 +40,7 @@ impl SqPackData {
     ) -> io::Result<Vec<SqPackDataBlock>> {
         let block_offsets = match file_header.file_type {
             FILE_TYPE_DEFAULT => self.read_block_offsets_default(base_offset, &file_header),
+            FILE_TYPE_MODEL => self.read_block_offsets_model(base_offset, &file_header),
             _ => Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "Incorrect header",
@@ -93,5 +97,20 @@ impl SqPackData {
             .iter()
             .map(|x| base_offset + file_header.header_length as u64 + x.offset as u64)
             .collect())
+    }
+
+    fn read_block_offsets_model(
+        &mut self,
+        base_offset: u64,
+        file_header: &FileHeader,
+    ) -> io::Result<Vec<u64>> {
+        let block_headers = read_and_parse!(
+            self.file,
+            base_offset + FileHeader::SIZE as u64,
+            file_header.block_count,
+            ModelBlockHeader
+        );
+
+        Ok(Vec::new())
     }
 }
