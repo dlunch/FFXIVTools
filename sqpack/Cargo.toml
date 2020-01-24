@@ -8,7 +8,8 @@ edition = "2018"
 std = ["nom/std", "crc32fast/std", "compression/std"]
 
 [dependencies]
-nom = { version = "^5.0.1", default-features = false }
+#nom = { version = "^5.0.1", features = ["alloc"], default-features = false }
+nom = { version = "^5.0.1", features = ["std"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 phf = { version = "^0.8.0", features = ["macros"], default-features = false }
-compression = { version = "^0.1", features = ["deflate"], default-features = false}
+compression = { version = "^0.1", features = ["deflate"], default-features = false }
