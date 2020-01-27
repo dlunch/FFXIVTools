@@ -239,15 +239,15 @@ impl ModelBlockHeader {
     #[rustfmt::skip]
     named!(pub parse<Self>,
         do_parse!(
-            uncompressed_chunk_sizes:   count!(le_u32, 11)  >>
-            sizes:                      count!(le_u32, 11)  >>
-            offsets:                    count!(le_u32, 11)  >>
-            start_block_indices:        count!(le_u16, 11)  >>
-            block_count:                count!(le_u16, 11)  >>
-            number_of_meshes:           le_u16              >>
-            number_of_materials:        le_u16              >>
-            _unk1: le_u16 >>
-            _unk2: le_u16 >>
+            uncompressed_chunk_sizes:   count!(le_u32, MODEL_BLOCK_COUNT)   >>
+            sizes:                      count!(le_u32, MODEL_BLOCK_COUNT)   >>
+            offsets:                    count!(le_u32, MODEL_BLOCK_COUNT)   >>
+            start_block_indices:        count!(le_u16, MODEL_BLOCK_COUNT)   >>
+            block_count:                count!(le_u16, MODEL_BLOCK_COUNT)   >>
+            number_of_meshes:           le_u16                              >>
+            number_of_materials:        le_u16                              >>
+            _unk1:                      le_u16                              >>
+            _unk2:                      le_u16                              >>
             (Self {
                 uncompressed_chunk_sizes,
                 sizes,
