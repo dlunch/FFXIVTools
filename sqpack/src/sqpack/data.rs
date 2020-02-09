@@ -4,7 +4,9 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
-use super::definition::{BlockHeader, DefaultBlockHeader, FileHeader, ModelBlockHeader, FILE_TYPE_DEFAULT, FILE_TYPE_MODEL};
+use super::definition::{
+    BlockHeader, DefaultBlockHeader, FileHeader, ImageBlockHeader, ModelBlockHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL,
+};
 use super::ext::ReadExt;
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
@@ -56,6 +58,7 @@ impl SqPackData {
         match file_header.file_type {
             FILE_TYPE_DEFAULT => self.read_default_raw(base_offset, file_header),
             FILE_TYPE_MODEL => self.read_model_raw(base_offset, file_header),
+            FILE_TYPE_IMAGE => self.read_image_raw(base_offset, file_header),
             _ => Err(io::Error::new(io::ErrorKind::InvalidData, "Incorrect header")),
         }
     }
@@ -95,29 +98,35 @@ impl SqPackData {
         })
     }
 
-    fn read_model_block_sizes(&mut self, base_offset: u64, block_header: &ModelBlockHeader) -> io::Result<Vec<u16>> {
-        let total_block_count = block_header.block_counts.iter().sum::<u16>() as usize;
-        let block_size_data = self.file.read_to_vec(
-            base_offset + FileHeader::SIZE as u64 + ModelBlockHeader::SIZE as u64,
-            total_block_count as usize * std::mem::size_of::<u16>(),
-        )?;
+    fn read_block_sizes(&mut self, offset: u64, count: usize) -> io::Result<Vec<u16>> {
+        let block_size_data = self.file.read_to_vec(offset, count * std::mem::size_of::<u16>())?;
 
         named_args!(parse_block_sizes(count: usize)<Vec<u16>>, count!(le_u16, count));
-        let (_, block_sizes) = parse_block_sizes(&block_size_data, total_block_count).unwrap();
+        let (_, block_sizes) = parse_block_sizes(&block_size_data, count).unwrap();
 
         Ok(block_sizes)
     }
 
-    fn read_model_raw(&mut self, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let block_header = read_and_parse!(self.file, base_offset + FileHeader::SIZE as u64, ModelBlockHeader);
-        let block_sizes = self.read_model_block_sizes(base_offset, &block_header)?;
-        let block_size_sums = block_sizes.iter().scan(0usize, |acc, &x| {
+    fn block_sizes_to_offset<'a>(sizes: &'a [u16], base_offset: u64) -> impl Iterator<Item = u64> + 'a {
+        let size_sums = sizes.iter().scan(0usize, |acc, &x| {
             *acc += x as usize;
             Some(*acc)
         });
 
-        let block_raw_offsets = (0..1).chain(block_size_sums.take(block_sizes.len() - 1));
-        let block_offsets = block_raw_offsets.map(|x| base_offset + file_header.header_length as u64 + block_header.offsets[0] as u64 + x as u64);
+        let raw_offsets = (0..1).chain(size_sums.take(sizes.len() - 1));
+        raw_offsets.map(move |x| base_offset + x as u64)
+    }
+
+    fn read_model_raw(&mut self, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
+        let block_header = read_and_parse!(self.file, base_offset + FileHeader::SIZE as u64, ModelBlockHeader);
+
+        let total_block_count = block_header.block_counts.iter().sum::<u16>() as usize;
+        let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelBlockHeader::SIZE as u64;
+        let block_sizes = self.read_block_sizes(sizes_offset, total_block_count)?;
+        let block_offsets = Self::block_sizes_to_offset(
+            &block_sizes,
+            base_offset + file_header.header_length as u64 + block_header.offsets[0] as u64,
+        );
 
         Ok(SqPackRawFile {
             additional_header: Self::serialize_model_header(&block_header),
@@ -133,5 +142,34 @@ impl SqPackData {
         result.resize(0x44, 0);
 
         result
+    }
+
+    fn read_image_raw(&mut self, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
+        let block_headers = read_and_parse!(
+            self.file,
+            base_offset + FileHeader::SIZE as u64,
+            file_header.block_count,
+            ImageBlockHeader
+        );
+        let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.block_count as u64 * ImageBlockHeader::SIZE as u64;
+
+        let block_offsets = block_headers
+            .iter()
+            .flat_map(|x| {
+                let block_sizes = self
+                    .read_block_sizes(sizes_table_base + x.sizes_table_offset as u64, x.block_count as usize)
+                    .unwrap();
+                Self::block_sizes_to_offset(&block_sizes, base_offset + file_header.header_length as u64 + x.block_offset as u64).collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+
+        let additional_header = self
+            .file
+            .read_to_vec(base_offset + file_header.header_length as u64, block_headers[0].block_offset as usize)?;
+
+        Ok(SqPackRawFile {
+            additional_header,
+            blocks: self.read_blocks(block_offsets.into_iter())?,
+        })
     }
 }

@@ -61,5 +61,14 @@ mod tests {
             assert_eq!(data[0], 3u8);
             assert_eq!(data.len(), 185_088);
         }
+
+        {
+            let data = pack.read_file("common/graphics/texture/dummy.tex").unwrap();
+            assert_eq!(data[0], 0u8);
+            assert_eq!(data[1], 0u8);
+            assert_eq!(data[2], 128u8);
+            assert_eq!(data[3], 0u8);
+            assert_eq!(data.len(), 104);
+        }
     }
 }
