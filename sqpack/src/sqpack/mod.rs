@@ -45,10 +45,7 @@ mod tests {
     use std::path::Path;
     #[test]
     fn test_read() {
-        let mut pack = SqPack::new(Path::new(
-            "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack",
-        ))
-        .unwrap();
+        let mut pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
 
         {
             let data = pack.read_file("exd/item.exh").unwrap();
@@ -60,9 +57,7 @@ mod tests {
         }
 
         {
-            let data = pack
-                .read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl")
-                .unwrap();
+            let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").unwrap();
             assert_eq!(data[0], 3u8);
             assert_eq!(data.len(), 185_088);
         }
