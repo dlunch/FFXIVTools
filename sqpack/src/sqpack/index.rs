@@ -15,12 +15,7 @@ pub struct SqPackIndex {
 
 macro_rules! read_segment {
     ($file: expr, $segment: expr, $type: ty) => {
-        read_and_parse!(
-            $file,
-            $segment.offset,
-            $segment.size as usize / <$type>::SIZE,
-            $type
-        )
+        read_and_parse!($file, $segment.offset, $segment.size as usize / <$type>::SIZE, $type)
     };
 }
 
@@ -49,8 +44,7 @@ impl SqPackIndex {
             .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such folder"))?;
         let folder = &self.folder_segments[folder_index];
 
-        let file_begin =
-            (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
+        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
         let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
         let file_index = self.file_segments[file_begin..file_end]
             .binary_search_by_key(&reference.file_hash, |x| x.file_hash)

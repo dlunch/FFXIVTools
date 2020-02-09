@@ -13,14 +13,10 @@ pub struct SqPackArchiveContainer {
 
 impl SqPackArchiveContainer {
     pub fn new(base_dir: &Path) -> io::Result<Self> {
-        let root_dirs = base_dir
-            .read_dir()?
-            .filter_map(Result::ok)
-            .map(|x| x.path())
-            .filter(|x| {
-                let file_name = x.file_name().and_then(OsStr::to_str).unwrap();
-                file_name == "ffxiv" || file_name.starts_with("ex")
-            });
+        let root_dirs = base_dir.read_dir()?.filter_map(Result::ok).map(|x| x.path()).filter(|x| {
+            let file_name = x.file_name().and_then(OsStr::to_str).unwrap();
+            file_name == "ffxiv" || file_name.starts_with("ex")
+        });
 
         let entries = root_dirs.flat_map(|x| {
             x.read_dir()
@@ -30,9 +26,7 @@ impl SqPackArchiveContainer {
                 .filter(|y| y.extension().and_then(OsStr::to_str).unwrap() == "index")
         });
 
-        let archive_paths = entries
-            .map(|x| (SqPackArchiveId::with_sqpack_path(&x), x))
-            .collect::<HashMap<_, _>>();
+        let archive_paths = entries.map(|x| (SqPackArchiveId::with_sqpack_path(&x), x)).collect::<HashMap<_, _>>();
 
         Ok(Self {
             archive_paths,

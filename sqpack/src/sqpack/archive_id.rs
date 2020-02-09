@@ -48,11 +48,7 @@ impl SqPackArchiveId {
 
         if root == 2 || root == 3 || root == 12 {
             let ex_path = path_splitted[1];
-            ex = if ex_path == "ffxiv" {
-                0
-            } else {
-                ex_path[2..].parse().unwrap()
-            };
+            ex = if ex_path == "ffxiv" { 0 } else { ex_path[2..].parse().unwrap() };
 
             if root == 2 && ex > 0 {
                 let part_path = path_splitted[2];
