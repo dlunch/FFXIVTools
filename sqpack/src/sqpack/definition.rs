@@ -221,14 +221,14 @@ impl DefaultBlockHeader {
     );
 }
 
-pub const MODEL_BLOCK_COUNT: usize = 11;
+pub const MODEL_CHUNK_COUNT: usize = 11;
 
 pub struct ModelBlockHeader {
     pub uncompressed_chunk_sizes: Vec<u32>,
     pub sizes: Vec<u32>,
     pub offsets: Vec<u32>,
     pub start_block_indices: Vec<u16>,
-    pub block_count: Vec<u16>,
+    pub block_counts: Vec<u16>,
     pub number_of_meshes: u16,
     pub number_of_materials: u16,
 }
@@ -239,11 +239,11 @@ impl ModelBlockHeader {
     #[rustfmt::skip]
     named!(pub parse<Self>,
         do_parse!(
-            uncompressed_chunk_sizes:   count!(le_u32, MODEL_BLOCK_COUNT)   >>
-            sizes:                      count!(le_u32, MODEL_BLOCK_COUNT)   >>
-            offsets:                    count!(le_u32, MODEL_BLOCK_COUNT)   >>
-            start_block_indices:        count!(le_u16, MODEL_BLOCK_COUNT)   >>
-            block_count:                count!(le_u16, MODEL_BLOCK_COUNT)   >>
+            uncompressed_chunk_sizes:   count!(le_u32, MODEL_CHUNK_COUNT)   >>
+            sizes:                      count!(le_u32, MODEL_CHUNK_COUNT)   >>
+            offsets:                    count!(le_u32, MODEL_CHUNK_COUNT)   >>
+            start_block_indices:        count!(le_u16, MODEL_CHUNK_COUNT)   >>
+            block_counts:               count!(le_u16, MODEL_CHUNK_COUNT)   >>
             number_of_meshes:           le_u16                              >>
             number_of_materials:        le_u16                              >>
             _unk1:                      le_u16                              >>
@@ -253,7 +253,7 @@ impl ModelBlockHeader {
                 sizes,
                 offsets,
                 start_block_indices,
-                block_count,
+                block_counts,
                 number_of_meshes,
                 number_of_materials
             })
