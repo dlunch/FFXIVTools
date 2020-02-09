@@ -260,3 +260,31 @@ impl ModelBlockHeader {
         )
     );
 }
+
+pub struct ImageBlockHeader {
+    pub block_offset: u32,
+    pub block_size: u32,
+    pub sizes_table_offset: u32,
+    pub block_count: u32,
+}
+
+impl ImageBlockHeader {
+    pub const SIZE: usize = 20;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            block_offset:       le_u32 >>
+            block_size:         le_u32 >>
+            _unk:               le_u32 >>
+            sizes_table_offset: le_u32 >>
+            block_count:        le_u32 >>
+            (Self {
+                block_offset,
+                block_size,
+                sizes_table_offset,
+                block_count,
+            })
+        )
+    );
+}
