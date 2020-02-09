@@ -95,25 +95,30 @@ impl SqPackData {
         })
     }
 
-    named_args!(parse_block_sizes(count: usize)<Vec<u16>>, count!(le_u16, count));
-
-    fn read_model_raw(&mut self, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let block_header = read_and_parse!(self.file, base_offset + FileHeader::SIZE as u64, ModelBlockHeader);
-
+    fn read_model_block_sizes(&mut self, base_offset: u64, block_header: &ModelBlockHeader) -> io::Result<Vec<u16>> {
         let total_block_count = block_header.block_counts.iter().sum::<u16>() as usize;
         let block_size_data = self.file.read_to_vec(
             base_offset + FileHeader::SIZE as u64 + ModelBlockHeader::SIZE as u64,
             total_block_count as usize * std::mem::size_of::<u16>(),
         )?;
-        let (_, block_sizes) = Self::parse_block_sizes(&block_size_data, total_block_count).unwrap();
 
+        named_args!(parse_block_sizes(count: usize)<Vec<u16>>, count!(le_u16, count));
+        let (_, block_sizes) = parse_block_sizes(&block_size_data, total_block_count).unwrap();
+
+        Ok(block_sizes)
+    }
+
+    fn read_model_raw(&mut self, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
+        let block_header = read_and_parse!(self.file, base_offset + FileHeader::SIZE as u64, ModelBlockHeader);
+        let block_sizes = self.read_model_block_sizes(base_offset, &block_header)?;
         let block_size_sums = block_sizes.iter().scan(0usize, |acc, &x| {
             *acc += x as usize;
             Some(*acc)
         });
 
-        let block_raw_offsets = (0..1).chain(block_size_sums.take(total_block_count - 1));
+        let block_raw_offsets = (0..1).chain(block_size_sums.take(block_sizes.len() - 1));
         let block_offsets = block_raw_offsets.map(|x| base_offset + file_header.header_length as u64 + block_header.offsets[0] as u64 + x as u64);
+
         Ok(SqPackRawFile {
             additional_header: Self::serialize_model_header(&block_header),
             blocks: self.read_blocks(block_offsets)?,
