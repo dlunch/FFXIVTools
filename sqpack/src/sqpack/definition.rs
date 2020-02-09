@@ -147,7 +147,7 @@ pub struct FileHeader {
     pub header_length: u32,
     pub file_type: u32,
     pub uncompressed_size: u32,
-    pub block_count: u32,
+    pub frame_count: u32,
 }
 
 impl FileHeader {
@@ -161,12 +161,12 @@ impl FileHeader {
             uncompressed_size:  le_u32  >>
             _unk1:              le_u32  >>
             _unk2:              le_u32  >>
-            block_count:        le_u32  >>
+            frame_count:        le_u32  >>
             (Self {
                 header_length,
                 file_type,
                 uncompressed_size,
-                block_count
+                frame_count
             })
         )
     );
@@ -197,23 +197,23 @@ impl BlockHeader {
     );
 }
 
-pub struct DefaultBlockHeader {
-    pub offset: u32,
+pub struct DefaultFrameHeader {
+    pub block_offset: u32,
     pub block_size: u16,
     pub uncompressed_size: u16,
 }
 
-impl DefaultBlockHeader {
+impl DefaultFrameHeader {
     pub const SIZE: usize = 8;
 
     #[rustfmt::skip]
     named!(pub parse<Self>,
         do_parse!(
-            offset:             le_u32  >>
+            block_offset:       le_u32  >>
             block_size:         le_u16  >>
             uncompressed_size:  le_u16  >>
             (Self {
-                offset,
+                block_offset,
                 block_size,
                 uncompressed_size,
             })
@@ -223,7 +223,7 @@ impl DefaultBlockHeader {
 
 pub const MODEL_CHUNK_COUNT: usize = 11;
 
-pub struct ModelBlockHeader {
+pub struct ModelFrameHeader {
     pub uncompressed_chunk_sizes: Vec<u32>,
     pub sizes: Vec<u32>,
     pub offsets: Vec<u32>,
@@ -233,7 +233,7 @@ pub struct ModelBlockHeader {
     pub number_of_materials: u16,
 }
 
-impl ModelBlockHeader {
+impl ModelFrameHeader {
     pub const SIZE: usize = 184;
 
     #[rustfmt::skip]
@@ -261,14 +261,14 @@ impl ModelBlockHeader {
     );
 }
 
-pub struct ImageBlockHeader {
+pub struct ImageFrameHeader {
     pub block_offset: u32,
     pub block_size: u32,
     pub sizes_table_offset: u32,
     pub block_count: u32,
 }
 
-impl ImageBlockHeader {
+impl ImageFrameHeader {
     pub const SIZE: usize = 20;
 
     #[rustfmt::skip]
