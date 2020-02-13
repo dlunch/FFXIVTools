@@ -46,7 +46,7 @@ impl SqPackArchiveId {
         let mut ex = 0;
         let mut part = 0;
 
-        if root == 2 || root == 3 || root == 12 {
+        if root == ROOT_INDICES["bg"] || root == ROOT_INDICES["cut"] || root == ROOT_INDICES["music"] {
             let ex_path = path_splitted[1];
             ex = if ex_path == "ffxiv" { 0 } else { ex_path[2..].parse().unwrap() };
 
