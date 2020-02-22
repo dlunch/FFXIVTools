@@ -11,26 +11,25 @@ pub struct SqPackArchive {
 }
 
 impl SqPackArchive {
-    pub fn new(index_path: &Path) -> io::Result<Self> {
+    pub async fn new(index_path: &Path) -> io::Result<Self> {
         let index_path_str = index_path.to_str().unwrap();
         let base_path = index_path_str.trim_end_matches(".index");
-        let index = SqPackIndex::new(index_path)?;
+        let index = SqPackIndex::new(index_path).await?;
 
-        let data = (0..index.dat_count)
-            .map(|x| {
-                let path_str = format!("{}.dat{}", base_path, x);
-                Ok(SqPackData::new(Path::new(&path_str))?)
-            })
-            .collect::<io::Result<Vec<_>>>()?;
+        let mut data = Vec::with_capacity(index.dat_count as usize);
+        for dat_num in 0..index.dat_count {
+            let path_str = format!("{}.dat{}", base_path, dat_num);
+            data.push(SqPackData::new(Path::new(&path_str)).await?);
+        }
         Ok(Self { index, data })
     }
 
-    pub fn read_file(&mut self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub async fn read_file(&mut self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;
         let offset = (file_offset & 0xffff_fff0) << 3;
 
-        Ok(self.data[dat_index as usize].read(offset as u64)?)
+        Ok(self.data[dat_index as usize].read(offset as u64).await?)
     }
 }
