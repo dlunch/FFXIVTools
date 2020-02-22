@@ -18,7 +18,7 @@ static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
     "music" => 12,
 };
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Copy)]
 pub struct SqPackArchiveId {
     pub root: u8,
     pub ex: u8,

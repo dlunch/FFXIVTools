@@ -1,6 +1,6 @@
-use std::fs::File;
 use std::io;
 use std::path::Path;
+use tokio::fs::File;
 
 use super::definition::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use super::ext::ReadExt;
@@ -20,14 +20,14 @@ macro_rules! read_segment {
 }
 
 impl SqPackIndex {
-    pub fn new(path: &Path) -> io::Result<Self> {
-        let mut f = File::open(path)?;
+    pub async fn new(path: &Path) -> io::Result<Self> {
+        let mut f = File::open(path).await?;
 
-        let sqpack_header = read_and_parse!(f, 0, SqPackHeader);
-        let index_header = read_and_parse!(f, sqpack_header.header_length, SqPackIndexHeader);
+        let sqpack_header = read_and_parse!(f, 0, SqPackHeader).await?;
+        let index_header = read_and_parse!(f, sqpack_header.header_length, SqPackIndexHeader).await?;
 
-        let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment);
-        let file_segments = read_segment!(f, index_header.file_segment, FileSegment);
+        let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment).await?;
+        let file_segments = read_segment!(f, index_header.file_segment, FileSegment).await?;
 
         Ok(Self {
             folder_segments,

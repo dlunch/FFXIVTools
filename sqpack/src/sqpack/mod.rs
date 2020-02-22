@@ -9,6 +9,7 @@ mod definition;
 mod index;
 mod reference;
 
+use async_trait::async_trait;
 use std::io;
 use std::path::Path;
 
@@ -29,12 +30,13 @@ impl SqPack {
     }
 }
 
+#[async_trait]
 impl Package for SqPack {
-    fn read_file(&mut self, path: &str) -> io::Result<Vec<u8>> {
+    async fn read_file(&mut self, path: &str) -> io::Result<Vec<u8>> {
         let reference = SqPackFileReference::new(path);
-        let archive = self.archives.get_archive(&reference.archive_id);
+        let archive = self.archives.get_archive(&reference.archive_id).await?;
 
-        archive.read_file(&SqPackFileReference::new(path))
+        archive.read_file(&SqPackFileReference::new(path)).await
     }
 }
 
@@ -43,12 +45,12 @@ mod tests {
     use super::SqPack;
     use crate::package::Package;
     use std::path::Path;
-    #[test]
-    fn test_read() {
+    #[tokio::test]
+    async fn test_read() {
         let mut pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
 
         {
-            let data = pack.read_file("exd/item.exh").unwrap();
+            let data = pack.read_file("exd/item.exh").await.unwrap();
             assert_eq!(data[0], b'E');
             assert_eq!(data[1], b'X');
             assert_eq!(data[2], b'H');
@@ -57,13 +59,13 @@ mod tests {
         }
 
         {
-            let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").unwrap();
+            let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
             assert_eq!(data.len(), 185_088);
         }
 
         {
-            let data = pack.read_file("common/graphics/texture/dummy.tex").unwrap();
+            let data = pack.read_file("common/graphics/texture/dummy.tex").await.unwrap();
             assert_eq!(data[0], 0u8);
             assert_eq!(data[1], 0u8);
             assert_eq!(data[2], 128u8);
