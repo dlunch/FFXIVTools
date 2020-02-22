@@ -34,7 +34,7 @@ impl SqPack {
 impl Package for SqPack {
     async fn read_file(&mut self, path: &str) -> io::Result<Vec<u8>> {
         let reference = SqPackFileReference::new(path);
-        let archive = self.archives.get_archive(&reference.archive_id).await?;
+        let archive = self.archives.get_archive(reference.archive_id).await?;
 
         archive.read_file(&SqPackFileReference::new(path)).await
     }
