@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use std::io;
 use std::io::SeekFrom;
 use tokio::fs::File;
-use tokio::prelude::*;
+use tokio::io::AsyncReadExt;
 
 #[async_trait]
 pub trait ReadExt {
