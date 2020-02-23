@@ -14,5 +14,5 @@ crc32fast = { version = "^1.2.0", default-features = false, optional = true }
 phf = { version = "^0.8.0", features = ["macros"], default-features = false, optional = true }
 compression = { version = "^0.1", features = ["deflate"], default-features = false, optional = true }
 byteorder = { version = "^1.3.4", default-features = false, optional = true }
-tokio = { version = "^0.2.11", features = ["fs", "macros", "rt-threaded"], default-features = false, optional = true }
+tokio = { version = "^0.2.11", features = ["fs", "macros", "rt-threaded", "sync"], default-features = false, optional = true }
 async-trait = { version = "^0.1.24", default-features = false, optional = true }
