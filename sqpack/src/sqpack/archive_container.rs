@@ -36,12 +36,12 @@ impl SqPackArchiveContainer {
 
     // https://github.com/rust-lang/rust-clippy/issues/5176
     #[allow(clippy::map_entry)]
-    pub async fn get_archive(&mut self, archive_id: SqPackArchiveId) -> io::Result<&mut SqPackArchive> {
+    pub async fn get_archive(&mut self, archive_id: SqPackArchiveId) -> io::Result<&SqPackArchive> {
         let archive_paths = &self.archive_paths;
         if !self.archives.contains_key(&archive_id) {
             let archive = SqPackArchive::new(archive_paths.get(&archive_id).unwrap()).await?;
             self.archives.insert(archive_id, archive);
         }
-        Ok(self.archives.get_mut(&archive_id).unwrap())
+        Ok(self.archives.get(&archive_id).unwrap())
     }
 }

@@ -24,7 +24,7 @@ impl SqPackArchive {
         Ok(Self { index, data })
     }
 
-    pub async fn read_file(&mut self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;
