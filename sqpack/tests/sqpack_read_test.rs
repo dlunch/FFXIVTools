@@ -6,9 +6,9 @@ mod tests {
     #[tokio::test]
     async fn test_read() {
         #[cfg(windows)]
-        let mut pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
+        let pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
         #[cfg(unix)]
-        let mut pack = SqPack::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack")).unwrap();
+        let pack = SqPack::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack")).unwrap();
 
         {
             let data = pack.read_file("exd/item.exh").await.unwrap();
