@@ -32,7 +32,7 @@ impl SqPack {
 
 #[async_trait]
 impl Package for SqPack {
-    async fn read_file(&mut self, path: &str) -> io::Result<Vec<u8>> {
+    async fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
         let reference = SqPackFileReference::new(path);
         let archive = self.archives.get_archive(reference.archive_id).await?;
 
