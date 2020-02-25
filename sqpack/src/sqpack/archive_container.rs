@@ -37,8 +37,6 @@ impl SqPackArchiveContainer {
         })
     }
 
-    // https://github.com/rust-lang/rust-clippy/issues/5176
-    #[allow(clippy::map_entry)]
     pub async fn get_archive(&self, archive_id: SqPackArchiveId) -> io::Result<Arc<SqPackArchive>> {
         let mut archives = self.archives.lock().await;
 
