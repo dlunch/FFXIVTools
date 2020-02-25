@@ -1,6 +1,3 @@
-#[macro_use]
-mod ext;
-
 mod archive;
 mod archive_container;
 mod data;

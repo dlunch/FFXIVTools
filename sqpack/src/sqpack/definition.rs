@@ -173,31 +173,6 @@ impl FileHeader {
     );
 }
 
-pub struct BlockHeader {
-    pub header_size: u32,
-    pub compressed_length: u32, // 32000 if not compressed
-    pub uncompressed_length: u32,
-}
-
-impl BlockHeader {
-    pub const SIZE: usize = 16;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            header_size:            le_u32  >>
-            _unk:                   le_u32  >>
-            compressed_length:      le_u32  >>
-            uncompressed_length:    le_u32  >>
-            (Self {
-                header_size,
-                compressed_length,
-                uncompressed_length,
-            })
-        )
-    );
-}
-
 pub struct DefaultFrameHeader {
     pub block_offset: u32,
     pub block_size: u16,

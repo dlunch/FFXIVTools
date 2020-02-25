@@ -1,22 +1,15 @@
+use std::io;
+use std::path::Path;
+
 use byteorder::{LittleEndian, WriteBytesExt};
 use nom::number::complete::le_u16;
 use nom::{count, named_args};
-use std::io;
-use std::path::Path;
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
-use super::definition::{
-    BlockHeader, DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL,
-};
-use super::ext::ReadExt;
-use compression::prelude::DecodeExt;
-use compression::prelude::Deflater;
-
-struct SqPackDataBlock {
-    header: BlockHeader,
-    data: Vec<u8>,
-}
+use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
+use crate::common::ReadExt;
+use crate::common::SqPackDataBlock;
 
 struct SqPackRawFile {
     additional_header: Vec<u8>,
@@ -51,14 +44,7 @@ impl SqPackData {
         raw_file
             .additional_header
             .into_iter()
-            .chain(raw_file.blocks.drain(..).flat_map(|x| {
-                if x.header.compressed_length >= 32000 {
-                    x.data
-                } else {
-                    let mut data = x.data;
-                    data.drain(..).decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap()
-                }
-            }))
+            .chain(raw_file.blocks.drain(..).flat_map(|x| x.decode()))
             .collect()
     }
 
@@ -75,15 +61,7 @@ impl SqPackData {
         let mut result = Vec::with_capacity(block_offsets.size_hint().0);
 
         for block_offset in block_offsets {
-            let header = read_and_parse!(file, block_offset, BlockHeader).await?;
-            let length = if header.compressed_length >= 32000 {
-                header.uncompressed_length
-            } else {
-                header.compressed_length
-            };
-            let data = file.read_to_vec(block_offset + header.header_size as u64, length as usize).await?;
-
-            result.push(SqPackDataBlock { header, data })
+            result.push(SqPackDataBlock::new(file, block_offset).await?);
         }
 
         Ok(result)

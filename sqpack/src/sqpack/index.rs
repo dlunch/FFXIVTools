@@ -1,10 +1,10 @@
 use std::io;
 use std::path::Path;
+
 use tokio::fs::File;
 
 use super::definition::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
-use super::ext::ReadExt;
-use crate::common::SqPackFileReference;
+use crate::common::{ReadExt, SqPackFileReference};
 
 pub struct SqPackIndex {
     pub dat_count: u32,
