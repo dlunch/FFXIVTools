@@ -3,7 +3,7 @@ use std::path::Path;
 
 use super::data::SqPackData;
 use super::index::SqPackIndex;
-use super::reference::SqPackFileReference;
+use crate::common::SqPackFileReference;
 
 pub struct SqPackArchive {
     pub index: SqPackIndex,

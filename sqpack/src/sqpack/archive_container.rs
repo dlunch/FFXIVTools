@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use super::archive::SqPackArchive;
-use super::archive_id::SqPackArchiveId;
+use crate::common::SqPackArchiveId;
 
 pub struct SqPackArchiveContainer {
     archive_paths: HashMap<SqPackArchiveId, PathBuf>,
