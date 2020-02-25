@@ -2,13 +2,11 @@
 mod util;
 
 mod archive_id;
-mod block;
 mod decoder;
 mod reference;
 
 pub use archive_id::SqPackArchiveId;
-pub use block::decode_block_into;
-pub use decoder::decode_compressed_data;
+pub use decoder::{decode_block_into, decode_compressed_data};
 pub use reference::SqPackFileReference;
 pub use util::ReadExt;
 
