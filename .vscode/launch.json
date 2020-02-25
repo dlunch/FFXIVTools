@@ -22,6 +22,25 @@
       },
       "args": [],
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'sqpack_file_read_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=sqpack_file_read_test",
+          "--package=sqpack"
+        ],
+        "filter": {
+          "name": "sqpack_file_read_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
