@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use sqpack::Package;
     use sqpack::SqPackFile;
-    use std::path::Path;
     #[tokio::test]
     #[cfg(unix)]
     async fn test_read_sqpack_file() {
