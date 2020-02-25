@@ -10,11 +10,7 @@ use tokio::sync::Mutex;
 use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
 use crate::common::ReadExt;
 use crate::common::SqPackDataBlock;
-
-struct SqPackRawFile {
-    additional_header: Vec<u8>,
-    blocks: Vec<SqPackDataBlock>,
-}
+use crate::common::SqPackRawFile;
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -30,7 +26,7 @@ impl SqPackData {
     pub async fn read(&self, offset: u64) -> io::Result<Vec<u8>> {
         let raw_file = self.read_raw_file(offset).await?;
 
-        Ok(Self::decode_raw(raw_file))
+        Ok(raw_file.decode())
     }
 
     async fn read_raw_file(&self, offset: u64) -> io::Result<SqPackRawFile> {
@@ -38,14 +34,6 @@ impl SqPackData {
         let file_header = read_and_parse!(file, offset, FileHeader).await?;
 
         Ok(Self::read_raw(&mut file, offset, file_header).await?)
-    }
-
-    fn decode_raw(mut raw_file: SqPackRawFile) -> Vec<u8> {
-        raw_file
-            .additional_header
-            .into_iter()
-            .chain(raw_file.blocks.drain(..).flat_map(|x| x.decode()))
-            .collect()
     }
 
     async fn read_raw(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
@@ -74,10 +62,7 @@ impl SqPackData {
             .iter()
             .map(|x| base_offset + file_header.header_length as u64 + x.block_offset as u64);
 
-        Ok(SqPackRawFile {
-            additional_header: Vec::new(),
-            blocks: Self::read_blocks(file, block_offsets).await?,
-        })
+        Ok(SqPackRawFile::new(Vec::new(), Self::read_blocks(file, block_offsets).await?))
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
@@ -110,10 +95,10 @@ impl SqPackData {
             base_offset + file_header.header_length as u64 + frame_header.offsets[0] as u64,
         );
 
-        Ok(SqPackRawFile {
-            additional_header: Self::serialize_model_header(&frame_header),
-            blocks: Self::read_blocks(file, block_offsets).await?,
-        })
+        Ok(SqPackRawFile::new(
+            Self::serialize_model_header(&frame_header),
+            Self::read_blocks(file, block_offsets).await?,
+        ))
     }
 
     fn serialize_model_header(frame_header: &ModelFrameHeader) -> Vec<u8> {
@@ -150,9 +135,9 @@ impl SqPackData {
             .read_to_vec(base_offset + file_header.header_length as u64, frame_headers[0].block_offset as usize)
             .await?;
 
-        Ok(SqPackRawFile {
+        Ok(SqPackRawFile::new(
             additional_header,
-            blocks: Self::read_blocks(file, block_offsets.into_iter()).await?,
-        })
+            Self::read_blocks(file, block_offsets.into_iter()).await?,
+        ))
     }
 }

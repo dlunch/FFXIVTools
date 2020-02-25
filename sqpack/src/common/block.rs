@@ -32,6 +32,21 @@ impl BlockHeader {
         )
     );
 }
+
+// TODO move to util
+fn round_up(num_to_round: u64, multiple: u64) -> u64 {
+    if multiple == 0 {
+        return num_to_round;
+    }
+
+    let remainder = num_to_round % multiple;
+    if remainder == 0 {
+        num_to_round
+    } else {
+        num_to_round + multiple - remainder
+    }
+}
+
 pub struct SqPackDataBlock {
     header: BlockHeader,
     data: Vec<u8>,
@@ -39,15 +54,35 @@ pub struct SqPackDataBlock {
 
 impl SqPackDataBlock {
     pub async fn new(file: &mut File, offset: u64) -> io::Result<SqPackDataBlock> {
+        Ok(Self::read(file, offset).await?.0)
+    }
+
+    pub async fn with_compressed_data(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<SqPackDataBlock>> {
+        let mut result = Vec::with_capacity(count);
+
+        let mut offset = offset;
+        for _ in 0..count {
+            let item = Self::read(file, offset).await?;
+            result.push(item.0);
+
+            offset += round_up(item.1, 4u64);
+        }
+
+        Ok(result)
+    }
+
+    pub async fn read(file: &mut File, offset: u64) -> io::Result<(SqPackDataBlock, u64)> {
         let header = read_and_parse!(file, offset, BlockHeader).await?;
         let length = if header.compressed_length >= 32000 {
             header.uncompressed_length
         } else {
             header.compressed_length
         };
-        let data = file.read_to_vec(offset + header.header_size as u64, length as usize).await?;
 
-        Ok(SqPackDataBlock { header, data })
+        let header_size = header.header_size as u64;
+        let data = file.read_to_vec(offset + header_size, length as usize).await?;
+
+        Ok((SqPackDataBlock { header, data }, header_size + length as u64))
     }
 
     pub fn decode(mut self) -> impl Iterator<Item = u8> {
