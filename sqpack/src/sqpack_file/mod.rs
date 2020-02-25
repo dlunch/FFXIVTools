@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use byteorder::{LittleEndian, ReadBytesExt};
 use tokio::fs::File;
 
-use crate::common::{ReadExt, SqPackFileReference, SqPackRawFile};
+use crate::common::{ReadExt, SqPackFileReference, SqPackRawFile, MODEL_HEADER_SIZE};
 use crate::package::Package;
 
 pub struct SqPackFile {
@@ -45,7 +45,10 @@ impl SqPackFile {
         let additional_header_size = reader.read_u32::<LittleEndian>()?;
         let block_count = reader.read_u32::<LittleEndian>()?;
 
-        let additional_header = file.read_to_vec(FILE_HEADER_SIZE as u64, additional_header_size as usize).await?;
+        let mut additional_header = file.read_to_vec(FILE_HEADER_SIZE as u64, additional_header_size as usize).await?;
+        if additional_header_size == 4 {
+            additional_header.extend(vec![0; MODEL_HEADER_SIZE])
+        }
 
         let blocks = crate::common::SqPackDataBlock::with_compressed_data(
             &mut file,

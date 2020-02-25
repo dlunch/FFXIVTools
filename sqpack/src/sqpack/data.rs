@@ -8,9 +8,7 @@ use tokio::fs::File;
 use tokio::sync::Mutex;
 
 use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
-use crate::common::ReadExt;
-use crate::common::SqPackDataBlock;
-use crate::common::SqPackRawFile;
+use crate::common::{ReadExt, SqPackDataBlock, SqPackRawFile, MODEL_HEADER_SIZE};
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -102,11 +100,11 @@ impl SqPackData {
     }
 
     fn serialize_model_header(frame_header: &ModelFrameHeader) -> Vec<u8> {
-        let mut result = Vec::with_capacity(0x44);
+        let mut result = Vec::with_capacity(MODEL_HEADER_SIZE);
 
         result.write_u16::<LittleEndian>(frame_header.number_of_meshes).unwrap();
         result.write_u16::<LittleEndian>(frame_header.number_of_materials).unwrap();
-        result.resize(0x44, 0);
+        result.resize(MODEL_HEADER_SIZE, 0);
 
         result
     }
