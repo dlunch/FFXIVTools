@@ -62,7 +62,7 @@ impl SqPackData {
         Ok(file.read_to_vec(base_offset, total_size).await?)
     }
 
-    fn decode_contiguous_blocks_into(blocks: Vec<u8>, block_sizes: &[u16], result: &mut Vec<u8>) -> () {
+    fn decode_contiguous_blocks_into(blocks: Vec<u8>, block_sizes: &[u16], result: &mut Vec<u8>) {
         let mut offset = 0usize;
 
         for &block_size in block_sizes {
