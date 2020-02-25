@@ -8,7 +8,7 @@ use tokio::fs::File;
 use tokio::sync::Mutex;
 
 use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
-use crate::common::{ReadExt, SqPackDataBlock, SqPackRawFile, MODEL_HEADER_SIZE};
+use crate::common::{decode_block_into, ReadExt, MODEL_HEADER_SIZE};
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -22,45 +22,29 @@ impl SqPackData {
     }
 
     pub async fn read(&self, offset: u64) -> io::Result<Vec<u8>> {
-        let raw_file = self.read_raw_file(offset).await?;
-
-        Ok(raw_file.decode())
-    }
-
-    async fn read_raw_file(&self, offset: u64) -> io::Result<SqPackRawFile> {
         let mut file = self.file.lock().await;
+
         let file_header = read_and_parse!(file, offset, FileHeader).await?;
-
-        Ok(Self::read_raw(&mut file, offset, file_header).await?)
-    }
-
-    async fn read_raw(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
         match file_header.file_type {
-            FILE_TYPE_DEFAULT => Ok(Self::read_default_raw(file, base_offset, file_header).await?),
-            FILE_TYPE_MODEL => Ok(Self::read_model_raw(file, base_offset, file_header).await?),
-            FILE_TYPE_IMAGE => Ok(Self::read_image_raw(file, base_offset, file_header).await?),
+            FILE_TYPE_DEFAULT => Ok(Self::read_default(&mut file, offset, file_header).await?),
+            FILE_TYPE_MODEL => Ok(Self::read_model(&mut file, offset, file_header).await?),
+            FILE_TYPE_IMAGE => Ok(Self::read_image(&mut file, offset, file_header).await?),
             _ => Err(io::Error::new(io::ErrorKind::InvalidData, "Incorrect header")),
         }
     }
 
-    async fn read_blocks(file: &mut File, block_offsets: impl Iterator<Item = u64>) -> io::Result<Vec<SqPackDataBlock>> {
-        let mut result = Vec::with_capacity(block_offsets.size_hint().0);
+    async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
+        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameHeader).await?;
 
-        for block_offset in block_offsets {
-            result.push(SqPackDataBlock::new(file, block_offset).await?);
+        for frame_header in frame_headers {
+            let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
+            let block = file.read_to_vec(offset, frame_header.block_size as usize).await?;
+
+            decode_block_into(&block, &mut result);
         }
 
         Ok(result)
-    }
-
-    async fn read_default_raw(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameHeader).await?;
-
-        let block_offsets = frame_headers
-            .iter()
-            .map(|x| base_offset + file_header.header_length as u64 + x.block_offset as u64);
-
-        Ok(SqPackRawFile::new(Vec::new(), Self::read_blocks(file, block_offsets).await?))
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
@@ -72,31 +56,37 @@ impl SqPackData {
         Ok(block_sizes)
     }
 
-    fn block_sizes_to_offset<'a>(sizes: &'a [u16], base_offset: u64) -> impl Iterator<Item = u64> + 'a {
-        let size_sums = sizes.iter().scan(0usize, |acc, &x| {
-            *acc += x as usize;
-            Some(*acc)
-        });
+    async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Vec<u8>> {
+        let total_size = block_sizes.iter().map(|x| *x as usize).sum();
 
-        let raw_offsets = (0..1).chain(size_sums.take(sizes.len() - 1));
-        raw_offsets.map(move |x| base_offset + x as u64)
+        Ok(file.read_to_vec(base_offset, total_size).await?)
     }
 
-    async fn read_model_raw(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
+    fn decode_contiguous_blocks_into(blocks: Vec<u8>, block_sizes: &[u16], result: &mut Vec<u8>) -> () {
+        let mut offset = 0usize;
+
+        for &block_size in block_sizes {
+            decode_block_into(&blocks[offset..offset + block_size as usize], result);
+
+            offset += block_size as usize;
+        }
+    }
+
+    async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
         let frame_header = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameHeader).await?;
+
+        result.extend(Self::serialize_model_header(&frame_header));
 
         let total_block_count = frame_header.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameHeader::SIZE as u64;
         let block_sizes = Self::read_block_sizes(file, sizes_offset, total_block_count).await?;
-        let block_offsets = Self::block_sizes_to_offset(
-            &block_sizes,
-            base_offset + file_header.header_length as u64 + frame_header.offsets[0] as u64,
-        );
 
-        Ok(SqPackRawFile::new(
-            Self::serialize_model_header(&frame_header),
-            Self::read_blocks(file, block_offsets).await?,
-        ))
+        let block_base_offset = base_offset + file_header.header_length as u64 + frame_header.offsets[0] as u64;
+        let blocks = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
+        Self::decode_contiguous_blocks_into(blocks, &block_sizes, &mut result);
+
+        Ok(result)
     }
 
     fn serialize_model_header(frame_header: &ModelFrameHeader) -> Vec<u8> {
@@ -109,33 +99,29 @@ impl SqPackData {
         result
     }
 
-    async fn read_image_raw(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
+    async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
         let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, ImageFrameHeader).await?;
         let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.frame_count as u64 * ImageFrameHeader::SIZE as u64;
 
-        let block_count = frame_headers.iter().map(|x| x.block_count as usize).sum();
-        let mut block_offsets = Vec::with_capacity(block_count);
+        let additional_header = file
+            .read_to_vec(base_offset + file_header.header_length as u64, frame_headers[0].block_offset as usize)
+            .await?;
+        result.extend(additional_header);
 
-        for frame_header in &frame_headers {
+        for frame_header in frame_headers {
             let block_sizes = Self::read_block_sizes(
                 file,
                 sizes_table_base + frame_header.sizes_table_offset as u64,
                 frame_header.block_count as usize,
             )
             .await?;
-            block_offsets.extend(Self::block_sizes_to_offset(
-                &block_sizes,
-                base_offset + file_header.header_length as u64 + frame_header.block_offset as u64,
-            ));
+
+            let block_base_offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
+            let blocks = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
+            Self::decode_contiguous_blocks_into(blocks, &block_sizes, &mut result);
         }
 
-        let additional_header = file
-            .read_to_vec(base_offset + file_header.header_length as u64, frame_headers[0].block_offset as usize)
-            .await?;
-
-        Ok(SqPackRawFile::new(
-            additional_header,
-            Self::read_blocks(file, block_offsets.into_iter()).await?,
-        ))
+        Ok(result)
     }
 }

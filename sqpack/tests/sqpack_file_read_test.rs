@@ -5,10 +5,10 @@ mod tests {
     use std::path::Path;
     #[tokio::test]
     #[cfg(unix)]
-    async fn test_read() {
-        let pack = SqPackFile::new(Path::new("/mnt/i/FFXIVData/data")).unwrap();
-
+    async fn test_read_sqpack_file() {
         {
+            let pack = SqPackFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505")).unwrap();
+
             let data = pack.read_file("exd/item.exh").await.unwrap();
             assert_eq!(data[0], b'E');
             assert_eq!(data[1], b'X');
@@ -18,18 +18,22 @@ mod tests {
         }
 
         {
-            let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await.unwrap();
+            let pack = SqPackFile::new(Path::new("/mnt/i/FFXIVData/data/kor_500")).unwrap();
+
+            let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 185_088);
+            assert_eq!(data.len(), 27_348);
         }
 
         {
-            let data = pack.read_file("common/graphics/texture/dummy.tex").await.unwrap();
+            let pack = SqPackFile::new(Path::new("/mnt/i/FFXIVData/data/kor_500")).unwrap();
+
+            let data = pack.read_file("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex").await.unwrap();
             assert_eq!(data[0], 0u8);
             assert_eq!(data[1], 0u8);
             assert_eq!(data[2], 128u8);
             assert_eq!(data[3], 0u8);
-            assert_eq!(data.len(), 104);
+            assert_eq!(data.len(), 2824);
         }
     }
 }

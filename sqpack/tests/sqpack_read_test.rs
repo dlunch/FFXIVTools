@@ -4,7 +4,7 @@ mod tests {
     use sqpack::SqPack;
     use std::path::Path;
     #[tokio::test]
-    async fn test_read() {
+    async fn test_read_sqpack() {
         #[cfg(windows)]
         let pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
         #[cfg(unix)]
@@ -22,7 +22,7 @@ mod tests {
         {
             let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 185_088);
+            assert_eq!(data.len(), 185_084);
         }
 
         {
