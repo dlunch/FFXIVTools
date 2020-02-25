@@ -37,7 +37,7 @@ impl SqPackArchiveId {
         let ex = ((archive_id / 0x100) & 0xff) as u8;
         let part = (archive_id & 0xff) as u8;
 
-        SqPackArchiveId { root, ex, part }
+        Self { root, ex, part }
     }
 
     pub fn with_file_path(path: &str) -> Self {
@@ -59,6 +59,6 @@ impl SqPackArchiveId {
             }
         };
 
-        SqPackArchiveId { root, ex, part }
+        Self { root, ex, part }
     }
 }
