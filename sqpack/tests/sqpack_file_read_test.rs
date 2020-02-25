@@ -6,7 +6,6 @@ mod tests {
     #[tokio::test]
     #[cfg(unix)]
     async fn test_read() {
-        #[cfg(unix)]
         let pack = SqPackFile::new(Path::new("/mnt/i/FFXIVData/data")).unwrap();
 
         {
