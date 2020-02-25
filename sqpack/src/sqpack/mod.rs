@@ -3,20 +3,18 @@ mod ext;
 
 mod archive;
 mod archive_container;
-mod archive_id;
 mod data;
 mod definition;
 mod index;
-mod reference;
 
 use async_trait::async_trait;
 use std::io;
 use std::path::Path;
 
+use crate::common::SqPackFileReference;
 use crate::package::Package;
 
 use self::archive_container::SqPackArchiveContainer;
-use self::reference::SqPackFileReference;
 
 pub struct SqPack {
     archives: SqPackArchiveContainer,
@@ -32,10 +30,9 @@ impl SqPack {
 
 #[async_trait]
 impl Package for SqPack {
-    async fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
-        let reference = SqPackFileReference::new(path);
+    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let archive = self.archives.get_archive(reference.archive_id).await?;
 
-        archive.read_file(&SqPackFileReference::new(path)).await
+        archive.read_file(reference).await
     }
 }

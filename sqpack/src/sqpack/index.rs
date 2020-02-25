@@ -4,7 +4,7 @@ use tokio::fs::File;
 
 use super::definition::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use super::ext::ReadExt;
-use super::reference::SqPackFileReference;
+use crate::common::SqPackFileReference;
 
 pub struct SqPackIndex {
     pub dat_count: u32,
