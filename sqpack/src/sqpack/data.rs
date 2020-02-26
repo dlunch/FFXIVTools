@@ -8,7 +8,7 @@ use tokio::fs::File;
 use tokio::sync::Mutex;
 
 use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
-use crate::common::{decode_block_into, ReadExt, MODEL_HEADER_SIZE};
+use crate::common::{decode_block, ReadExt, MODEL_HEADER_SIZE};
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -41,7 +41,8 @@ impl SqPackData {
             let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
             let block = file.read_to_vec(offset, frame_header.block_size as usize).await?;
 
-            decode_block_into(&block, &mut result);
+            let decoded = decode_block(&block);
+            result.extend(decoded.data());
         }
 
         Ok(result)
@@ -66,7 +67,8 @@ impl SqPackData {
         let mut offset = 0usize;
 
         for &block_size in block_sizes {
-            decode_block_into(&blocks[offset..offset + block_size as usize], result);
+            let decoded = decode_block(&blocks[offset..offset + block_size as usize]);
+            result.extend(decoded.data());
 
             offset += block_size as usize;
         }
