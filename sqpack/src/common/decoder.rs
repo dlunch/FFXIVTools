@@ -31,23 +31,55 @@ impl BlockHeader {
     );
 }
 
-pub fn decode_block_into<'a>(data: &'a [u8], result: &mut Vec<u8>) -> usize {
-    let header = BlockHeader::parse(data).unwrap().1;
+enum DecodedResultData<'a> {
+    Slice(&'a [u8]),
+    Data(Vec<u8>),
+}
 
-    let end;
-    if header.compressed_length >= 32000 {
-        end = header.header_size as usize + header.uncompressed_length as usize;
+pub struct DecodedResult<'a> {
+    pub consumed: usize,
+    data: DecodedResultData<'a>,
+}
 
-        let data = &data[header.header_size as usize..end];
-        result.extend(data);
-    } else {
-        end = header.header_size as usize + header.compressed_length as usize;
-
-        let data = &data[header.header_size as usize..end];
-        result.extend(data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap());
+impl<'a> DecodedResult<'a> {
+    pub fn with_data_slice(consumed: usize, data_slice: &'a [u8]) -> Self {
+        Self {
+            consumed,
+            data: DecodedResultData::Slice(data_slice),
+        }
     }
 
-    end
+    pub fn with_data(consumed: usize, data: Vec<u8>) -> Self {
+        Self {
+            consumed,
+            data: DecodedResultData::Data(data),
+        }
+    }
+
+    pub fn data(&self) -> &[u8] {
+        match self.data {
+            DecodedResultData::Slice(x) => x,
+            DecodedResultData::Data(ref x) => x,
+        }
+    }
+}
+
+pub fn decode_block(data: &[u8]) -> DecodedResult {
+    let header = BlockHeader::parse(data).unwrap().1;
+
+    if header.compressed_length >= 32000 {
+        let end = header.header_size as usize + header.uncompressed_length as usize;
+        let data = &data[header.header_size as usize..end];
+
+        DecodedResult::with_data_slice(end, data)
+    } else {
+        let end = header.header_size as usize + header.compressed_length as usize;
+        let data = &data[header.header_size as usize..end];
+
+        let decoded = data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap();
+
+        DecodedResult::with_data(end, decoded)
+    }
 }
 
 // TODO move to util
@@ -83,9 +115,10 @@ pub fn decode_compressed_data(data: Vec<u8>) -> Vec<u8> {
 
     let mut offset = FILE_HEADER_SIZE + additional_header_size as usize;
     for _ in 0..block_count {
-        let consumed = decode_block_into(&data[offset..], &mut result);
+        let decoded = decode_block(&data[offset..]);
+        result.extend(decoded.data());
 
-        offset += round_up(consumed, 4usize);
+        offset += round_up(decoded.consumed, 4usize);
     }
 
     result
