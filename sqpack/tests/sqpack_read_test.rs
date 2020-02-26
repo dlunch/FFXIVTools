@@ -23,7 +23,7 @@ mod tests {
         {
             let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 185_084);
+            assert_eq!(data.len(), 185_024);
         }
 
         {

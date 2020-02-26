@@ -6,8 +6,6 @@ use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named};
 
-use super::MODEL_HEADER_SIZE;
-
 pub struct BlockHeader {
     pub header_size: u32,
     pub compressed_length: u32, // 32000 if not compressed
@@ -105,12 +103,9 @@ pub fn decode_compressed_data(data: Vec<u8>) -> Vec<u8> {
     let additional_header_size = reader.read_u32::<LittleEndian>().unwrap();
     let block_count = reader.read_u32::<LittleEndian>().unwrap();
 
-    let mut additional_header = data[FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize].to_vec();
-    if additional_header_size == 4 {
-        additional_header.extend(vec![0; MODEL_HEADER_SIZE])
-    }
     let mut result = Vec::with_capacity(uncompressed_size as usize);
 
+    let additional_header = data[FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize].to_vec();
     result.extend(additional_header);
 
     let mut offset = FILE_HEADER_SIZE + additional_header_size as usize;
