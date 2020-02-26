@@ -96,7 +96,6 @@ impl SqPackData {
 
         result.write_u16::<LittleEndian>(frame_header.number_of_meshes).unwrap();
         result.write_u16::<LittleEndian>(frame_header.number_of_materials).unwrap();
-        result.resize(MODEL_HEADER_SIZE, 0);
 
         result
     }

@@ -10,4 +10,4 @@ pub use decoder::{decode_block, decode_compressed_data};
 pub use reference::SqPackFileReference;
 pub use util::ReadExt;
 
-pub const MODEL_HEADER_SIZE: usize = 0x40;
+pub const MODEL_HEADER_SIZE: usize = 4;
