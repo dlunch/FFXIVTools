@@ -94,10 +94,10 @@ fn round_up(num_to_round: usize, multiple: usize) -> usize {
     }
 }
 
-pub fn decode_compressed_data(data: Vec<u8>) -> Vec<u8> {
+pub fn decode_compressed_data(data: &[u8]) -> Vec<u8> {
     const FILE_HEADER_SIZE: usize = 12;
 
-    let mut reader = Cursor::new(&data);
+    let mut reader = Cursor::new(data);
 
     let uncompressed_size = reader.read_u32::<LittleEndian>().unwrap();
     let additional_header_size = reader.read_u32::<LittleEndian>().unwrap();

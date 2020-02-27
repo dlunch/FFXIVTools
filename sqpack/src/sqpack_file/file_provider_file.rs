@@ -2,6 +2,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use bytes::Bytes;
 
 use super::file_provider::FileProvider;
 use crate::common::SqPackFileReference;
@@ -33,9 +34,9 @@ impl FileProviderFile {
 
 #[async_trait]
 impl FileProvider for FileProviderFile {
-    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let path = self.find_path(reference)?;
 
-        tokio::fs::read(path).await
+        Ok(Bytes::from(tokio::fs::read(path).await?))
     }
 }
