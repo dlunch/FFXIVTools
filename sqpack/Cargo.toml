@@ -5,7 +5,7 @@ authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
 
 [features]
-default = ["nom", "crc32fast", "phf", "compression", "byteorder", "std", "bytes"]
+default = ["nom", "crc32fast", "phf", "compression", "byteorder", "std", "bytes", "num"]
 std = ["nom/std", "crc32fast/std", "compression/std", "byteorder/std", "tokio", "async-trait", "reqwest/default-tls"]
 
 [dependencies]
@@ -18,3 +18,4 @@ tokio = { version = "^0.2.11", features = ["fs", "macros", "rt-threaded", "sync"
 async-trait = { version = "^0.1.24", default-features = false, optional = true }
 reqwest = { version = "^0.10", default-features = false, optional = true }
 bytes = { version = "^0.5", default-features = false, optional = true }
+num = { version = "^0.2", default-features = false, optional = true }

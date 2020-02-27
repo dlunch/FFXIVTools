@@ -6,6 +6,8 @@ use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named};
 
+use super::util::round_up;
+
 pub struct BlockHeader {
     pub header_size: u32,
     pub compressed_length: u32, // 32000 if not compressed
@@ -77,20 +79,6 @@ pub fn decode_block(data: &[u8]) -> DecodedResult {
         let decoded = data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap();
 
         DecodedResult::with_data(end, decoded)
-    }
-}
-
-// TODO move to util
-fn round_up(num_to_round: usize, multiple: usize) -> usize {
-    if multiple == 0 {
-        return num_to_round;
-    }
-
-    let remainder = num_to_round % multiple;
-    if remainder == 0 {
-        num_to_round
-    } else {
-        num_to_round + multiple - remainder
     }
 }
 
