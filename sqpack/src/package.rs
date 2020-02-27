@@ -11,5 +11,5 @@ pub trait Package {
         self.read_file_by_reference(&reference).await
     }
 
-    async fn read_file_by_reference(&self, refenrece: &SqPackFileReference) -> io::Result<Vec<u8>>;
+    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>>;
 }
