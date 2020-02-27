@@ -1,47 +1,31 @@
+mod file_provider;
+mod file_provider_file;
+
 use std::io;
-use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 
 use crate::common::{decode_compressed_data, SqPackFileReference};
 use crate::package::Package;
 
+use file_provider::FileProvider;
+pub use file_provider_file::FileProviderFile;
+
 pub struct SqPackFile {
-    base_dir: PathBuf,
+    provider: Box<dyn FileProvider + Send + Sync>,
 }
 
 impl SqPackFile {
-    pub fn new(base_dir: &Path) -> io::Result<Self> {
-        Ok(SqPackFile {
-            base_dir: base_dir.to_owned(),
-        })
-    }
-
-    fn find_path(&self, reference: &SqPackFileReference) -> io::Result<PathBuf> {
-        let mut path = self.base_dir.clone();
-
-        path.push(reference.folder_hash.to_string());
-        path.push(reference.file_hash.to_string());
-
-        if path.exists() {
-            Ok(path)
-        } else {
-            Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
-        }
-    }
-
-    async fn decode_file(path: &Path) -> io::Result<Vec<u8>> {
-        let data = tokio::fs::read(path).await?;
-
-        Ok(decode_compressed_data(data))
+    pub fn new(provider: Box<dyn FileProvider + Send + Sync>) -> io::Result<Self> {
+        Ok(SqPackFile { provider })
     }
 }
 
 #[async_trait]
 impl Package for SqPackFile {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
-        let path = self.find_path(reference)?;
+        let data = self.provider.read_file(reference).await?;
 
-        Ok(Self::decode_file(&path).await?)
+        Ok(decode_compressed_data(data))
     }
 }
