@@ -2,4 +2,5 @@
 members = [
     "sqpack",
     "server",
+    "renderer",
 ]
