@@ -18,8 +18,13 @@ pub struct SqPackFile {
 }
 
 impl SqPackFile {
-    pub fn new(provider: Box<dyn FileProvider>) -> io::Result<Self> {
-        Ok(SqPackFile { provider })
+    pub fn new<T>(provider: T) -> io::Result<Self>
+    where
+        T: FileProvider + 'static,
+    {
+        Ok(SqPackFile {
+            provider: Box::new(provider),
+        })
     }
 }
 
