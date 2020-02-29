@@ -14,11 +14,11 @@ pub use file_provider_file::FileProviderFile;
 pub use file_provider_web::FileProviderWeb;
 
 pub struct SqPackFile {
-    provider: Box<dyn FileProvider + Send + Sync>,
+    provider: Box<dyn FileProvider>,
 }
 
 impl SqPackFile {
-    pub fn new(provider: Box<dyn FileProvider + Send + Sync>) -> io::Result<Self> {
+    pub fn new(provider: Box<dyn FileProvider>) -> io::Result<Self> {
         Ok(SqPackFile { provider })
     }
 }

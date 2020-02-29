@@ -4,7 +4,7 @@ use std::io;
 use crate::common::SqPackFileReference;
 
 #[async_trait]
-pub trait Package {
+pub trait Package: Sync + Send {
     async fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
         let reference = SqPackFileReference::new(path);
 
