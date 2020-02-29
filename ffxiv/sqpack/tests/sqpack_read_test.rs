@@ -1,11 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use sqpack::Package;
-    use sqpack::SqPack;
+    #[cfg(feature = "test_local")]
     #[tokio::test]
     async fn test_read_sqpack() {
+        use std::path::Path;
+
+        use sqpack::Package;
+        use sqpack::SqPack;
+
         #[cfg(windows)]
         let pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
         #[cfg(unix)]

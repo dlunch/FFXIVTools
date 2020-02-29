@@ -1,14 +1,17 @@
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use sqpack::FileProviderFile;
     use sqpack::FileProviderWeb;
     use sqpack::Package;
     use sqpack::SqPackFile;
+
+    #[cfg(feature = "test_local")]
     #[tokio::test]
     #[cfg(unix)]
     async fn test_read_sqpack_file() {
+        use std::path::Path;
+
+        use sqpack::FileProviderFile;
+
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505"));
             let pack = SqPackFile::new(provider).unwrap();

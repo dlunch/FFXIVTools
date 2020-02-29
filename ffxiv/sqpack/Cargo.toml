@@ -7,6 +7,7 @@ edition = "2018"
 [features]
 default = ["nom", "crc32fast", "phf", "compression", "byteorder", "std", "bytes", "num"]
 std = ["nom/std", "crc32fast/std", "compression/std", "byteorder/std", "tokio", "async-trait", "reqwest/default-tls"]
+test_local = ["default"]
 
 [dependencies]
 nom = { version = "^5.1", features = ["alloc"], default-features = false, optional = true }
