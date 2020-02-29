@@ -15,7 +15,7 @@ impl ExList {
         let ex_names = cursor
             .lines()
             .skip(1)
-            .map(|x| Ok(x?.split(',').nth(0).unwrap().to_owned()))
+            .map(|x| Ok(x?.split(',').next().unwrap().to_owned()))
             .collect::<io::Result<Vec<_>>>()?;
 
         Ok(Self { ex_names })
