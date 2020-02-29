@@ -1,5 +1,5 @@
 [package]
-name = "sqpack"
+name = "sqpack_reader"
 version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"

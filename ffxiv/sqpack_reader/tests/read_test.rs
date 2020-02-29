@@ -2,16 +2,15 @@
 mod tests {
     #[cfg(feature = "test_local")]
     #[tokio::test]
-    async fn test_read_sqpack() {
+    async fn read_test() {
         use std::path::Path;
 
-        use sqpack::Package;
-        use sqpack::SqPack;
+        use sqpack_reader::{Package, SqPackReader};
 
         #[cfg(windows)]
-        let pack = SqPack::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
+        let pack = SqPackReader::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack")).unwrap();
         #[cfg(unix)]
-        let pack = SqPack::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack")).unwrap();
+        let pack = SqPackReader::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack")).unwrap();
 
         {
             let data = pack.read_file("exd/item.exh").await.unwrap();
