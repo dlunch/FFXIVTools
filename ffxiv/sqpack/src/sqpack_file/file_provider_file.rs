@@ -12,10 +12,10 @@ pub struct FileProviderFile {
 }
 
 impl FileProviderFile {
-    pub fn new(base_dir: &Path) -> Box<Self> {
-        Box::new(Self {
+    pub fn new(base_dir: &Path) -> Self {
+        Self {
             base_dir: base_dir.to_owned(),
-        })
+        }
     }
 
     fn find_path(&self, reference: &SqPackFileReference) -> io::Result<PathBuf> {

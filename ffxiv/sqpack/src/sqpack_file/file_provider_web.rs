@@ -11,10 +11,10 @@ pub struct FileProviderWeb {
 }
 
 impl FileProviderWeb {
-    pub fn new(base_uri: &str) -> Box<Self> {
-        Box::new(Self {
+    pub fn new(base_uri: &str) -> Self {
+        Self {
             base_uri: base_uri.to_owned(),
-        })
+        }
     }
 
     async fn do_read(&self, reference: &SqPackFileReference) -> reqwest::Result<Bytes> {
