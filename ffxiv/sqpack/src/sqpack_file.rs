@@ -1,17 +1,10 @@
-mod file_provider;
-mod file_provider_file;
-mod file_provider_web;
-
 use std::io;
 
 use async_trait::async_trait;
 
 use crate::common::{decode_compressed_data, SqPackFileReference};
+use crate::file_provider::FileProvider;
 use crate::package::Package;
-
-use file_provider::FileProvider;
-pub use file_provider_file::FileProviderFile;
-pub use file_provider_web::FileProviderWeb;
 
 pub struct SqPackFile {
     provider: Box<dyn FileProvider>,
