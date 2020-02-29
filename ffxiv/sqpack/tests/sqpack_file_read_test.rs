@@ -48,10 +48,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_sqpack_web() {
+        let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
+        let pack = SqPackFile::new(provider).unwrap();
         {
-            let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
-            let pack = SqPackFile::new(provider).unwrap();
-
             let data = pack.read_file("exd/item.exh").await.unwrap();
             assert_eq!(data[0], b'E');
             assert_eq!(data[1], b'X');
@@ -61,18 +60,12 @@ mod tests {
         }
 
         {
-            let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
-            let pack = SqPackFile::new(provider).unwrap();
-
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
             assert_eq!(data.len(), 27_284);
         }
 
         {
-            let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
-            let pack = SqPackFile::new(provider).unwrap();
-
             let data = pack.read_file("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex").await.unwrap();
             assert_eq!(data[0], 0u8);
             assert_eq!(data[1], 0u8);
