@@ -1,0 +1,12 @@
+[package]
+name = "ffxiv-parser"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[features]
+default = ["sqpack"]
+std = ["sqpack/std"]
+
+[dependencies]
+sqpack = { version = "^0.1", default-features = false, optional = true, path = "../sqpack" }
