@@ -1,5 +1,5 @@
 [package]
-name = "ffxiv-parser"
+name = "ffxiv_parser"
 version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"

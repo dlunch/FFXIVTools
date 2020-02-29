@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "ffxiv/sqpack",
-    "ffxiv/ffxiv-parser",
+    "ffxiv/ffxiv_parser",
     "server",
     "renderer",
 ]
