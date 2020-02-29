@@ -1,7 +1,7 @@
 use std::io;
 use std::io::{BufRead, Cursor};
 
-use sqpack::Package;
+use sqpack_reader::Package;
 
 pub struct ExList {
     pub ex_names: Vec<String>,

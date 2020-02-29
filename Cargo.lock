@@ -315,7 +315,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "ffxiv_parser"
 version = "0.1.0"
 dependencies = [
- "sqpack 0.1.0",
+ "sqpack_reader 0.1.0",
  "tokio 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -1788,7 +1788,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sqpack"
+name = "sqpack_reader"
 version = "0.1.0"
 dependencies = [
  "async-trait 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",

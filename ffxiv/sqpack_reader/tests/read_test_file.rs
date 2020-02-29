@@ -1,20 +1,18 @@
 #[cfg(test)]
 mod tests {
-    use sqpack::FileProviderWeb;
-    use sqpack::Package;
-    use sqpack::SqPackFile;
+    use sqpack_reader::{FileProviderWeb, Package, SqPackReaderFile};
 
     #[cfg(feature = "test_local")]
     #[tokio::test]
     #[cfg(unix)]
-    async fn test_read_sqpack_file() {
+    async fn read_test_file() {
         use std::path::Path;
 
-        use sqpack::FileProviderFile;
+        use sqpack_reader::FileProviderFile;
 
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505"));
-            let pack = SqPackFile::new(provider).unwrap();
+            let pack = SqPackReaderFile::new(provider).unwrap();
 
             let data = pack.read_file("exd/item.exh").await.unwrap();
             assert_eq!(data[0], b'E');
@@ -26,7 +24,7 @@ mod tests {
 
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackFile::new(provider).unwrap();
+            let pack = SqPackReaderFile::new(provider).unwrap();
 
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await.unwrap();
             assert_eq!(data[0], 3u8);
@@ -35,7 +33,7 @@ mod tests {
 
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackFile::new(provider).unwrap();
+            let pack = SqPackReaderFile::new(provider).unwrap();
 
             let data = pack.read_file("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex").await.unwrap();
             assert_eq!(data[0], 0u8);
@@ -47,9 +45,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_read_sqpack_web() {
+    async fn read_test_web() {
         let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
-        let pack = SqPackFile::new(provider).unwrap();
+        let pack = SqPackReaderFile::new(provider).unwrap();
         {
             let data = pack.read_file("exd/item.exh").await.unwrap();
             assert_eq!(data[0], b'E');

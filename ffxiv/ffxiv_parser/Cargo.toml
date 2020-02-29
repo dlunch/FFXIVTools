@@ -8,11 +8,11 @@ edition = "2018"
 doctest = false
 
 [features]
-default = ["sqpack"]
-std = ["sqpack/std"]
+default = ["sqpack_reader"]
+std = ["sqpack_reader/std"]
 
 [dependencies]
-sqpack = { version = "^0.1", default-features = false, optional = true, path = "../sqpack" }
+sqpack_reader = { version = "^0.1", default-features = false, optional = true, path = "../sqpack_reader" }
 
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
