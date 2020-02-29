@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "sqpack",
+    "ffxiv/sqpack",
     "server",
     "renderer",
 ]
