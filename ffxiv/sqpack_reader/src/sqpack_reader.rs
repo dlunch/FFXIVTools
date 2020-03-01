@@ -5,6 +5,7 @@ mod definition;
 mod index;
 
 use async_trait::async_trait;
+use bytes::Bytes;
 use std::io;
 use std::path::Path;
 
@@ -27,7 +28,7 @@ impl SqPackReader {
 
 #[async_trait]
 impl Package for SqPackReader {
-    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let archive = self.archives.get_archive(reference.archive_id).await?;
 
         archive.read_file(reference).await

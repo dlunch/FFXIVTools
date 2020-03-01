@@ -7,16 +7,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug integration test 'sqpack_read_test'",
+      "name": "Debug integration test 'read_test'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--test=sqpack_read_test",
-          "--package=sqpack"
+          "--test=read_test",
+          "--package=sqpack_reader"
         ],
         "filter": {
-          "name": "sqpack_read_test",
+          "name": "read_test",
           "kind": "test"
         }
       },
@@ -26,16 +26,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug integration test 'sqpack_file_read_test'",
+      "name": "Debug integration test 'read_test_file'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--test=sqpack_file_read_test",
-          "--package=sqpack"
+          "--test=read_test_file",
+          "--package=sqpack_reader"
         ],
         "filter": {
-          "name": "sqpack_file_read_test",
+          "name": "read_test_file",
           "kind": "test"
         }
       },
