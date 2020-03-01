@@ -1,7 +1,4 @@
-use std::io::Cursor;
-
-use byteorder::{LittleEndian, ReadBytesExt};
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
@@ -53,11 +50,10 @@ pub fn decode_block(data: Bytes) -> (usize, Bytes) {
 pub fn decode_compressed_data(data: Bytes) -> Bytes {
     const FILE_HEADER_SIZE: usize = 12;
 
-    let mut reader = Cursor::new(&data);
-
-    let uncompressed_size = reader.read_u32::<LittleEndian>().unwrap();
-    let additional_header_size = reader.read_u32::<LittleEndian>().unwrap();
-    let block_count = reader.read_u32::<LittleEndian>().unwrap();
+    let mut header = data.slice(0..FILE_HEADER_SIZE);
+    let uncompressed_size = header.get_u32_le();
+    let additional_header_size = header.get_u32_le();
+    let block_count = header.get_u32_le();
 
     let mut result = BytesMut::with_capacity(uncompressed_size as usize);
 
