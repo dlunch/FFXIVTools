@@ -1,6 +1,7 @@
-use phf::phf_map;
 use std::ffi::OsStr;
 use std::path::Path;
+
+use phf::phf_map;
 
 #[allow(dead_code)] // rustc bug?
 static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
