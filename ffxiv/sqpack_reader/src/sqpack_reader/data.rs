@@ -81,7 +81,9 @@ impl SqPackData {
         let frame_header = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameHeader).await?;
         let mut result = BytesMut::with_capacity(file_header.uncompressed_size as usize);
 
-        result.put(Self::serialize_model_header(&frame_header));
+        // header
+        result.put_u16_le(frame_header.number_of_meshes);
+        result.put_u16_le(frame_header.number_of_materials);
 
         let total_block_count = frame_header.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameHeader::SIZE as u64;
@@ -96,16 +98,6 @@ impl SqPackData {
         }
 
         Ok(result.freeze())
-    }
-
-    fn serialize_model_header(frame_header: &ModelFrameHeader) -> Bytes {
-        pub const MODEL_HEADER_SIZE: usize = 4;
-        let mut result = BytesMut::with_capacity(MODEL_HEADER_SIZE);
-
-        result.put_u16_le(frame_header.number_of_meshes);
-        result.put_u16_le(frame_header.number_of_materials);
-
-        result.freeze()
     }
 
     async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Bytes> {
