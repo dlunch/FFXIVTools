@@ -1,6 +1,7 @@
 use std::io::Cursor;
 
 use byteorder::{LittleEndian, ReadBytesExt};
+use bytes::{BufMut, Bytes, BytesMut};
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
@@ -31,78 +32,45 @@ impl BlockHeader {
     );
 }
 
-enum DecodedResultData<'a> {
-    Slice(&'a [u8]),
-    Data(Vec<u8>),
-}
-
-pub struct DecodedResult<'a> {
-    pub consumed: usize,
-    data: DecodedResultData<'a>,
-}
-
-impl<'a> DecodedResult<'a> {
-    pub fn with_data_slice(consumed: usize, data_slice: &'a [u8]) -> Self {
-        Self {
-            consumed,
-            data: DecodedResultData::Slice(data_slice),
-        }
-    }
-
-    pub fn with_data(consumed: usize, data: Vec<u8>) -> Self {
-        Self {
-            consumed,
-            data: DecodedResultData::Data(data),
-        }
-    }
-
-    pub fn data(&self) -> &[u8] {
-        match self.data {
-            DecodedResultData::Slice(x) => x,
-            DecodedResultData::Data(ref x) => x,
-        }
-    }
-}
-
-pub fn decode_block(data: &[u8]) -> DecodedResult {
-    let header = BlockHeader::parse(data).unwrap().1;
+pub fn decode_block(data: Bytes) -> (usize, Bytes) {
+    let header = BlockHeader::parse(&data).unwrap().1;
 
     if header.compressed_length >= 32000 {
         let end = header.header_size as usize + header.uncompressed_length as usize;
-        let data = &data[header.header_size as usize..end];
+        let data = data.slice(header.header_size as usize..end);
 
-        DecodedResult::with_data_slice(end, data)
+        (end, data)
     } else {
         let end = header.header_size as usize + header.compressed_length as usize;
         let data = &data[header.header_size as usize..end];
 
         let decoded = data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap();
 
-        DecodedResult::with_data(end, decoded)
+        (end, Bytes::from(decoded))
     }
 }
 
-pub fn decode_compressed_data(data: &[u8]) -> Vec<u8> {
+pub fn decode_compressed_data(data: Bytes) -> Bytes {
     const FILE_HEADER_SIZE: usize = 12;
 
-    let mut reader = Cursor::new(data);
+    let mut reader = Cursor::new(&data);
 
     let uncompressed_size = reader.read_u32::<LittleEndian>().unwrap();
     let additional_header_size = reader.read_u32::<LittleEndian>().unwrap();
     let block_count = reader.read_u32::<LittleEndian>().unwrap();
 
-    let mut result = Vec::with_capacity(uncompressed_size as usize);
+    let mut result = BytesMut::with_capacity(uncompressed_size as usize);
 
-    let additional_header = data[FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize].to_vec();
-    result.extend(additional_header);
+    let additional_header = data.slice(FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize);
+    result.put(additional_header);
 
     let mut offset = FILE_HEADER_SIZE + additional_header_size as usize;
     for _ in 0..block_count {
-        let decoded = decode_block(&data[offset..]);
-        result.extend(decoded.data());
+        let (consumed, decoded) = decode_block(data.slice(offset..));
+        result.put(decoded);
 
-        offset += round_up(decoded.consumed, 4usize);
+        offset += round_up(consumed, 4usize);
     }
 
-    result
+    result.freeze()
 }

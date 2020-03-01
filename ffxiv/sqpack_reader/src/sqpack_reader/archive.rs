@@ -1,6 +1,8 @@
 use std::io;
 use std::path::Path;
 
+use bytes::Bytes;
+
 use super::data::SqPackData;
 use super::index::SqPackIndex;
 use crate::common::SqPackFileReference;
@@ -24,7 +26,7 @@ impl SqPackArchive {
         Ok(Self { index, data })
     }
 
-    pub async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;
