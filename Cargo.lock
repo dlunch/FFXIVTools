@@ -1472,6 +1472,7 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "dotenv 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ffxiv_parser 0.1.0",
  "tokio 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "warp 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

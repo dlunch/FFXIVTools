@@ -8,3 +8,4 @@ edition = "2018"
 tokio = { version = "^0.2.11", features = ["macros"], default-features = false }
 warp = { version = "^0.2.1", default-features = false }
 dotenv = { version = "^0.15", default-features = false }
+ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv/ffxiv_parser" }
