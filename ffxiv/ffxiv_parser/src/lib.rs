@@ -1,3 +1,6 @@
-mod ex;
+#[macro_use]
+mod util;
 
-pub use ex::*;
+mod ex_parser;
+
+pub use ex_parser::{Ex, ExList};
