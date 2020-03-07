@@ -1,9 +1,7 @@
 use std::io;
 use std::path::Path;
 
-use bytes::{BufMut, Bytes, BytesMut};
-use nom::number::complete::le_u16;
-use nom::{count, named_args};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
@@ -49,12 +47,9 @@ impl SqPackData {
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
-        let block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
+        let mut block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
 
-        named_args!(parse_block_sizes(count: usize)<Vec<u16>>, count!(le_u16, count));
-        let (_, block_sizes) = parse_block_sizes(&block_size_data, count).unwrap();
-
-        Ok(block_sizes)
+        Ok((0..count).map(move |_| block_size_data.get_u16_le()).collect())
     }
 
     async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
