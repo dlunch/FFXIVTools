@@ -4,10 +4,11 @@ mod data;
 mod definition;
 mod index;
 
-use async_trait::async_trait;
-use bytes::Bytes;
 use std::io;
 use std::path::Path;
+
+use async_trait::async_trait;
+use bytes::Bytes;
 
 use crate::common::SqPackFileReference;
 use crate::package::Package;
