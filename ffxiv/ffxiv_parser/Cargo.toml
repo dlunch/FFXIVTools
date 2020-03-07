@@ -8,10 +8,12 @@ edition = "2018"
 doctest = false
 
 [features]
-default = []
-std = ["sqpack_reader/std"]
+default = ["std"]
+std = ["sqpack_reader/std", "nom/std"]
 
 [dependencies]
+nom = { version = "^5.1", features = ["alloc"], default-features = false }
+bytes = { version = "^0.5", default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 
 [dev-dependencies]

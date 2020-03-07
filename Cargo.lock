@@ -619,6 +619,8 @@ dependencies = [
 name = "ffxiv_parser"
 version = "0.1.0"
 dependencies = [
+ "bytes 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nom 5.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
  "tokio 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
