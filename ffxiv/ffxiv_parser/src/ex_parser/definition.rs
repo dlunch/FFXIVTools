@@ -41,3 +41,24 @@ impl ExhHeader {
         )
     );
 }
+
+pub struct ExhColumnHeader {
+    pub field_type: u16,
+    pub offset: u16,
+}
+
+impl ExhColumnHeader {
+    pub const SIZE: usize = 4;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            field_type: be_u16  >>
+            offset:     be_u16  >>
+            (Self {
+                field_type,
+                offset,
+            })
+        )
+    );
+}
