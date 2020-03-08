@@ -62,3 +62,25 @@ impl ExhColumnHeader {
         )
     );
 }
+
+#[derive(Copy, Clone)]
+pub struct ExhPageHeader {
+    pub start: u32,
+    pub count: u32,
+}
+
+impl ExhPageHeader {
+    pub const SIZE: usize = 8;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            start:  be_u32  >>
+            count:  be_u32  >>
+            (Self {
+                start,
+                count,
+            })
+        )
+    );
+}
