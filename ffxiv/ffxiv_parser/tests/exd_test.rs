@@ -8,6 +8,6 @@ mod tests {
         let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider).unwrap();
 
-        let _ex = Ex::new(&pack, "item").await.unwrap();
+        let _ex = Ex::new(&pack, "classjob").await.unwrap();
     }
 }

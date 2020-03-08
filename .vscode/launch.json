@@ -55,6 +55,25 @@
       },
       "args": [],
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'exd_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=exd_test",
+          "--package=ffxiv_parser"
+        ],
+        "filter": {
+          "name": "exd_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

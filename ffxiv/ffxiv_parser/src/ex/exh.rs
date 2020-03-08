@@ -23,7 +23,7 @@ impl ExHeader {
         let columns = parse!(data, header.column_count as usize, ExhColumnHeader);
         let pages = parse!(data, header.page_count as usize, ExhPageHeader);
         let languages = (0..header.language_count as usize)
-            .map(|_| Language::from_u16(data.get_u16()).unwrap())
+            .map(|_| Language::from_u64(data.get_u16_le() as u64).unwrap())
             .collect::<Vec<_>>();
 
         Ok(Self { columns, pages, languages })
