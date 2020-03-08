@@ -3,7 +3,6 @@ use std::path::Path;
 
 use phf::phf_map;
 
-#[allow(dead_code)] // rustc bug?
 static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
     "common" => 0,
     "bgcommon" => 1,
