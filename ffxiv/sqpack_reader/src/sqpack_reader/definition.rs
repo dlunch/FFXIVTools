@@ -160,13 +160,13 @@ impl FileHeader {
     );
 }
 
-pub struct DefaultFrameHeader {
+pub struct DefaultFrameInfo {
     pub block_offset: u32,
     pub block_size: u16,
     pub uncompressed_size: u16,
 }
 
-impl DefaultFrameHeader {
+impl DefaultFrameInfo {
     pub const SIZE: usize = 8;
 
     #[rustfmt::skip]
@@ -186,7 +186,7 @@ impl DefaultFrameHeader {
 
 pub const MODEL_CHUNK_COUNT: usize = 11;
 
-pub struct ModelFrameHeader {
+pub struct ModelFrameInfo {
     pub uncompressed_chunk_sizes: Vec<u32>,
     pub sizes: Vec<u32>,
     pub offsets: Vec<u32>,
@@ -196,7 +196,7 @@ pub struct ModelFrameHeader {
     pub number_of_materials: u16,
 }
 
-impl ModelFrameHeader {
+impl ModelFrameInfo {
     pub const SIZE: usize = 184;
 
     #[rustfmt::skip]
@@ -224,14 +224,14 @@ impl ModelFrameHeader {
     );
 }
 
-pub struct ImageFrameHeader {
+pub struct ImageFrameInfo {
     pub block_offset: u32,
     pub block_size: u32,
     pub sizes_table_offset: u32,
     pub block_count: u32,
 }
 
-impl ImageFrameHeader {
+impl ImageFrameInfo {
     pub const SIZE: usize = 20;
 
     #[rustfmt::skip]

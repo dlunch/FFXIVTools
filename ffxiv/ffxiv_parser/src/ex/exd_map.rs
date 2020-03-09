@@ -3,14 +3,14 @@ use std::io;
 
 use sqpack_reader::Package;
 
-use super::definition::ExhPageHeader;
+use super::definition::ExhPage;
 use super::exd::ExData;
 use super::exh::ExHeader;
 use crate::Language;
 
 #[allow(dead_code)] // WIP
 pub struct ExdMap {
-    data: HashMap<Language, Vec<(ExhPageHeader, ExData)>>,
+    data: HashMap<Language, Vec<(ExhPage, ExData)>>,
 }
 
 impl ExdMap {
