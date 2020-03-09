@@ -49,7 +49,7 @@ mod tests {
 
     #[tokio::test]
     async fn read_test_web() -> io::Result<()> {
-        let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
+        let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
         {
             let data = pack.read_file("exd/item.exh").await?;

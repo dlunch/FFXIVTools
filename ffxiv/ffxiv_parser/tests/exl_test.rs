@@ -9,7 +9,7 @@ mod tests {
     use ffxiv_parser::ExList;
     #[tokio::test]
     async fn test_exl() -> io::Result<()> {
-        let provider = FileProviderWeb::new("https://ffxiv-data3.dlunch.net/compressed/");
+        let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
 
         let ex_list = ExList::new(&pack).await?;
