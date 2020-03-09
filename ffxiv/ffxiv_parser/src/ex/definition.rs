@@ -42,12 +42,12 @@ impl ExhHeader {
     );
 }
 
-pub struct ExhColumnHeader {
+pub struct ExhColumnDefinition {
     pub field_type: u16,
     pub offset: u16,
 }
 
-impl ExhColumnHeader {
+impl ExhColumnDefinition {
     pub const SIZE: usize = 4;
 
     #[rustfmt::skip]
@@ -64,12 +64,12 @@ impl ExhColumnHeader {
 }
 
 #[derive(Copy, Clone)]
-pub struct ExhPageHeader {
+pub struct ExhPage {
     pub start: u32,
     pub count: u32,
 }
 
-impl ExhPageHeader {
+impl ExhPage {
     pub const SIZE: usize = 8;
 
     #[rustfmt::skip]

@@ -5,7 +5,7 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
-use super::definition::{DefaultFrameHeader, FileHeader, ImageFrameHeader, ModelFrameHeader, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
+use super::definition::{DefaultFrameInfo, FileHeader, ImageFrameInfo, ModelFrameInfo, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
 use crate::common::{decode_block, ReadExt};
 
 pub struct SqPackData {
@@ -32,7 +32,7 @@ impl SqPackData {
     }
 
     async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Bytes> {
-        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameHeader).await?;
+        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameInfo).await?;
 
         let mut result = BytesMut::with_capacity(file_header.uncompressed_size as usize);
         for frame_header in frame_headers {
@@ -73,18 +73,18 @@ impl SqPackData {
     }
 
     async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Bytes> {
-        let frame_header = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameHeader).await?;
+        let frame_info = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameInfo).await?;
         let mut result = BytesMut::with_capacity(file_header.uncompressed_size as usize);
 
         // header
-        result.put_u16_le(frame_header.number_of_meshes);
-        result.put_u16_le(frame_header.number_of_materials);
+        result.put_u16_le(frame_info.number_of_meshes);
+        result.put_u16_le(frame_info.number_of_materials);
 
-        let total_block_count = frame_header.block_counts.iter().sum::<u16>() as usize;
-        let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameHeader::SIZE as u64;
+        let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
+        let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
         let block_sizes = Self::read_block_sizes(file, sizes_offset, total_block_count).await?;
 
-        let block_base_offset = base_offset + file_header.header_length as u64 + frame_header.offsets[0] as u64;
+        let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
         let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
         let blocks = Self::decode_contiguous_blocks(block_data, &block_sizes);
 
@@ -96,25 +96,25 @@ impl SqPackData {
     }
 
     async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Bytes> {
-        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, ImageFrameHeader).await?;
-        let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.frame_count as u64 * ImageFrameHeader::SIZE as u64;
+        let frame_infos = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, ImageFrameInfo).await?;
+        let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.frame_count as u64 * ImageFrameInfo::SIZE as u64;
 
         let mut result = BytesMut::with_capacity(file_header.uncompressed_size as usize);
 
         let additional_header = file
-            .read_bytes(base_offset + file_header.header_length as u64, frame_headers[0].block_offset as usize)
+            .read_bytes(base_offset + file_header.header_length as u64, frame_infos[0].block_offset as usize)
             .await?;
         result.put(additional_header);
 
-        for frame_header in frame_headers {
+        for frame_info in frame_infos {
             let block_sizes = Self::read_block_sizes(
                 file,
-                sizes_table_base + frame_header.sizes_table_offset as u64,
-                frame_header.block_count as usize,
+                sizes_table_base + frame_info.sizes_table_offset as u64,
+                frame_info.block_count as usize,
             )
             .await?;
 
-            let block_base_offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
+            let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
             let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
             let blocks = Self::decode_contiguous_blocks(block_data, &block_sizes);
 
