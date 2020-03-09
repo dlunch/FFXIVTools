@@ -22,6 +22,3 @@ sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_
 
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
-
-[profile.release]
-panic = "abort"
