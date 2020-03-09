@@ -84,3 +84,33 @@ impl ExhPage {
         )
     );
 }
+
+pub struct ExdHeader {
+    pub version: u16,
+    pub row_size: u32,
+    pub data_size: u32,
+}
+
+impl ExdHeader {
+    pub const SIZE: usize = 32;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            /* magic: */    tag!(b"EXDF")   >>
+            version:        be_u16          >>
+            /* unk1: */     be_u16          >>
+            row_size:       be_u32          >>
+            data_size:      be_u32          >>
+            /* unk2: */     be_u32          >>
+            /* unk3: */     be_u32          >>
+            /* unk4: */     be_u32          >>
+            /* unk5: */     be_u32          >>
+            (Self {
+                version,
+                row_size,
+                data_size,
+            })
+        )
+    );
+}
