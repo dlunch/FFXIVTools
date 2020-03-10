@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 
 use sqpack_reader::Package;
 
-use super::definition::{ExdHeader, ExdRow};
+use super::definition::{ExdData, ExdHeader, ExdRow};
 use crate::Language;
 
 lazy_static! {
@@ -47,8 +47,8 @@ impl ExData {
 
     pub fn read_row(&self, index: u32) -> Option<&[u8]> {
         let offset = *self.offsets.get(&index)? as usize;
+        let data = parse!(&self.data[offset..], ExdData);
 
-        const EXD_DATA_HEADER_SIZE: usize = 6;
-        Some(&self.data[offset + EXD_DATA_HEADER_SIZE..])
+        Some(data.data)
     }
 }
