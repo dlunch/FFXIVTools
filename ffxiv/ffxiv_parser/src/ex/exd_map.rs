@@ -31,7 +31,7 @@ impl ExdMap {
 
     pub fn read_row(&self, index: u32, language: Language) -> Option<Bytes> {
         let items = self.data.get(&language)?;
-        let item = items.iter().find(|x| x.0.start <= index && index <= x.0.start + x.0.count)?;
+        let item = items.iter().find(|x| x.0.start <= index && index < x.0.start + x.0.count)?;
 
         item.1.read_row(index)
     }
