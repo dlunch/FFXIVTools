@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::io;
 
+use futures::future::join_all;
+use futures::future::FutureExt;
+
 use sqpack_reader::Package;
 
 use super::definition::ExhPage;
@@ -13,15 +16,13 @@ pub struct ExdMap {
 
 impl ExdMap {
     pub async fn new(package: &dyn Package, name: &str, pages: &[ExhPage], languages: &[Language]) -> io::Result<Self> {
-        let mut data = HashMap::with_capacity(languages.len());
-        for language in languages {
-            let mut page_data = Vec::with_capacity(pages.len());
-            for page in pages {
-                let exd = ExData::new(package, name, page.start, *language).await?;
-                page_data.push((*page, exd));
-            }
-            data.insert(*language, page_data);
-        }
+        let futures = languages.iter().map(|&x| {
+            let futures = pages.iter().map(|&y| ExData::new(package, name, y.start, x).map(move |z| Ok((y, z?))));
+
+            join_all(futures).map(move |y| Ok((x, y.into_iter().collect::<io::Result<Vec<_>>>()?)))
+        });
+
+        let data = join_all(futures).await.into_iter().collect::<io::Result<HashMap<_, _>>>()?;
 
         Ok(Self { data })
     }
