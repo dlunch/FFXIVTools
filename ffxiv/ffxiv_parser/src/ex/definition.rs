@@ -1,5 +1,5 @@
 use nom::number::complete::{be_u16, be_u32};
-use nom::{do_parse, named, tag};
+use nom::{do_parse, named, tag, take, IResult};
 
 pub struct ExhHeader {
     pub version: u16,
@@ -134,4 +134,25 @@ impl ExdRow {
             })
         )
     );
+}
+
+pub struct ExdData<'a> {
+    pub length: u32,
+    pub data: &'a [u8],
+}
+
+impl<'a> ExdData<'a> {
+    #[rustfmt::skip]
+    pub fn parse(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+        do_parse!(
+            input,
+            length:     be_u32          >>
+            /* unk: */  be_u16          >>
+            data:       take!(length)   >>
+            (Self {
+                length,
+                data,
+            })
+        )
+    }
 }
