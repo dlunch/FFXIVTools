@@ -28,6 +28,8 @@ impl ExHeader {
         for _ in 0..header.language_count as usize {
             let raw = LittleEndian::read_u16(&data[cursor..]);
             languages.push(Language::from_u16(raw).unwrap());
+
+            cursor += std::mem::size_of::<u16>();
         }
 
         Ok(Self {
