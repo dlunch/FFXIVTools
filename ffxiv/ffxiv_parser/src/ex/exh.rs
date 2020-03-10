@@ -8,11 +8,11 @@ use sqpack_reader::Package;
 use super::definition::{ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
 
-#[allow(dead_code)] // WIP
 pub struct ExHeader {
     pub columns: Vec<ExhColumnDefinition>,
     pub pages: Vec<ExhPage>,
     pub languages: Vec<Language>,
+    pub row_size: u16,
 }
 
 impl ExHeader {
@@ -26,6 +26,11 @@ impl ExHeader {
             .map(|_| Language::from_u64(data.get_u16_le() as u64).unwrap())
             .collect::<Vec<_>>();
 
-        Ok(Self { columns, pages, languages })
+        Ok(Self {
+            columns,
+            pages,
+            languages,
+            row_size: header.row_size,
+        })
     }
 }
