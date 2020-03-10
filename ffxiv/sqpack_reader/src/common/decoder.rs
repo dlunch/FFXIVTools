@@ -6,7 +6,7 @@ use nom::{do_parse, named};
 
 use super::util::round_up;
 
-pub struct BlockHeader {
+struct BlockHeader {
     pub header_size: u32,
     pub compressed_length: u32, // 32000 if not compressed
     pub uncompressed_length: u32,
