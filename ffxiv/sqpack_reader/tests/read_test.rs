@@ -8,7 +8,9 @@ mod tests {
 
     #[tokio::test]
     async fn read_test() -> io::Result<()> {
-        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
+        let _ = pretty_env_logger::formatted_timed_builder()
+            .filter_level(log::LevelFilter::Debug)
+            .try_init();
 
         #[cfg(windows)]
         let pack = SqPackReader::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack"))?;
