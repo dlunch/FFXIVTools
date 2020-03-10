@@ -1,5 +1,7 @@
-use nom::number::complete::{be_u16, be_u32};
+use nom::number::complete::{be_u16, be_u32, le_u16};
 use nom::{do_parse, named, tag, take, IResult};
+
+use crate::Language;
 
 pub struct ExhHeader {
     pub version: u16,
@@ -154,5 +156,27 @@ impl<'a> ExdData<'a> {
                 data,
             })
         )
+    }
+}
+
+impl Language {
+    pub const SIZE: usize = std::mem::size_of::<u16>();
+
+    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        let raw = le_u16(input)?;
+
+        let result = match raw.1 {
+            0 => Language::None,
+            1 => Language::Japanese,
+            2 => Language::English,
+            3 => Language::Deutsch,
+            4 => Language::French,
+            5 => Language::ChineseSimplified,
+            6 => Language::ChineseTraditional,
+            7 => Language::Korean,
+            _ => panic!(),
+        };
+
+        Ok((raw.0, result))
     }
 }

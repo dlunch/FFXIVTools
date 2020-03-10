@@ -17,20 +17,4 @@ pub enum Language {
     Korean = 7,
 }
 
-impl Language {
-    pub fn from_raw(raw: u16) -> Self {
-        match raw {
-            0 => Language::None,
-            1 => Language::Japanese,
-            2 => Language::English,
-            3 => Language::Deutsch,
-            4 => Language::French,
-            5 => Language::ChineseSimplified,
-            6 => Language::ChineseTraditional,
-            7 => Language::Korean,
-            _ => panic!(),
-        }
-    }
-}
-
 pub use ex::{Ex, ExList};
