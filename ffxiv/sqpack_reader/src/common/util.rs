@@ -2,7 +2,6 @@ use std::io;
 use std::io::SeekFrom;
 
 use async_trait::async_trait;
-use num::Integer;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
@@ -46,16 +45,13 @@ macro_rules! read_and_parse {
     };
 }
 
-pub fn round_up<T>(num_to_round: T, multiple: T) -> T
-where
-    T: Integer + Copy,
-{
-    if multiple == T::zero() {
+pub fn round_up(num_to_round: usize, multiple: usize) -> usize {
+    if multiple == 0 {
         return num_to_round;
     }
 
     let remainder = num_to_round % multiple;
-    if remainder == T::zero() {
+    if remainder == 0 {
         num_to_round
     } else {
         num_to_round + multiple - remainder
