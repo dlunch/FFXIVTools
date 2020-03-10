@@ -1,7 +1,7 @@
 use std::io;
 
 use async_trait::async_trait;
-use log::info;
+use log::debug;
 
 use super::FileProvider;
 use crate::common::SqPackFileReference;
@@ -23,7 +23,7 @@ impl FileProviderWeb {
             self.base_uri, reference.folder_hash, reference.file_hash, reference.path_hash,
         );
 
-        info!("Fetching {}", uri);
+        debug!("Fetching {}", uri);
 
         let result = reqwest::get(&uri).await?.bytes().await?;
         Ok(Vec::from(&result[..]))
