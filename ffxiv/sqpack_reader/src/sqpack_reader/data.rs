@@ -1,7 +1,7 @@
+use std::convert::TryInto;
 use std::io;
 use std::path::Path;
 
-use byteorder::{ByteOrder, LittleEndian};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
@@ -48,10 +48,13 @@ impl SqPackData {
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
         let block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
 
-        let mut result = vec![0u16; count];
-        LittleEndian::read_u16_into(&block_size_data, &mut result);
-
-        Ok(result)
+        Ok((0..count * 2)
+            .step_by(2)
+            .map(|x| {
+                let data = &block_size_data[x..x + 2];
+                u16::from_le_bytes(data.try_into().unwrap())
+            })
+            .collect::<Vec<_>>())
     }
 
     async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Vec<u8>> {
@@ -75,9 +78,8 @@ impl SqPackData {
         let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
 
         // header
-        result.resize(std::mem::size_of::<u16>() * 2, 0);
-        LittleEndian::write_u16(&mut result, frame_info.number_of_meshes);
-        LittleEndian::write_u16(&mut result, frame_info.number_of_materials);
+        result.extend(&frame_info.number_of_meshes.to_le_bytes());
+        result.extend(&frame_info.number_of_materials.to_le_bytes());
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
