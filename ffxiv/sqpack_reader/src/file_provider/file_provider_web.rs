@@ -33,8 +33,10 @@ impl FileProviderWeb {
 #[async_trait]
 impl FileProvider for FileProviderWeb {
     async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
-        self.fetch(reference)
-            .await
-            .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))
+        self.fetch(reference).await.map_err(|x| {
+            debug!("Error downloading file");
+
+            io::Error::new(io::ErrorKind::NotFound, x.to_string())
+        })
     }
 }
