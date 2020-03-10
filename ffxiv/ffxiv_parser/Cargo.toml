@@ -14,7 +14,6 @@ std = ["sqpack_reader/std", "nom/std"]
 [dependencies]
 nom = { version = "^5.1", features = ["alloc"], default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
-byteorder = { version = "^1.3", default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 
 [dev-dependencies]
