@@ -9,7 +9,7 @@ doctest = false
 
 [features]
 default = ["std"]
-std = ["nom/std", "crc32fast/std", "compression/std", "tokio", "async-trait", "reqwest/default-tls"]
+std = ["nom/std", "crc32fast/std", "compression/std", "tokio", "reqwest/default-tls"]
 test_local = ["default"]
 
 [dependencies]
@@ -17,9 +17,9 @@ nom = { version = "^5.1", features = ["alloc"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }
 log = { version = "^0.4", default-features = false }
+async-trait = { version = "^0.1.24", default-features = false }
 
 tokio = { version = "^0.2.11", features = ["fs", "sync"], default-features = false, optional = true }
-async-trait = { version = "^0.1.24", default-features = false, optional = true }
 reqwest = { version = "^0.10", default-features = false, optional = true }
 
 [dev-dependencies]
