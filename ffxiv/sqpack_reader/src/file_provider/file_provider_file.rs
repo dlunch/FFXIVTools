@@ -27,6 +27,7 @@ impl FileProviderFile {
         if path.exists() {
             Ok(path)
         } else {
+            debug!("No such file {}", path.to_str().unwrap());
             Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
         }
     }
