@@ -4,6 +4,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use log::debug;
 use tokio::sync::Mutex;
 
 use super::archive::SqPackArchive;
@@ -16,6 +17,8 @@ pub struct SqPackArchiveContainer {
 
 impl SqPackArchiveContainer {
     pub fn new(base_dir: &Path) -> io::Result<Self> {
+        debug!("Opening {}", base_dir.to_str().unwrap());
+
         let root_dirs = base_dir.read_dir()?.filter_map(Result::ok).map(|x| x.path()).filter(|x| {
             let file_name = x.file_name().and_then(OsStr::to_str).unwrap();
             file_name == "ffxiv" || file_name.starts_with("ex")

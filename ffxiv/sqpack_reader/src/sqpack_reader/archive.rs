@@ -1,6 +1,8 @@
 use std::io;
 use std::path::Path;
 
+use log::debug;
+
 use super::data::SqPackData;
 use super::index::SqPackIndex;
 use crate::common::SqPackFileReference;
@@ -12,6 +14,8 @@ pub struct SqPackArchive {
 
 impl SqPackArchive {
     pub async fn new(index_path: &Path) -> io::Result<Self> {
+        debug!("Opening {}", index_path.to_str().unwrap());
+
         let index_path_str = index_path.to_str().unwrap();
         let base_path = index_path_str.trim_end_matches(".index");
         let index = SqPackIndex::new(index_path).await?;
