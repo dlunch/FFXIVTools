@@ -2,6 +2,7 @@ use std::io;
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use log::info;
 
 use super::FileProvider;
 use crate::common::SqPackFileReference;
@@ -17,11 +18,13 @@ impl FileProviderWeb {
         }
     }
 
-    async fn do_read(&self, reference: &SqPackFileReference) -> reqwest::Result<Bytes> {
+    async fn fetch(&self, reference: &SqPackFileReference) -> reqwest::Result<Bytes> {
         let uri = format!(
             "{}{}/{}/{}",
             self.base_uri, reference.folder_hash, reference.file_hash, reference.path_hash,
         );
+
+        info!("Fetching {}", uri);
 
         Ok(reqwest::get(&uri).await?.bytes().await?)
     }
@@ -30,7 +33,7 @@ impl FileProviderWeb {
 #[async_trait]
 impl FileProvider for FileProviderWeb {
     async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
-        self.do_read(reference)
+        self.fetch(reference)
             .await
             .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))
     }

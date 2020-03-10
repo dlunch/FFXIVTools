@@ -2,12 +2,13 @@
 #[cfg(feature = "test_local")]
 mod tests {
     use std::io;
+    use std::path::Path;
+
+    use sqpack_reader::{Package, SqPackReader};
 
     #[tokio::test]
     async fn read_test() -> io::Result<()> {
-        use std::path::Path;
-
-        use sqpack_reader::{Package, SqPackReader};
+        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
 
         #[cfg(windows)]
         let pack = SqPackReader::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack"))?;

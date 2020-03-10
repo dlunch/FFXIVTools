@@ -4,11 +4,13 @@ mod tests {
     use std::io;
     use std::iter::FromIterator;
 
+    use ffxiv_parser::ExList;
     use sqpack_reader::{FileProviderWeb, SqPackReaderFile};
 
-    use ffxiv_parser::ExList;
     #[tokio::test]
     async fn test_exl() -> io::Result<()> {
+        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
+
         let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
 
