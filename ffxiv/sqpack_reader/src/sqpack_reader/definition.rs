@@ -127,13 +127,26 @@ impl FolderSegment {
     );
 }
 
-pub const FILE_TYPE_DEFAULT: u32 = 2;
-pub const FILE_TYPE_MODEL: u32 = 3;
-pub const FILE_TYPE_IMAGE: u32 = 4;
+pub enum FileType {
+    Default = 2,
+    Model = 3,
+    Image = 4,
+}
+
+impl FileType {
+    pub fn parse(raw: u32) -> Self {
+        match raw {
+            2 => FileType::Default,
+            3 => FileType::Model,
+            4 => FileType::Image,
+            _ => panic!(),
+        }
+    }
+}
 
 pub struct FileHeader {
     pub header_length: u32,
-    pub file_type: u32,
+    pub file_type: FileType,
     pub uncompressed_size: u32,
     pub frame_count: u32,
 }
@@ -152,7 +165,7 @@ impl FileHeader {
             frame_count:        le_u32  >>
             (Self {
                 header_length,
-                file_type,
+                file_type: FileType::parse(file_type),
                 uncompressed_size,
                 frame_count
             })

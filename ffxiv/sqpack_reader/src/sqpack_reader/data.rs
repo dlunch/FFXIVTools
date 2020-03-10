@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 
 use util::{read_and_parse, ReadExt};
 
-use super::definition::{DefaultFrameInfo, FileHeader, ImageFrameInfo, ModelFrameInfo, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
+use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
 use crate::common::decode_block_into;
 
 pub struct SqPackData {
@@ -27,10 +27,9 @@ impl SqPackData {
 
         let file_header = read_and_parse!(file, offset, FileHeader).await?;
         match file_header.file_type {
-            FILE_TYPE_DEFAULT => Ok(Self::read_default(&mut file, offset, file_header).await?),
-            FILE_TYPE_MODEL => Ok(Self::read_model(&mut file, offset, file_header).await?),
-            FILE_TYPE_IMAGE => Ok(Self::read_image(&mut file, offset, file_header).await?),
-            _ => Err(io::Error::new(io::ErrorKind::InvalidData, "Incorrect header")),
+            FileType::Default => Ok(Self::read_default(&mut file, offset, file_header).await?),
+            FileType::Model => Ok(Self::read_model(&mut file, offset, file_header).await?),
+            FileType::Image => Ok(Self::read_image(&mut file, offset, file_header).await?),
         }
     }
 
