@@ -114,3 +114,25 @@ impl ExdHeader {
         )
     );
 }
+
+#[derive(Copy, Clone)]
+pub struct ExdRow {
+    pub index: u32,
+    pub offset: u32,
+}
+
+impl ExdRow {
+    pub const SIZE: usize = 8;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            index:  be_u32  >>
+            offset:  be_u32  >>
+            (Self {
+                index,
+                offset,
+            })
+        )
+    );
+}

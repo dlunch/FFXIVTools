@@ -9,7 +9,11 @@ mod tests {
         let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
 
-        let _ex = Ex::new(&pack, "classjob").await?;
+        let ex = Ex::new(&pack, "classjob").await?;
+        let languages = ex.languages();
+
+        let row = ex.find_row(0, languages[0]).unwrap();
+        assert_eq!(row.string(1), "ADV");
 
         Ok(())
     }
