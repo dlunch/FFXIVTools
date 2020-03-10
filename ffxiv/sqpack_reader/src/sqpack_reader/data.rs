@@ -53,7 +53,7 @@ impl SqPackData {
     }
 
     async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
-        let total_size = block_sizes.iter().map(|x| *x as usize).sum();
+        let total_size = block_sizes.iter().map(|&x| x as usize).sum();
 
         Ok(file.read_bytes(base_offset, total_size).await?)
     }
