@@ -21,26 +21,29 @@ impl ReadExt for File {
     }
 }
 
+#[macro_export]
+macro_rules! parse {
+    ($data: expr, $type: ty) => {
+        <$type>::parse(&$data).unwrap().1
+    };
+    ($data: expr, $count: expr, $type: ty) => {
+        (0..$count as usize).map(|x| $crate::parse!(&$data[x * <$type>::SIZE..], $type)).collect::<Vec<_>>()
+    };
+}
+
+#[macro_export]
 macro_rules! read_and_parse {
     ($file: expr, $offset: expr, $type: ty) => {
         async {
             let data = $file.read_bytes($offset as u64, <$type>::SIZE as usize).await?;
-            Ok::<_, io::Error>(<$type>::parse(&data).unwrap().1)
+            Ok::<_, io::Error>($crate::parse!(data, $type))
         }
     };
 
     ($file: expr, $offset: expr, $count: expr, $type: ty) => {
         async {
             let data = $file.read_bytes($offset as u64, $count as usize * <$type>::SIZE).await?;
-            Ok::<_, io::Error>(
-                (0..$count)
-                    .map(|x| {
-                        let begin = (x as usize) * <$type>::SIZE;
-                        let end = begin + <$type>::SIZE;
-                        <$type>::parse(&data[begin..end]).unwrap().1
-                    })
-                    .collect::<Vec<_>>(),
-            )
+            Ok::<_, io::Error>($crate::parse!(data, $count, $type))
         }
     };
 }

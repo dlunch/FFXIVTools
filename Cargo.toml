@@ -4,6 +4,7 @@ members = [
     "ffxiv/ffxiv_parser",
     "server",
     "renderer",
+    "util",
 ]
 
 [profile.release]

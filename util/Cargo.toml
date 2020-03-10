@@ -1,0 +1,14 @@
+[package]
+name = "util"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[features]
+default = []
+std = ["tokio"]
+
+[dependencies]
+async-trait = { version = "^0.1.24", default-features = false }
+
+tokio = { version = "^0.2.11", features = ["fs"], default-features = false, optional = true }

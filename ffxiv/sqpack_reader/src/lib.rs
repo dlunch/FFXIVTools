@@ -1,4 +1,3 @@
-#[macro_use]
 mod common;
 mod file_provider;
 mod package;
