@@ -1,6 +1,7 @@
 use std::io;
 use std::path::Path;
 
+use futures::future;
 use log::debug;
 
 use super::data::SqPackData;
@@ -20,11 +21,9 @@ impl SqPackArchive {
         let base_path = index_path_str.trim_end_matches(".index");
         let index = SqPackIndex::new(index_path).await?;
 
-        let mut data = Vec::with_capacity(index.dat_count as usize);
-        for dat_num in 0..index.dat_count {
-            let path_str = format!("{}.dat{}", base_path, dat_num);
-            data.push(SqPackData::new(Path::new(&path_str)).await?);
-        }
+        let futures = (0..index.dat_count).map(|x| SqPackData::new(base_path, x));
+        let data = future::join_all(futures).await.into_iter().collect::<io::Result<Vec<_>>>()?;
+
         Ok(Self { index, data })
     }
 

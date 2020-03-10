@@ -13,8 +13,9 @@ pub struct SqPackData {
 }
 
 impl SqPackData {
-    pub async fn new(path: &Path) -> io::Result<Self> {
-        let file = File::open(path).await?;
+    pub async fn new(base_path: &str, index: u32) -> io::Result<Self> {
+        let path = format!("{}.dat{}", base_path, index);
+        let file = File::open(Path::new(&path)).await?;
 
         Ok(Self { file: Mutex::new(file) })
     }
