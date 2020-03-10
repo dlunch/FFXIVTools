@@ -9,10 +9,10 @@ use super::definition::{ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
 
 pub struct ExHeader {
+    pub row_size: u16,
     pub columns: Vec<ExhColumnDefinition>,
     pub pages: Vec<ExhPage>,
     pub languages: Vec<Language>,
-    pub row_size: u16,
 }
 
 impl ExHeader {
@@ -27,10 +27,10 @@ impl ExHeader {
             .collect::<Vec<_>>();
 
         Ok(Self {
+            row_size: header.row_size,
             columns,
             pages,
             languages,
-            row_size: header.row_size,
         })
     }
 }
