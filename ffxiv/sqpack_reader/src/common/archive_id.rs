@@ -1,24 +1,6 @@
 use std::ffi::OsStr;
 use std::path::Path;
 
-use phf::phf_map;
-
-static ROOT_INDICES: phf::Map<&'static str, u8> = phf_map! {
-    "common" => 0,
-    "bgcommon" => 1,
-    "bg" => 2,
-    "cut" => 3,
-    "chara" => 4,
-    "shader" => 5,
-    "ui" => 6,
-    "sound" => 7,
-    "vfx" => 8,
-    "ui_script" => 9,
-    "exd" => 10,
-    "game_script" => 11,
-    "music" => 12,
-};
-
 #[derive(Eq, PartialEq, Hash, Clone, Copy)]
 pub struct SqPackArchiveId {
     pub root: u8,
@@ -43,11 +25,11 @@ impl SqPackArchiveId {
     pub fn with_file_path(path: &str) -> Self {
         let path_splitted = path.split('/').collect::<Vec<_>>();
 
-        let root = ROOT_INDICES[path_splitted[0]];
+        let root = Self::path_to_root_index(path_splitted[0]);
         let mut ex = 0;
         let mut part = 0;
 
-        if root == ROOT_INDICES["bg"] || root == ROOT_INDICES["cut"] || root == ROOT_INDICES["music"] {
+        if root == Self::path_to_root_index("bg") || root == Self::path_to_root_index("cut") || root == Self::path_to_root_index("music") {
             let ex_path = path_splitted[1];
             ex = if ex_path == "ffxiv" { 0 } else { ex_path[2..].parse().unwrap() };
 
@@ -60,5 +42,24 @@ impl SqPackArchiveId {
         };
 
         Self { root, ex, part }
+    }
+
+    fn path_to_root_index(root: &str) -> u8 {
+        match root {
+            "common" => 0,
+            "bgcommon" => 1,
+            "bg" => 2,
+            "cut" => 3,
+            "chara" => 4,
+            "shader" => 5,
+            "ui" => 6,
+            "sound" => 7,
+            "vfx" => 8,
+            "ui_script" => 9,
+            "exd" => 10,
+            "game_script" => 11,
+            "music" => 12,
+            _ => panic!(),
+        }
     }
 }
