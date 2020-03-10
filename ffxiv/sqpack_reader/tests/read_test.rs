@@ -9,7 +9,7 @@ mod tests {
     #[tokio::test]
     async fn read_test() -> io::Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter_level(log::LevelFilter::Debug)
+            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
         #[cfg(windows)]
