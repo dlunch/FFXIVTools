@@ -1,6 +1,6 @@
 use std::str;
 
-use bytes::{Buf, Bytes};
+use byteorder::{BigEndian, ByteOrder};
 
 use super::definition::ExhColumnDefinition;
 
@@ -9,13 +9,13 @@ pub enum ExRowType<'a> {
 }
 
 pub struct ExRow<'a> {
-    data: Bytes,
+    data: &'a [u8],
     row_size: u16,
     columns: &'a [ExhColumnDefinition],
 }
 
 impl<'a> ExRow<'a> {
-    pub fn new(data: Bytes, row_size: u16, columns: &'a [ExhColumnDefinition]) -> Self {
+    pub fn new(data: &'a [u8], row_size: u16, columns: &'a [ExhColumnDefinition]) -> Self {
         Self { data, row_size, columns }
     }
 
@@ -30,7 +30,8 @@ impl<'a> ExRow<'a> {
 
     pub fn string(&self, index: usize) -> &str {
         let data_offset = self.columns[index].offset as usize;
-        let str_offset = self.data.slice(data_offset..).get_u32() as usize + self.row_size as usize;
+        let data = &self.data[data_offset..];
+        let str_offset = BigEndian::read_u32(data) as usize + self.row_size as usize;
 
         let bytes = &self.data[str_offset..];
         let end = bytes.iter().position(|&x| x == b'\0').unwrap();

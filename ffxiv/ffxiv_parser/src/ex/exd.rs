@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::io;
 
-use bytes::{Buf, Bytes};
 use enum_map::{enum_map, EnumMap};
 use lazy_static::lazy_static;
 
@@ -24,7 +23,7 @@ lazy_static! {
 }
 
 pub struct ExData {
-    data: Bytes,
+    data: Vec<u8>,
     offsets: BTreeMap<u32, u32>,
 }
 
@@ -33,25 +32,23 @@ impl ExData {
         let path = format!("exd/{}_{}{}.exd", name, page_start, LANGUAGE_SUFFIX[language]);
         let data = package.read_file(&path).await?;
 
-        let mut cursor = data.clone();
-        let header = parse!(cursor, ExdHeader);
+        let mut cursor = 0;
+        let header = parse!(data, cursor, ExdHeader);
         let item_count = header.row_size / ExdRow::SIZE as u32;
+
         let mut offsets = BTreeMap::new();
         for _ in 0..item_count {
-            let row = parse!(cursor, ExdRow);
+            let row = parse!(data, cursor, ExdRow);
             offsets.insert(row.index, row.offset);
         }
 
         Ok(Self { data, offsets })
     }
 
-    pub fn read_row(&self, index: u32) -> Option<Bytes> {
+    pub fn read_row(&self, index: u32) -> Option<&[u8]> {
         let offset = *self.offsets.get(&index)? as usize;
-        let mut data = self.data.slice(offset..);
 
-        let length = data.get_u32() as usize;
-        data.get_u16(); // unk
-
-        Some(data.slice(..length))
+        const EXD_DATA_HEADER_SIZE: usize = 6;
+        Some(&self.data[offset + EXD_DATA_HEADER_SIZE..])
     }
 }

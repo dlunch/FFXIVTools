@@ -1,4 +1,4 @@
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::{Buf, Bytes};
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
@@ -47,7 +47,7 @@ pub fn decode_block(data: Bytes) -> (usize, Bytes) {
     }
 }
 
-pub fn decode_compressed_data(data: Bytes) -> Bytes {
+pub fn decode_compressed_data(data: Bytes) -> Vec<u8> {
     const FILE_HEADER_SIZE: usize = 12;
 
     let mut header = data.slice(0..FILE_HEADER_SIZE);
@@ -55,18 +55,18 @@ pub fn decode_compressed_data(data: Bytes) -> Bytes {
     let additional_header_size = header.get_u32_le();
     let block_count = header.get_u32_le();
 
-    let mut result = BytesMut::with_capacity(uncompressed_size as usize);
+    let mut result = Vec::with_capacity(uncompressed_size as usize);
 
     let additional_header = data.slice(FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize);
-    result.put(additional_header);
+    result.extend(additional_header);
 
     let mut offset = FILE_HEADER_SIZE + additional_header_size as usize;
     for _ in 0..block_count {
         let (consumed, decoded) = decode_block(data.slice(offset..));
-        result.put(decoded);
+        result.extend(decoded);
 
         offset += round_up(consumed, 4usize);
     }
 
-    result.freeze()
+    result
 }
