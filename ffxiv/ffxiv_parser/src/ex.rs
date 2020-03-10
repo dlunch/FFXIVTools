@@ -25,7 +25,7 @@ pub struct Ex {
 impl Ex {
     pub async fn new(package: &dyn Package, name: &str) -> io::Result<Self> {
         let header = ExHeader::new(package, name).await?;
-        let data = ExdMap::new(package, name, &header).await?;
+        let data = ExdMap::new(package, name, &header.pages, &header.languages).await?;
 
         Ok(Self { header, data })
     }
