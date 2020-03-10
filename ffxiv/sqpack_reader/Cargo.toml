@@ -19,7 +19,13 @@ phf = { version = "^0.8.0", features = ["macros"], default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }
 bytes = { version = "^0.5", default-features = false }
 num = { version = "^0.2", default-features = false }
+log = { version = "^0.4", default-features = false }
 
-tokio = { version = "^0.2.11", features = ["fs", "macros", "rt-threaded", "sync"], default-features = false, optional = true }
+tokio = { version = "^0.2.11", features = ["fs", "sync"], default-features = false, optional = true }
 async-trait = { version = "^0.1.24", default-features = false, optional = true }
 reqwest = { version = "^0.10", default-features = false, optional = true }
+
+[dev-dependencies]
+tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
+pretty_env_logger = { version = "^0.4", default-features = false }
+log = { version = "^0.4", default-features = false }

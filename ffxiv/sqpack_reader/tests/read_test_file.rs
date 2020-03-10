@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use sqpack_reader::{FileProviderWeb, Package, SqPackReaderFile};
     use std::io;
+
+    use sqpack_reader::{Package, SqPackReaderFile};
 
     #[cfg(feature = "test_local")]
     #[tokio::test]
@@ -11,6 +12,7 @@ mod tests {
 
         use sqpack_reader::FileProviderFile;
 
+        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505"));
             let pack = SqPackReaderFile::new(provider)?;
@@ -49,6 +51,10 @@ mod tests {
 
     #[tokio::test]
     async fn read_test_web() -> io::Result<()> {
+        use sqpack_reader::FileProviderWeb;
+
+        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
+
         let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
         {
