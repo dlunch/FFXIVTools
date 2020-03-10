@@ -1,12 +1,15 @@
 use std::io;
 
 use async_trait::async_trait;
+use log::debug;
 
 use crate::common::SqPackFileReference;
 
 #[async_trait]
 pub trait Package: Sync + Send {
     async fn read_file(&self, path: &str) -> io::Result<Vec<u8>> {
+        debug!("Reading {}", path);
+
         let reference = SqPackFileReference::new(path);
 
         self.read_file_by_reference(&reference).await

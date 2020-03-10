@@ -12,7 +12,9 @@ mod tests {
 
         use sqpack_reader::FileProviderFile;
 
-        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
+        let _ = pretty_env_logger::formatted_timed_builder()
+            .filter_level(log::LevelFilter::Debug)
+            .try_init();
         {
             let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505"));
             let pack = SqPackReaderFile::new(provider)?;
@@ -53,7 +55,9 @@ mod tests {
     async fn read_test_web() -> io::Result<()> {
         use sqpack_reader::FileProviderWeb;
 
-        pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Info).init();
+        let _ = pretty_env_logger::formatted_timed_builder()
+            .filter_level(log::LevelFilter::Debug)
+            .try_init();
 
         let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderFile::new(provider)?;
