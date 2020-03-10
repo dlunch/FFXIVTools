@@ -1,4 +1,3 @@
-use bytes::{Buf, Bytes};
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
@@ -29,41 +28,59 @@ impl BlockHeader {
     );
 }
 
-pub fn decode_block(data: Bytes) -> (usize, Bytes) {
+struct CompressedFileHeader {
+    uncompressed_size: u32,
+    additional_header_size: u32,
+    block_count: u32,
+}
+
+impl CompressedFileHeader {
+    const SIZE: usize = 12;
+
+    #[rustfmt::skip]
+    named!(pub parse<Self>,
+        do_parse!(
+            uncompressed_size:      le_u32  >>
+            additional_header_size: le_u32  >>
+            block_count:            le_u32  >>
+            (Self {
+                uncompressed_size,
+                additional_header_size,
+                block_count,
+            })
+        )
+    );
+}
+
+pub fn decode_block_into(result: &mut Vec<u8>, data: &[u8]) -> usize {
     let header = BlockHeader::parse(&data).unwrap().1;
 
     if header.compressed_length >= 32000 {
         let end = header.header_size as usize + header.uncompressed_length as usize;
-        let data = data.slice(header.header_size as usize..end);
+        result.extend(&data[header.header_size as usize..end]);
 
-        (end, data)
+        end
     } else {
         let end = header.header_size as usize + header.compressed_length as usize;
         let data = &data[header.header_size as usize..end];
 
-        let decoded = data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap();
+        result.extend(data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap());
 
-        (end, Bytes::from(decoded))
+        end
     }
 }
 
-pub fn decode_compressed_data(data: Bytes) -> Vec<u8> {
-    const FILE_HEADER_SIZE: usize = 12;
+pub fn decode_compressed_data(data: &[u8]) -> Vec<u8> {
+    let header = CompressedFileHeader::parse(&data).unwrap().1;
 
-    let mut header = data.slice(0..FILE_HEADER_SIZE);
-    let uncompressed_size = header.get_u32_le();
-    let additional_header_size = header.get_u32_le();
-    let block_count = header.get_u32_le();
+    let mut result = Vec::with_capacity(header.uncompressed_size as usize);
 
-    let mut result = Vec::with_capacity(uncompressed_size as usize);
-
-    let additional_header = data.slice(FILE_HEADER_SIZE as usize..FILE_HEADER_SIZE as usize + additional_header_size as usize);
+    let additional_header = &data[CompressedFileHeader::SIZE..CompressedFileHeader::SIZE + header.additional_header_size as usize];
     result.extend(additional_header);
 
-    let mut offset = FILE_HEADER_SIZE + additional_header_size as usize;
-    for _ in 0..block_count {
-        let (consumed, decoded) = decode_block(data.slice(offset..));
-        result.extend(decoded);
+    let mut offset = CompressedFileHeader::SIZE + header.additional_header_size as usize;
+    for _ in 0..header.block_count {
+        let consumed = decode_block_into(&mut result, &data[offset..]);
 
         offset += round_up(consumed, 4usize);
     }

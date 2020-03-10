@@ -1,12 +1,12 @@
 use std::io;
 use std::path::Path;
 
-use bytes::{Buf, BufMut, Bytes};
+use byteorder::{ByteOrder, LittleEndian};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
 use super::definition::{DefaultFrameInfo, FileHeader, ImageFrameInfo, ModelFrameInfo, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
-use crate::common::{decode_block, ReadExt};
+use crate::common::{decode_block_into, ReadExt};
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -37,39 +37,37 @@ impl SqPackData {
         let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
         for frame_header in frame_headers {
             let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
-            let block = file.read_bytes(offset, frame_header.block_size as usize).await?;
+            let block_data = file.read_bytes(offset, frame_header.block_size as usize).await?;
 
-            let (_, decoded) = decode_block(block);
-            result.extend(decoded);
+            decode_block_into(&mut result, &block_data);
         }
 
         Ok(result)
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
-        let mut block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
+        let block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
 
-        Ok((0..count).map(move |_| block_size_data.get_u16_le()).collect())
+        let mut result = vec![0u16; count];
+        LittleEndian::read_u16_into(&block_size_data, &mut result);
+
+        Ok(result)
     }
 
-    async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
+    async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Vec<u8>> {
         let total_size = block_sizes.iter().map(|&x| x as usize).sum();
 
         Ok(file.read_bytes(base_offset, total_size).await?)
     }
 
-    fn decode_contiguous_blocks(block_data: Bytes, block_sizes: &[u16]) -> Vec<Bytes> {
-        let mut result = Vec::with_capacity(block_sizes.len());
+    fn decode_contiguous_blocks_into(mut result: &mut Vec<u8>, block_data: Vec<u8>, block_sizes: &[u16]) {
         let mut offset = 0usize;
 
         for &block_size in block_sizes {
-            let (_, decoded) = decode_block(block_data.slice(offset..offset + block_size as usize));
-            result.push(decoded);
+            decode_block_into(&mut result, &block_data[offset..offset + block_size as usize]);
 
             offset += block_size as usize;
         }
-
-        result
     }
 
     async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
@@ -77,8 +75,9 @@ impl SqPackData {
         let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
 
         // header
-        result.put_u16_le(frame_info.number_of_meshes);
-        result.put_u16_le(frame_info.number_of_materials);
+        result.resize(std::mem::size_of::<u16>() * 2, 0);
+        LittleEndian::write_u16(&mut result, frame_info.number_of_meshes);
+        LittleEndian::write_u16(&mut result, frame_info.number_of_materials);
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
@@ -86,11 +85,7 @@ impl SqPackData {
 
         let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
         let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-        let blocks = Self::decode_contiguous_blocks(block_data, &block_sizes);
-
-        for block in blocks {
-            result.extend(block)
-        }
+        Self::decode_contiguous_blocks_into(&mut result, block_data, &block_sizes);
 
         Ok(result)
     }
@@ -116,11 +111,7 @@ impl SqPackData {
 
             let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
             let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-            let blocks = Self::decode_contiguous_blocks(block_data, &block_sizes);
-
-            for block in blocks {
-                result.extend(block);
-            }
+            Self::decode_contiguous_blocks_into(&mut result, block_data, &block_sizes);
         }
 
         Ok(result)
