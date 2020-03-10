@@ -17,7 +17,7 @@ impl BlockHeader {
     named!(pub parse<Self>,
         do_parse!(
             header_size:            le_u32  >>
-            _unk:                   le_u32  >>
+            /* unk: */              le_u32  >>
             compressed_length:      le_u32  >>
             uncompressed_length:    le_u32  >>
             (Self {
