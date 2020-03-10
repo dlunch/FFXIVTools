@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::io;
 
-use bytes::Bytes;
-
 use sqpack_reader::Package;
 
 use super::definition::ExhPage;
@@ -28,7 +26,7 @@ impl ExdMap {
         Ok(Self { data })
     }
 
-    pub fn read_row(&self, index: u32, language: Language) -> Option<Bytes> {
+    pub fn read_row(&self, index: u32, language: Language) -> Option<&[u8]> {
         let items = self.data.get(&language)?;
         let item = items.iter().find(|x| x.0.start <= index && index < x.0.start + x.0.count)?;
 

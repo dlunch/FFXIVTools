@@ -1,12 +1,16 @@
 macro_rules! parse {
-    ($data: expr, $type: ty) => {{
-        let result = <$type>::parse(&$data).unwrap().1;
-        $data.advance(<$type>::SIZE);
+    ($data: expr, $type: ty) => {
+        <$type>::parse(&$data).unwrap().1
+    };
+
+    ($data: expr, $cursor: expr, $type: ty) => {{
+        let result = parse!(&$data[$cursor..], $type);
+        $cursor += <$type>::SIZE;
 
         result
     }};
 
-    ($data: expr, $count: expr, $type: ty) => {{
-        (0..$count).map(|_| parse!($data, $type)).collect::<Vec<_>>()
-    }};
+    ($data: expr, $cursor: expr, $count: expr, $type: ty) => {
+        (0..$count).map(|_| parse!($data, $cursor, $type)).collect::<Vec<_>>()
+    };
 }
