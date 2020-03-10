@@ -3,7 +3,7 @@ use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named};
 
-use super::util::round_up;
+use util::{parse, round_up};
 
 struct BlockHeader {
     pub header_size: u32,
@@ -53,7 +53,7 @@ impl CompressedFileHeader {
 }
 
 pub fn decode_block_into(result: &mut Vec<u8>, data: &[u8]) -> usize {
-    let header = BlockHeader::parse(&data).unwrap().1;
+    let header = parse!(&data, BlockHeader);
 
     if header.compressed_length >= 32000 {
         let end = header.header_size as usize + header.uncompressed_length as usize;
@@ -71,7 +71,7 @@ pub fn decode_block_into(result: &mut Vec<u8>, data: &[u8]) -> usize {
 }
 
 pub fn decode_compressed_data(data: &[u8]) -> Vec<u8> {
-    let header = CompressedFileHeader::parse(&data).unwrap().1;
+    let header = parse!(&data, CompressedFileHeader);
 
     let mut result = Vec::with_capacity(header.uncompressed_size as usize);
 

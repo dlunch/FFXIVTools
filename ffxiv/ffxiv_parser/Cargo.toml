@@ -9,12 +9,14 @@ doctest = false
 
 [features]
 default = ["std"]
-std = ["sqpack_reader/std", "nom/std"]
+std = ["sqpack_reader/std", "nom/std", "util/std"]
 
 [dependencies]
-nom = { version = "^5.1", features = ["alloc"], default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
+util = { version = "^0.1", default-features = false, path = "../../util" }
+
+nom = { version = "^5.1", features = ["alloc"], default-features = false, optional = true }
 
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }

@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::io;
 
 use sqpack_reader::Package;
+use util::parse;
 
 use super::definition::{ExdData, ExdHeader, ExdRow};
 use crate::Language;

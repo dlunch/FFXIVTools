@@ -1,6 +1,3 @@
-#[macro_use]
-mod util;
-
 mod ex;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

@@ -5,8 +5,10 @@ use std::path::Path;
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
+use util::{read_and_parse, ReadExt};
+
 use super::definition::{DefaultFrameInfo, FileHeader, ImageFrameInfo, ModelFrameInfo, FILE_TYPE_DEFAULT, FILE_TYPE_IMAGE, FILE_TYPE_MODEL};
-use crate::common::{decode_block_into, ReadExt};
+use crate::common::decode_block_into;
 
 pub struct SqPackData {
     file: Mutex<File>,
