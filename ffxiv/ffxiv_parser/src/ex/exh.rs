@@ -27,9 +27,9 @@ impl ExHeader {
         let mut languages = Vec::with_capacity(header.language_count as usize);
         for _ in 0..header.language_count as usize {
             let raw = LittleEndian::read_u16(&data[cursor..]);
-            languages.push(Language::from_u16(raw).unwrap());
-
             cursor += std::mem::size_of::<u16>();
+
+            languages.push(Language::from_u16(raw).unwrap());
         }
 
         Ok(Self {
