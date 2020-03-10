@@ -1,7 +1,6 @@
 use std::io;
 
 use byteorder::{ByteOrder, LittleEndian};
-use num_traits::cast::FromPrimitive;
 
 use sqpack_reader::Package;
 
@@ -23,14 +22,14 @@ impl ExHeader {
         let header = parse!(data, cursor, ExhHeader);
         let columns = parse!(data, cursor, header.column_count as usize, ExhColumnDefinition);
         let pages = parse!(data, cursor, header.page_count as usize, ExhPage);
+        let languages = (0..header.language_count as usize)
+            .map(|x| {
+                let offset = cursor + std::mem::size_of::<u16>() * x;
+                let raw = LittleEndian::read_u16(&data[offset..]);
 
-        let mut languages = Vec::with_capacity(header.language_count as usize);
-        for _ in 0..header.language_count as usize {
-            let raw = LittleEndian::read_u16(&data[cursor..]);
-            cursor += std::mem::size_of::<u16>();
-
-            languages.push(Language::from_u16(raw).unwrap());
-        }
+                Language::from_raw(raw)
+            })
+            .collect::<Vec<_>>();
 
         Ok(Self {
             row_size: header.row_size,
