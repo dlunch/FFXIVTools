@@ -3,9 +3,7 @@ mod util;
 
 mod ex;
 
-use enum_map::Enum;
-
-#[derive(Enum, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Language {
     None = 0,
     Japanese = 1,
