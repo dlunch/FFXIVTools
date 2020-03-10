@@ -32,15 +32,14 @@ impl ExData {
         let path = format!("exd/{}_{}{}.exd", name, page_start, LANGUAGE_SUFFIX[language]);
         let data = package.read_file(&path).await?;
 
-        let mut cursor = 0;
-        let header = parse!(data, cursor, ExdHeader);
-        let item_count = header.row_size / ExdRow::SIZE as u32;
+        let header = parse!(data, ExdHeader);
 
-        let mut offsets = BTreeMap::new();
-        for _ in 0..item_count {
-            let row = parse!(data, cursor, ExdRow);
-            offsets.insert(row.index, row.offset);
-        }
+        let item_count = header.row_size as usize / ExdRow::SIZE;
+        let items_base = ExdHeader::SIZE;
+        let offsets = (0..item_count)
+            .map(|x| parse!(&data[items_base + x * ExdRow::SIZE..], ExdRow))
+            .map(|x| (x.index, x.offset))
+            .collect::<BTreeMap<_, _>>();
 
         Ok(Self { data, offsets })
     }

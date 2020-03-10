@@ -1,7 +1,5 @@
 use std::io;
 
-use byteorder::{ByteOrder, LittleEndian};
-
 use sqpack_reader::Package;
 
 use super::definition::{ExhColumnDefinition, ExhHeader, ExhPage};
@@ -18,18 +16,14 @@ impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> io::Result<Self> {
         let data = package.read_file(&format!("exd/{}.exh", name)).await?;
 
-        let mut cursor = 0;
-        let header = parse!(data, cursor, ExhHeader);
-        let columns = parse!(data, cursor, header.column_count as usize, ExhColumnDefinition);
-        let pages = parse!(data, cursor, header.page_count as usize, ExhPage);
-        let languages = (0..header.language_count as usize)
-            .map(|x| {
-                let offset = cursor + std::mem::size_of::<u16>() * x;
-                let raw = LittleEndian::read_u16(&data[offset..]);
+        let header = parse!(data, ExhHeader);
+        let columns = parse!(&data[ExhHeader::SIZE..], header.column_count as usize, ExhColumnDefinition);
 
-                Language::from_raw(raw)
-            })
-            .collect::<Vec<_>>();
+        let pages_base = ExhHeader::SIZE + header.column_count as usize * ExhColumnDefinition::SIZE;
+        let pages = parse!(&data[pages_base..], header.page_count as usize, ExhPage);
+
+        let languages_base = ExhHeader::SIZE + header.column_count as usize * ExhColumnDefinition::SIZE + header.page_count as usize * ExhPage::SIZE;
+        let languages = parse!(&data[languages_base..], header.language_count as usize, Language);
 
         Ok(Self {
             row_size: header.row_size,
