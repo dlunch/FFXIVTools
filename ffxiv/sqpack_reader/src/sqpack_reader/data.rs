@@ -41,7 +41,7 @@ impl SqPackData {
             let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
             let block_data = file.read_bytes(offset, frame_header.block_size as usize).await?;
 
-            decode_block_into(&mut result, &block_data);
+            decode_block_into(&block_data, &mut result);
         }
 
         Ok(result)
@@ -65,11 +65,11 @@ impl SqPackData {
         Ok(file.read_bytes(base_offset, total_size).await?)
     }
 
-    fn decode_contiguous_blocks_into(mut result: &mut Vec<u8>, block_data: Vec<u8>, block_sizes: &[u16]) {
+    fn decode_contiguous_blocks_into(block_data: Vec<u8>, block_sizes: &[u16], mut result: &mut Vec<u8>) {
         let mut offset = 0usize;
 
         for &block_size in block_sizes {
-            decode_block_into(&mut result, &block_data[offset..offset + block_size as usize]);
+            decode_block_into(&block_data[offset..offset + block_size as usize], &mut result);
 
             offset += block_size as usize;
         }
@@ -89,7 +89,7 @@ impl SqPackData {
 
         let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
         let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-        Self::decode_contiguous_blocks_into(&mut result, block_data, &block_sizes);
+        Self::decode_contiguous_blocks_into(block_data, &block_sizes, &mut result);
 
         Ok(result)
     }
@@ -115,7 +115,7 @@ impl SqPackData {
 
             let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
             let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-            Self::decode_contiguous_blocks_into(&mut result, block_data, &block_sizes);
+            Self::decode_contiguous_blocks_into(block_data, &block_sizes, &mut result);
         }
 
         Ok(result)

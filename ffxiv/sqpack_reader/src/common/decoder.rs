@@ -52,7 +52,7 @@ impl CompressedFileHeader {
     );
 }
 
-pub fn decode_block_into(result: &mut Vec<u8>, data: &[u8]) -> usize {
+pub fn decode_block_into(data: &[u8], result: &mut Vec<u8>) -> usize {
     let header = parse!(&data, BlockHeader);
 
     if header.compressed_length >= 32000 {
@@ -80,7 +80,7 @@ pub fn decode_compressed_data(data: &[u8]) -> Vec<u8> {
 
     let mut offset = CompressedFileHeader::SIZE + header.additional_header_size as usize;
     for _ in 0..header.block_count {
-        let consumed = decode_block_into(&mut result, &data[offset..]);
+        let consumed = decode_block_into(&data[offset..], &mut result);
 
         offset += round_up(consumed, 4usize);
     }
