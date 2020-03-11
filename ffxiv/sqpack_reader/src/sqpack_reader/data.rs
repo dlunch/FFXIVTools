@@ -48,12 +48,13 @@ impl SqPackData {
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
-        let block_size_data = file.read_bytes(offset, count * std::mem::size_of::<u16>()).await?;
+        let item_size = std::mem::size_of::<u16>();
+        let block_size_data = file.read_bytes(offset, count * item_size).await?;
 
-        Ok((0..count * 2)
-            .step_by(2)
+        Ok((0..count * item_size)
+            .step_by(item_size)
             .map(|x| {
-                let data = &block_size_data[x..x + 2];
+                let data = &block_size_data[x..x + item_size];
                 u16::from_le_bytes(data.try_into().unwrap())
             })
             .collect::<Vec<_>>())
