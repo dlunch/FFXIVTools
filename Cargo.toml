@@ -2,6 +2,7 @@
 members = [
     "ffxiv/sqpack_reader",
     "ffxiv/ffxiv_parser",
+    "ffxiv/model_viewer",
     "server",
     "renderer",
     "util",
