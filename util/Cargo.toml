@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
 
+[lib]
+doctest = false
+
 [features]
 default = []
 std = ["tokio"]
