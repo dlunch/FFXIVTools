@@ -18,5 +18,6 @@ wasm = []
 
 [dependencies]
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
+renderer = { version = "^0.1", default-features = false, path = "../../renderer" }
 
 winit = { version = "^0.22", default-features = false, optional = true }
