@@ -1,0 +1,19 @@
+[package]
+name = "model_viewer"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "model_viewer"
+path = "src/main.rs"
+
+[features]
+default = ["binary"]
+binary = ["sqpack_reader/std"]
+
+[dependencies]
+sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
