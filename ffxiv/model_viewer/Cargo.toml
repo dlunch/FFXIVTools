@@ -13,7 +13,10 @@ path = "src/main.rs"
 
 [features]
 default = ["binary"]
-binary = ["sqpack_reader/std"]
+binary = ["sqpack_reader/std", "winit"]
+wasm = []
 
 [dependencies]
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
+
+winit = { version = "^0.22", default-features = false, optional = true }
