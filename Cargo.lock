@@ -1260,6 +1260,7 @@ dependencies = [
 name = "model_viewer"
 version = "0.1.0"
 dependencies = [
+ "renderer 0.1.0",
  "sqpack_reader 0.1.0",
  "winit 0.22.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1644,6 +1645,7 @@ dependencies = [
 name = "renderer"
 version = "0.1.0"
 dependencies = [
+ "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "wgpu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
