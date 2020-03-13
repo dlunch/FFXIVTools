@@ -16,31 +16,27 @@ fn main() {
 
     let renderer = Renderer::new(&window);
 
-    event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Exit;
-
-        match event {
-            event::Event::MainEventsCleared => window.request_redraw(),
-            event::Event::WindowEvent { event, .. } => match event {
-                WindowEvent::KeyboardInput {
-                    input:
-                        event::KeyboardInput {
-                            virtual_keycode: Some(event::VirtualKeyCode::Escape),
-                            state: event::ElementState::Pressed,
-                            ..
-                        },
-                    ..
-                }
-                | WindowEvent::CloseRequested => {
-                    *control_flow = ControlFlow::Exit;
-                }
-                _ => {}
-            },
-            event::Event::RedrawRequested(_) => {
-                renderer.redraw();
+    event_loop.run(move |event, _, control_flow| match event {
+        event::Event::MainEventsCleared => window.request_redraw(),
+        event::Event::WindowEvent { event, .. } => match event {
+            WindowEvent::KeyboardInput {
+                input:
+                    event::KeyboardInput {
+                        virtual_keycode: Some(event::VirtualKeyCode::Escape),
+                        state: event::ElementState::Pressed,
+                        ..
+                    },
+                ..
+            }
+            | WindowEvent::CloseRequested => {
+                *control_flow = ControlFlow::Exit;
             }
             _ => {}
+        },
+        event::Event::RedrawRequested(_) => {
+            renderer.redraw();
         }
+        _ => {}
     });
 }
 
