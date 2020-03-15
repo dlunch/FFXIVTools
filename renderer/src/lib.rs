@@ -211,8 +211,8 @@ impl Example {
         // Create the render pipeline
         let vs_bytes = load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
         let fs_bytes = load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
-        let vs_module = device.create_shader_module(&vs_bytes);
-        let fs_module = device.create_shader_module(&fs_bytes);
+        let vs_module = device.create_shader_module(vs_bytes.as_binary());
+        let fs_module = device.create_shader_module(fs_bytes.as_binary());
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &pipeline_layout,
@@ -384,11 +384,12 @@ fn create_texels(size: usize) -> Vec<u8> {
         .collect()
 }
 
-fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u32> {
+fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
     let ty = match stage {
-        ShaderStage::Vertex => glsl_to_spirv::ShaderType::Vertex,
-        ShaderStage::Fragment => glsl_to_spirv::ShaderType::Fragment,
+        ShaderStage::Vertex => shaderc::ShaderKind::Vertex,
+        ShaderStage::Fragment => shaderc::ShaderKind::Fragment,
     };
 
-    wgpu::read_spirv(glsl_to_spirv::compile(&code, ty).unwrap()).unwrap()
+    let mut compiler = shaderc::Compiler::new().unwrap();
+    compiler.compile_into_spirv(code, ty, "shader.glsl", "main", None).unwrap()
 }
