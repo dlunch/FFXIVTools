@@ -75,23 +75,24 @@ impl Example {
         mapped.finish()
     }
 
-    fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
+    fn generate_matrix(aspect_ratio: f32) -> nalgebra::Matrix4<f32> {
+        use std::f32::consts::PI;
         #[rustfmt::skip]
-        const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
+        let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
             1.0, 0.0, 0.0, 0.0,
             0.0, -1.0, 0.0, 0.0,
-            0.0, 0.0, 0.5, 0.0,
-            0.0, 0.0, 0.5, 1.0,
+            0.0, 0.0, 0.5, 0.5,
+            0.0, 0.0, 0.0, 1.0,
         );
 
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
-        let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, -5.0, 3.0),
-            cgmath::Point3::new(0f32, 0.0, 0.0),
-            cgmath::Vector3::unit_z(),
+        let projection = nalgebra::Matrix4::new_perspective(aspect_ratio, 45.0 * PI / 180.0, 1.0, 10.0);
+        let view = nalgebra::Matrix4::look_at_rh(
+            &nalgebra::Point3::new(1.5f32, -5.0, 3.0),
+            &nalgebra::Point3::new(0.0, 0.0, 0.0),
+            &nalgebra::Vector3::z_axis(),
         );
-        let mx_correction = OPENGL_TO_WGPU_MATRIX;
-        mx_correction * mx_projection * mx_view
+
+        correction * projection * view
     }
 
     fn init(device: &wgpu::Device) -> (Self, Option<wgpu::CommandBuffer>) {
@@ -182,7 +183,7 @@ impl Example {
             compare_function: wgpu::CompareFunction::Always,
         });
         let mx_total = Self::generate_matrix(1024.0 / 768.0);
-        let mx_ref: &[f32; 16] = mx_total.as_ref();
+        let mx_ref = mx_total.as_slice();
         let uniform_buf = Self::create_buffer_with_data(&device, mx_ref.as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
 
         // Create bind group

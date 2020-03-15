@@ -9,7 +9,7 @@ doctest = false
 
 [dependencies]
 wgpu = { version = "^0.4", default-features = false }
-cgmath = { version = "^0.17", default-features = false }
+nalgebra = { version = "^0.20", default-features = false }
 glsl-to-spirv = { version = "^0.1", default-features = false }
 zerocopy = { version = "^0.3", default-features = false }
 raw-window-handle = { version = "^0.3", default-features = false }
