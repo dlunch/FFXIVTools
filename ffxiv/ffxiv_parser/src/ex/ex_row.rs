@@ -1,5 +1,6 @@
-use std::convert::TryInto;
 use std::str;
+
+use util::SliceByteOrderExt;
 
 use super::definition::ExhColumnDefinition;
 
@@ -30,17 +31,11 @@ impl<'a> ExRow<'a> {
     pub fn string(&self, index: usize) -> &str {
         let data_offset = self.columns[index].offset as usize;
         let data = &self.data[data_offset..];
-        let str_offset = Self::read_u32_be(data) as usize + self.row_size as usize;
+        let str_offset = data.read_u32_be() as usize + self.row_size as usize;
 
         let bytes = &self.data[str_offset..];
         let end = bytes.iter().position(|&x| x == b'\0').unwrap();
 
         str::from_utf8(&bytes[..end]).unwrap()
-    }
-
-    fn read_u32_be(data: &[u8]) -> u32 {
-        let sliced = &data[..std::mem::size_of::<u32>()];
-
-        u32::from_be_bytes(sliced.try_into().unwrap())
     }
 }
