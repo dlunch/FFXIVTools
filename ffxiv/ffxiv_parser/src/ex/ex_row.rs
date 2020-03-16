@@ -29,9 +29,7 @@ impl<'a> ExRow<'a> {
     }
 
     pub fn index(&self, index: usize) -> ExRowItem {
-        let field_type = ExFieldType::parse(self.columns[index].field_type);
-
-        match field_type {
+        match self.columns[index].field_type {
             ExFieldType::String => ExRowItem::String(self.string(index)),
             ExFieldType::Bool => ExRowItem::Bool(self.bool(index)),
             ExFieldType::Int8 => ExRowItem::Int8(self.int8(index)),
@@ -47,6 +45,8 @@ impl<'a> ExRow<'a> {
     }
 
     pub fn string(&self, index: usize) -> &str {
+        debug_assert!(self.columns[index].field_type == ExFieldType::String);
+
         let data = self.data_slice(index);
         let str_offset = data.read_int_be::<u32>() as usize + self.row_size as usize;
 
@@ -58,12 +58,15 @@ impl<'a> ExRow<'a> {
 
     pub fn bool(&self, index: usize) -> bool {
         let packed_bool_offset = ExFieldType::PackedBool as u16;
+        let field_type_value = self.columns[index].field_type as u16;
+
+        debug_assert!(self.columns[index].field_type == ExFieldType::Bool || field_type_value >= packed_bool_offset);
 
         let data;
-        if self.columns[index].field_type >= packed_bool_offset {
+        if field_type_value >= packed_bool_offset {
             // packed bool
             let packed_data = self.data_slice(index).read_int_be::<u32>();
-            let index = self.columns[index].field_type - packed_bool_offset;
+            let index = field_type_value - packed_bool_offset;
             data = (packed_data & (1 << index)) as u8;
         } else {
             data = self.data_slice(index)[0];
@@ -77,34 +80,42 @@ impl<'a> ExRow<'a> {
     }
 
     pub fn int8(&self, index: usize) -> i8 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::Int8);
         self.data_slice(index).read_int_be()
     }
 
     pub fn uint8(&self, index: usize) -> u8 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::UInt8);
         self.data_slice(index).read_int_be()
     }
 
     pub fn int16(&self, index: usize) -> i16 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::Int16);
         self.data_slice(index).read_int_be()
     }
 
     pub fn uint16(&self, index: usize) -> u16 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::UInt16);
         self.data_slice(index).read_int_be()
     }
 
     pub fn int32(&self, index: usize) -> i32 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::Int32);
         self.data_slice(index).read_int_be()
     }
 
     pub fn uint32(&self, index: usize) -> u32 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::UInt32);
         self.data_slice(index).read_int_be()
     }
 
     pub fn float(&self, index: usize) -> f32 {
+        debug_assert!(self.columns[index].field_type == ExFieldType::Float);
         self.data_slice(index).read_float_be()
     }
 
     pub fn quad(&self, index: usize) -> (u16, u16, u16, u16) {
+        debug_assert!(self.columns[index].field_type == ExFieldType::Quad);
         let data = self.data_slice(index);
 
         (
