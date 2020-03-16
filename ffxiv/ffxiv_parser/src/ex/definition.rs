@@ -45,7 +45,7 @@ impl ExhHeader {
 }
 
 pub struct ExhColumnDefinition {
-    pub field_type: u16,
+    pub field_type: ExFieldType,
     pub offset: u16,
 }
 
@@ -58,7 +58,7 @@ impl ExhColumnDefinition {
             field_type: be_u16  >>
             offset:     be_u16  >>
             (Self {
-                field_type,
+                field_type: ExFieldType::parse(field_type),
                 offset,
             })
         )
@@ -181,6 +181,7 @@ impl Language {
     }
 }
 
+#[derive(Eq, PartialEq, Copy, Clone)]
 pub enum ExFieldType {
     String = 0,
     Bool = 1,
