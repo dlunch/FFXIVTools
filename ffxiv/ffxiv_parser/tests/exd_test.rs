@@ -19,6 +19,12 @@ mod tests {
 
         let row = ex.find_row(0, languages[0]).unwrap();
         assert_eq!(row.string(1), "ADV");
+        assert_eq!(row.uint8(3), 30);
+        assert_eq!(row.int8(4), -1);
+        assert_eq!(row.uint16(9), 100);
+        assert_eq!(row.int32(28), 0);
+        assert_eq!(row.bool(44), false);
+        assert_eq!(row.bool(45), false);
 
         Ok(())
     }
