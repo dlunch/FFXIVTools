@@ -180,3 +180,37 @@ impl Language {
         Ok((raw.0, result))
     }
 }
+
+pub enum ExFieldType {
+    String = 0,
+    Bool = 1,
+    Int8 = 2,
+    UInt8 = 3,
+    Int16 = 4,
+    UInt16 = 5,
+    Int32 = 6,
+    UInt32 = 7,
+
+    Float = 9,
+    Quad = 11,
+    PackedBool = 25,
+}
+
+impl ExFieldType {
+    pub fn parse(raw: u16) -> Self {
+        match raw {
+            0 => ExFieldType::String,
+            1 => ExFieldType::Bool,
+            2 => ExFieldType::Int8,
+            3 => ExFieldType::UInt8,
+            4 => ExFieldType::Int16,
+            5 => ExFieldType::UInt16,
+            6 => ExFieldType::Int32,
+            7 => ExFieldType::UInt32,
+            9 => ExFieldType::Float,
+            11 => ExFieldType::Quad,
+            25..=std::u16::MAX => ExFieldType::PackedBool,
+            _ => panic!(),
+        }
+    }
+}
