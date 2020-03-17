@@ -8,28 +8,37 @@ use super::FileProvider;
 use crate::common::SqPackFileReference;
 
 pub struct FileProviderFile {
-    base_dir: PathBuf,
+    base_dir: Vec<PathBuf>,
 }
 
 impl FileProviderFile {
-    pub fn new(base_dir: &Path) -> Self {
+    pub fn with_paths(base_dirs: &[&Path]) -> Self {
         Self {
-            base_dir: base_dir.to_owned(),
+            base_dir: base_dirs.iter().map(|&x| x.to_owned()).collect(),
+        }
+    }
+
+    pub fn with_path(base_dir: &Path) -> Self {
+        Self {
+            base_dir: vec![base_dir.to_owned()],
         }
     }
 
     fn find_path(&self, reference: &SqPackFileReference) -> io::Result<PathBuf> {
-        let mut path = self.base_dir.clone();
+        for path in &self.base_dir {
+            let mut path = path.clone();
 
-        path.push(reference.folder_hash.to_string());
-        path.push(reference.file_hash.to_string());
+            path.push(reference.folder_hash.to_string());
+            path.push(reference.file_hash.to_string());
 
-        if path.exists() {
-            Ok(path)
-        } else {
-            debug!("No such file {}", path.to_str().unwrap());
-            Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
+            if path.exists() {
+                return Ok(path);
+            }
         }
+
+        #[cfg(debug_assertions)]
+        debug!("No such file {}", reference.path);
+        Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
     }
 }
 
