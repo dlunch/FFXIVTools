@@ -8,7 +8,6 @@ use std::io;
 use std::path::Path;
 
 use async_trait::async_trait;
-use log::debug;
 
 use crate::common::SqPackFileReference;
 use crate::package::Package;
@@ -31,9 +30,6 @@ impl SqPackReader {
 impl Package for SqPackReader {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let result = self.archives.get_archive(reference.archive_id).await;
-        if result.is_err() {
-            debug!("No such file");
-        }
 
         result.unwrap().read_file(reference).await
     }

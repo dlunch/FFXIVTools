@@ -11,8 +11,12 @@ pub trait Package: Sync + Send {
         debug!("Reading {}", path);
 
         let reference = SqPackFileReference::new(path);
+        let result = self.read_file_by_reference(&reference).await;
 
-        self.read_file_by_reference(&reference).await
+        if result.is_err() {
+            debug!("No such file {}", path);
+        }
+        result
     }
 
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>>;
