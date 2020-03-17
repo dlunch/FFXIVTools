@@ -15,7 +15,7 @@ impl Context {
         dotenv().ok();
 
         #[cfg(unix)]
-        let package = Box::new(sqpack_reader::SqPackReaderFile::with_path(sqpack_reader::FileProviderFile::new(
+        let package = Box::new(sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_path(
             Path::new("/mnt/i/FFXIVData/data/kor_505"),
         ))?);
         #[cfg(windows)]
