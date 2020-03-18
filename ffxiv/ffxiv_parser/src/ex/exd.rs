@@ -29,15 +29,15 @@ impl ExData {
         Ok(Self { data, offsets })
     }
 
-    pub fn read_row(&self, index: u32) -> Option<&[u8]> {
+    pub fn index(&self, index: u32) -> Option<&[u8]> {
         let offset = *self.offsets.get(&index)? as usize;
         let data = parse!(&self.data[offset..], ExdData);
 
         Some(data.data)
     }
 
-    pub fn read_all(&self) -> impl Iterator<Item = (u32, &[u8])> {
-        self.offsets.iter().map(move |x| (*x.0, self.read_row(*x.0).unwrap()))
+    pub fn all(&self) -> impl Iterator<Item = (u32, &[u8])> {
+        self.offsets.iter().map(move |x| (*x.0, self.index(*x.0).unwrap()))
     }
 
     fn language_to_suffix(language: Language) -> &'static str {

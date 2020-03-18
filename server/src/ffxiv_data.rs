@@ -15,7 +15,7 @@ async fn get_ex(context: web::Data<Context>, param: web::Path<(String,)>) -> Res
     let ex_name = &param.0;
     let ex = Ex::new(&*context.package, ex_name).await?;
 
-    let ex_json = serde_json::to_string(&ex.read_all(Language::None).unwrap())?;
+    let ex_json = serde_json::to_string(&ex.all(Language::None).unwrap())?;
 
     // not using `web::Json` because `web::Json` takes ownership and return value of `ex.read_all()` requires same lifetime as `ex`.
     Ok(HttpResponse::build(StatusCode::OK).content_type("application/json").body(ex_json))

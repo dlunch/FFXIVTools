@@ -35,16 +35,16 @@ impl Ex {
         &self.header.languages
     }
 
-    pub fn find_row(&self, index: u32, language: Language) -> Option<ExRow> {
-        let data = self.data.read_row(index, language)?;
+    pub fn index(&self, index: u32, language: Language) -> Option<ExRow> {
+        let data = self.data.index(index, language)?;
 
         Some(self.to_row(data))
     }
 
-    pub fn read_all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
+    pub fn all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
         Some(
             self.data
-                .read_all(language)?
+                .all(language)?
                 .map(|x| (x.0, self.to_row(x.1)))
                 .collect::<BTreeMap<u32, ExRow>>(),
         )
