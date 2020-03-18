@@ -35,4 +35,10 @@ impl ExdMap {
 
         item.1.read_row(index)
     }
+
+    pub fn read_all(&self, language: Language) -> Option<impl Iterator<Item = (u32, &[u8])>> {
+        let items = self.data.get(&language)?;
+
+        Some(items.iter().flat_map(|x| x.1.read_all()))
+    }
 }

@@ -1,5 +1,7 @@
 use std::str;
 
+use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
+
 use util::SliceByteOrderExt;
 
 use super::definition::{ExFieldType, ExhColumnDefinition};
@@ -26,6 +28,10 @@ pub struct ExRow<'a> {
 impl<'a> ExRow<'a> {
     pub fn new(data: &'a [u8], row_size: u16, columns: &'a [ExhColumnDefinition]) -> Self {
         Self { data, row_size, columns }
+    }
+
+    pub fn all(&self) -> Vec<ExRowItem> {
+        (0..self.columns.len()).map(|x| self.index(x)).collect::<Vec<_>>()
     }
 
     pub fn index(&self, index: usize) -> ExRowItem {
@@ -130,5 +136,47 @@ impl<'a> ExRow<'a> {
         let data_offset = self.columns[index].offset as usize;
 
         &self.data[data_offset..]
+    }
+}
+
+impl<'a> Serialize for ExRow<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let rows = self.all();
+
+        let mut seq = serializer.serialize_seq(Some(rows.len()))?;
+        for row in rows {
+            seq.serialize_element(&row)?;
+        }
+        seq.end()
+    }
+}
+
+impl<'a> Serialize for ExRowItem<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ExRowItem::String(x) => serializer.serialize_str(x),
+            ExRowItem::Bool(x) => serializer.serialize_bool(*x),
+            ExRowItem::Int8(x) => serializer.serialize_i8(*x),
+            ExRowItem::UInt8(x) => serializer.serialize_u8(*x),
+            ExRowItem::Int16(x) => serializer.serialize_i16(*x),
+            ExRowItem::UInt16(x) => serializer.serialize_u16(*x),
+            ExRowItem::Int32(x) => serializer.serialize_i32(*x),
+            ExRowItem::UInt32(x) => serializer.serialize_u32(*x),
+            ExRowItem::Float(x) => serializer.serialize_f32(*x),
+            ExRowItem::Quad(x) => {
+                let mut tup = serializer.serialize_tuple(4)?;
+                tup.serialize_element(&x.0)?;
+                tup.serialize_element(&x.1)?;
+                tup.serialize_element(&x.2)?;
+                tup.serialize_element(&x.3)?;
+                tup.end()
+            }
+        }
     }
 }
