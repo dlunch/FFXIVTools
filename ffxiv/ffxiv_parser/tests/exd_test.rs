@@ -17,7 +17,7 @@ mod tests {
         let ex = Ex::new(&pack, "classjob").await?;
         let languages = ex.languages();
 
-        let row = ex.find_row(0, languages[0]).unwrap();
+        let row = ex.index(0, languages[0]).unwrap();
         assert_eq!(row.string(1), "ADV");
         assert_eq!(row.uint8(3), 30);
         assert_eq!(row.int8(4), -1);
