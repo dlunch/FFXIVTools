@@ -36,6 +36,13 @@ impl ExData {
         Some(data.data)
     }
 
+    pub fn read_all(&self) -> BTreeMap<u32, &[u8]> {
+        self.offsets
+            .iter()
+            .map(|x| (*x.0, self.read_row(*x.0).unwrap()))
+            .collect::<BTreeMap<_, _>>()
+    }
+
     fn language_to_suffix(language: Language) -> &'static str {
         match language {
             Language::None => "",

@@ -12,5 +12,6 @@ tokio = { version = "^0.2.11", features = ["macros"], default-features = false }
 actix-web = { version = "^2.0", default-features = false }
 actix-rt = { version = "^1.0", default-features = false }
 dotenv = { version = "^0.15", default-features = false }
+serde_json = {version = "^1.0", default-features = false }
 ffxiv_parser = { version = "^0.1", features = ["std"], default-features = false, path = "../ffxiv/ffxiv_parser" }
 sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../ffxiv/sqpack_reader"}
