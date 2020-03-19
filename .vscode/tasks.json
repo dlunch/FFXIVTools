@@ -13,6 +13,9 @@
       "args": ["build", "-v"],
       "command": "cargo",
       "group": "build",
+      "presentation": {
+        "reveal": "never"
+      },
       "problemMatcher": [
         {
           "owner": "rust",
@@ -35,6 +38,9 @@
       "args": ["check", "-v"],
       "command": "cargo",
       "group": "build",
+      "presentation": {
+        "reveal": "never"
+      },
       "problemMatcher": [
         {
           "owner": "rust",
@@ -57,15 +63,15 @@
       "command": "cargo",
       "args": ["clean"],
       "presentation": {
-        "reveal": "always"
+        "reveal": "never"
       }
     },
     {
       "label": "cargo run",
       "command": "cargo",
-      "args": ["run", "-v"],
+      "args": ["run", "-v", "--bin", "model_viewer"],
       "presentation": {
-        "reveal": "always"
+        "reveal": "never"
       },
       "group": "build",
       "problemMatcher": [
