@@ -1,6 +1,6 @@
 mod ex;
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub enum Language {
     None = 0,
     Japanese = 1,
