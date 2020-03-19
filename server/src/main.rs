@@ -5,7 +5,7 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Result};
 use dotenv::dotenv;
 
 use ffxiv_parser::ExList;
-use sqpack_reader::{FileProviderFile, Package, SqPackReaderFile};
+use sqpack_reader::Package;
 
 struct Context {
     package: Box<dyn Package>,
@@ -13,10 +13,14 @@ struct Context {
 
 impl Context {
     async fn new() -> Result<Self, Box<dyn Error>> {
-
         #[cfg(unix)]
-        let provider = FileProviderFile::new(Path::new("/mnt/i/FFXIVData/data/kor_505"));
-        let package = Box::new(SqPackReaderFile::new(provider)?);
+        let package = Box::new(sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::new(Path::new(
+            "/mnt/i/FFXIVData/data/kor_505",
+        )))?);
+        #[cfg(windows)]
+        let package = Box::new(sqpack_reader::SqPackReader::new(Path::new(
+            "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack",
+        ))?);
 
         Ok(Self { package })
     }
