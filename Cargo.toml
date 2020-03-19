@@ -7,6 +7,7 @@ members = [
     "renderer",
     "util",
 ]
+default-members = ["ffxiv/model_viewer", "server"]
 
 [profile.release]
 panic = "abort"
