@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
 
+[features]
+default = []
+
 [dependencies]
 tokio = { version = "^0.2.11", features = ["macros"], default-features = false }
 actix-web = { version = "^2.0", default-features = false }
