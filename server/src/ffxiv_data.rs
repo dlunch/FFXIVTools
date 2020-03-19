@@ -1,7 +1,9 @@
+use std::collections::BTreeMap;
+
 use actix_web::{http::StatusCode, web, HttpResponse, Responder, Result};
 use serde_json;
 
-use ffxiv_parser::{Ex, ExList, Language};
+use ffxiv_parser::{Ex, ExList};
 
 use super::context::Context;
 
@@ -15,7 +17,9 @@ async fn get_ex(context: web::Data<Context>, param: web::Path<(String,)>) -> Res
     let ex_name = &param.0;
     let ex = Ex::new(&*context.package, ex_name).await?;
 
-    let ex_json = serde_json::to_string(&ex.all(Language::None).unwrap())?;
+    let ex_data = ex.languages().iter().map(|&x| (x as u32, ex.all(x).unwrap())).collect::<BTreeMap<_, _>>();
+
+    let ex_json = serde_json::to_string(&ex_data)?;
 
     // not using `web::Json` because `web::Json` takes ownership and return value of `ex.read_all()` requires same lifetime as `ex`.
     Ok(HttpResponse::build(StatusCode::OK).content_type("application/json").body(ex_json))
