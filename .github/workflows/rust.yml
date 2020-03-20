@@ -1,10 +1,4 @@
-on:
-  push:
-    paths:
-      - "rust/**"
-  pull_request:
-    paths:
-      - "rust/**"
+on: [push, pull_request]
 
 name: Rust CI
 
@@ -58,3 +52,19 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
+
+      - name: Cache .npm
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: npm install
+        if: matrix.os == 'ubuntu-latest'
+        run: npm install
+
+      - name: npm run build
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run build
