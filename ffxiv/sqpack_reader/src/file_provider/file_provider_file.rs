@@ -8,24 +8,22 @@ use super::FileProvider;
 use crate::common::SqPackFileReference;
 
 pub struct FileProviderFile {
-    base_dir: Vec<PathBuf>,
+    base_dirs: Vec<PathBuf>,
 }
 
 impl FileProviderFile {
-    pub fn with_paths(base_dirs: &[&Path]) -> Self {
-        Self {
-            base_dir: base_dirs.iter().map(|&x| x.to_owned()).collect(),
-        }
+    pub fn with_paths(base_dirs: Vec<PathBuf>) -> Self {
+        Self { base_dirs }
     }
 
     pub fn with_path(base_dir: &Path) -> Self {
         Self {
-            base_dir: vec![base_dir.to_owned()],
+            base_dirs: vec![base_dir.to_owned()],
         }
     }
 
     fn find_path(&self, reference: &SqPackFileReference) -> io::Result<PathBuf> {
-        for path in &self.base_dir {
+        for path in &self.base_dirs {
             let mut path = path.clone();
 
             path.push(reference.folder_hash.to_string());

@@ -1994,6 +1994,7 @@ dependencies = [
  "actix-rt 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix-web 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ffxiv_parser 0.1.0",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
  "tokio 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
