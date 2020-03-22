@@ -34,8 +34,7 @@ impl FileProviderFile {
             }
         }
 
-        #[cfg(debug_assertions)]
-        debug!("No such file {}", reference.path);
+        debug!("No such file {}/{}", reference.folder_hash, reference.file_hash);
         Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
     }
 }
