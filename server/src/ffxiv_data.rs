@@ -1,58 +1,50 @@
 use std::collections::BTreeMap;
-use std::error::Error;
-use std::path::PathBuf;
+use std::io;
+use std::path::Path;
 
 use actix_web::{http::StatusCode, web, HttpResponse, Responder, Result};
-use lazy_static::lazy_static;
+use itertools::Itertools;
+use log::info;
 use serde_json;
 
 use ffxiv_parser::{Ex, ExList};
 use sqpack_reader::SqPackReaderFile;
 
-#[rustfmt::skip]
-lazy_static! {
-    static ref VERSIONS: Vec<(&'static str, Vec<&'static str>)> = vec![
-        (
-            "kor",
-            vec![
-                "320", "330", "335", "338", "340", "345", "350", "355", "357", "400", "401", "405", "406", "410", "411", "415", "420", "425", "430",
-                "431", "435", "436", "440", "445", "450", "455", "456", "458", "500", "501", "505",
-            ],
-        ),
-        (
-            "chn",
-            vec![
-                "340", "350", "400", "410", "415", "420", "430", "440", "450", "500", "511"
-            ]
-        ),
-        (
-            "global",
-            vec![
-                "356", "400_bench", "400", "401", "405", "406", "410", "411", "415", "420", "425", "430", "436", "440", "445", "450", "455", "456",
-                "500", "505", "510", "511", "515", "520", "521",
-            ],
-        ),
-    ];
-}
+const REGIONS: [&str; 3] = ["kor", "chn", "global"];
 
 struct Context {
     pub package: SqPackReaderFile,
 }
 
 impl Context {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new() -> Result<Self, io::Error> {
         #[cfg(unix)]
         let path_base = "/mnt/i/FFXIVData/data";
         #[cfg(windows)]
         let path_base = "i:\\FFXIVData\\data";
 
-        let version = VERSIONS
-            .iter()
-            .flat_map(|x| x.1.iter().map(move |y| format!("{}/{}_{}", path_base, x.0, y)))
-            .map(PathBuf::from)
+        let packs = Path::new(path_base)
+            .read_dir()?
+            .filter_map(Result::ok)
+            .map(|x| (x.path(), x.path().file_name().unwrap().to_str().unwrap().to_owned()))
+            .map(|(path, file_name)| {
+                let mut split = file_name.split('_');
+                Some((path, split.next()?.to_owned(), split.next()?.to_owned()))
+            })
+            .filter_map(|x| x)
+            .sorted_by_key(|(_, region, _)| REGIONS.iter().position(|x| x == region))
             .collect::<Vec<_>>();
 
-        let package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(version))?;
+        info!(
+            "mounting {:?}",
+            packs
+                .iter()
+                .map(|(_, region, version)| format!("{}_{}", region, version))
+                .collect::<Vec<_>>()
+        );
+
+        let paths = packs.into_iter().map(|(path, _, _)| path).collect::<Vec<_>>();
+        let package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(paths))?;
 
         Ok(Self { package })
     }
