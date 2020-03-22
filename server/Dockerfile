@@ -4,6 +4,7 @@ WORKDIR /src
 RUN cargo install --path server --locked --bins --root build
 
 FROM debian:buster-slim
-COPY --from=0 /src/build /server
+COPY --from=0 /src/build/bin /server
 
-CMD ["/server/bin/server"]
+WORKDIR "/server"
+ENTRYPOINT ["/server/server"]

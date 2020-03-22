@@ -2,3 +2,4 @@ target
 dist
 web/pkg
 **/node_modules
+data
