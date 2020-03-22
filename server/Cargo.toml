@@ -9,6 +9,7 @@ default = []
 
 [dependencies]
 tokio = { version = "^0.2.11", features = ["macros"], default-features = false }
+lazy_static = { version = "^1.4", default-features = false }
 actix-web = { version = "^2.0", default-features = false }
 actix-rt = { version = "^1.0", default-features = false }
 serde_json = {version = "^1.0", default-features = false }
