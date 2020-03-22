@@ -1,6 +1,6 @@
 FROM rust:latest
 
-WORKDIR /build
+WORKDIR /src
 COPY . .
 
 RUN apt-get update
