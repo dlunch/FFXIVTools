@@ -1,53 +1,17 @@
+mod context;
+
 use std::collections::BTreeMap;
-use std::io;
-use std::path::Path;
 
 use actix_web::{http::StatusCode, web, HttpResponse, Responder, Result};
-use itertools::Itertools;
-use log::info;
+use lazy_static::lazy_static;
 use serde_json;
 
 use ffxiv_parser::{Ex, ExList};
-use sqpack_reader::SqPackReaderFile;
 
-const REGIONS: [&str; 3] = ["kor", "chn", "global"];
+use context::Context;
 
-struct Context {
-    pub package: SqPackReaderFile,
-}
-
-impl Context {
-    pub fn new() -> Result<Self, io::Error> {
-        #[cfg(unix)]
-        let path_base = "/mnt/i/FFXIVData/data";
-        #[cfg(windows)]
-        let path_base = "i:\\FFXIVData\\data";
-
-        let packs = Path::new(path_base)
-            .read_dir()?
-            .filter_map(Result::ok)
-            .map(|x| (x.path(), x.path().file_name().unwrap().to_str().unwrap().to_owned()))
-            .map(|(path, file_name)| {
-                let mut split = file_name.split('_');
-                Some((path, split.next()?.to_owned(), split.next()?.to_owned()))
-            })
-            .filter_map(|x| x)
-            .sorted_by_key(|(_, region, _)| REGIONS.iter().position(|x| x == region))
-            .collect::<Vec<_>>();
-
-        info!(
-            "mounting {:?}",
-            packs
-                .iter()
-                .map(|(_, region, version)| format!("{}_{}", region, version))
-                .collect::<Vec<_>>()
-        );
-
-        let paths = packs.into_iter().map(|(path, _, _)| path).collect::<Vec<_>>();
-        let package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(paths))?;
-
-        Ok(Self { package })
-    }
+lazy_static! {
+    static ref CONTEXT: Context = Context::new().unwrap();
 }
 
 async fn get_exl(context: web::Data<Context>) -> Result<impl Responder> {
@@ -69,9 +33,7 @@ async fn get_ex(context: web::Data<Context>, param: web::Path<(String,)>) -> Res
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    let context = Context::new().unwrap();
-
-    cfg.data(context)
+    cfg.data(CONTEXT.clone())
         .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
         .service(web::resource("/parsed/ex/{ex_name}").route(web::get().to(get_ex)));
 }
