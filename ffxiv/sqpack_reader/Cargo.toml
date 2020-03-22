@@ -27,4 +27,3 @@ reqwest = { version = "^0.10", default-features = false, optional = true }
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
-log = { version = "^0.4", default-features = false }
