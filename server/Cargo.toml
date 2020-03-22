@@ -8,6 +8,7 @@ edition = "2018"
 default = []
 
 [dependencies]
+futures = { version = "^0.3", default-features = false }
 itertools = { version = "^0.9", features = ["use_std"], default-features = false }
 log = { version = "^0.4", default-features = false }
 lazy_static = { version = "^1.4", default-features = false }
