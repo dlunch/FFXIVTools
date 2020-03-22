@@ -23,10 +23,7 @@ pub struct ContextImpl {
 
 impl ContextImpl {
     pub fn new() -> Result<Self, io::Error> {
-        #[cfg(unix)]
-        let path_base = "/mnt/i/FFXIVData/data";
-        #[cfg(windows)]
-        let path_base = "i:\\FFXIVData\\data";
+        let path_base = "./data";
 
         let packs = Path::new(path_base)
             .read_dir()?
