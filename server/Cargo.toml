@@ -8,8 +8,9 @@ edition = "2018"
 default = []
 
 [dependencies]
-tokio = { version = "^0.2.11", features = ["macros"], default-features = false }
-lazy_static = { version = "^1.4", default-features = false }
+itertools = { version = "^0.9", features = ["use_std"], default-features = false }
+log = { version = "^0.4", default-features = false }
+pretty_env_logger = { version = "^0.4", default-features = false }
 actix-web = { version = "^2.0", default-features = false }
 actix-rt = { version = "^1.0", default-features = false }
 serde_json = {version = "^1.0", default-features = false }
