@@ -1,11 +1,31 @@
 use std::collections::BTreeMap;
+use std::error::Error;
+use std::path::Path;
 
 use actix_web::{http::StatusCode, web, HttpResponse, Responder, Result};
 use serde_json;
 
 use ffxiv_parser::{Ex, ExList};
+use sqpack_reader::Package;
 
-use super::context::Context;
+struct Context {
+    pub package: Box<dyn Package>,
+}
+
+impl Context {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        #[cfg(unix)]
+        let package = Box::new(sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_path(
+            Path::new("/mnt/i/FFXIVData/data/kor_505"),
+        ))?);
+        #[cfg(windows)]
+        let package = Box::new(sqpack_reader::SqPackReader::new(Path::new(
+            "D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack",
+        ))?);
+
+        Ok(Self { package })
+    }
+}
 
 async fn get_exl(context: web::Data<Context>) -> Result<impl Responder> {
     let exl = ExList::new(&*context.package).await?;
@@ -26,6 +46,9 @@ async fn get_ex(context: web::Data<Context>, param: web::Path<(String,)>) -> Res
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
+    let context = Context::new().unwrap();
+
+    cfg.data(context)
+        .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
         .service(web::resource("/parsed/ex/{ex_name}").route(web::get().to(get_ex)));
 }
