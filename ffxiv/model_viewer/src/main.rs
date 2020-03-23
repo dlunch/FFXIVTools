@@ -1,6 +1,7 @@
+mod lib;
+
 use renderer::Renderer;
 
-#[cfg(feature = "binary")]
 fn main() {
     use winit::{
         event,
@@ -43,6 +44,3 @@ fn main() {
         }
     });
 }
-
-#[cfg(not(feature = "binary"))]
-fn main() {}
