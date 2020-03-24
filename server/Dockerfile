@@ -3,7 +3,7 @@ FROM builder
 WORKDIR /src
 RUN cargo install --path server --locked --bins --root build
 
-FROM debian:buster-slim
+FROM debian:stretch-slim
 COPY --from=0 /src/build/bin /server
 
 WORKDIR "/server"
