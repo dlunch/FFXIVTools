@@ -1,4 +1,4 @@
-FROM rust:latest
+FROM rust:stretch
 
 WORKDIR /src
 COPY . .
