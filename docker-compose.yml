@@ -2,9 +2,7 @@ version: "3.7"
 services:
   builder:
     image: dlunch/ffxivtools:builder
-    build: .
   server:
     image: dlunch/ffxivtools:server
-    build: server
     volumes:
       - ./data:/server/data
