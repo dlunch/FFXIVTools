@@ -1,3 +1,4 @@
+FROM dlunch/ffxivtools:builder as builder
 FROM rust:stretch
 
 WORKDIR /src
