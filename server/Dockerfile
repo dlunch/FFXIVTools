@@ -1,4 +1,4 @@
-FROM builder
+FROM dlunch/ffxivtools:builder as builder
 
 WORKDIR /src
 RUN cargo install --path server --locked --bins --root build

@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   builder:
-    image: builder
+    image: dlunch/ffxivtools:builder
     build:
       context: .
       dockerfile: Dockerfile.init
