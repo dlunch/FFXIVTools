@@ -28,7 +28,7 @@ fn probe(req: HttpRequest) -> HttpResponse {
     };
 
     HttpResponse::Ok()
-        .set(CacheControl(vec![CacheDirective::MaxAge(31536000)]))
+        .set(CacheControl(vec![CacheDirective::MaxAge(31_536_000)]))
         .body(response)
 }
 
