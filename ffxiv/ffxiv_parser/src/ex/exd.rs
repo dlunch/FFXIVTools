@@ -37,7 +37,9 @@ impl ExData {
     }
 
     pub fn all(&self) -> impl Iterator<Item = (u32, &[u8])> {
-        self.offsets.iter().map(move |x| (*x.0, self.index(*x.0).unwrap()))
+        self.offsets
+            .iter()
+            .map(move |(index, offset)| (*index, parse!(&self.data[*offset as usize..], ExdData).data))
     }
 
     fn language_to_suffix(language: Language) -> &'static str {
