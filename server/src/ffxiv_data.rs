@@ -1,6 +1,7 @@
 mod context;
 
 use std::collections::BTreeMap;
+use std::io;
 
 use actix_web::{error, web, Responder, Result};
 use lazy_static::lazy_static;
@@ -50,8 +51,15 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
     Ok(serde_json::to_value(result)?)
 }
 
+fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Package> {
+    Ok(context
+        .packages
+        .get(version)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No such package"))?)
+}
+
 async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<impl Responder> {
-    let package = context.packages.get(&param.version).unwrap();
+    let package = find_package(&context, &param.version)?;
     let result = ex_to_json(package, param.language, &param.ex_name).await?;
 
     Ok(web::Json(result))
@@ -60,7 +68,7 @@ async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<im
 async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, String)>) -> Result<impl Responder> {
     let (version, language, ex_names) = param.into_inner();
 
-    let package = context.packages.get(&version).unwrap();
+    let package = find_package(&context, &version)?;
     let mut result = BTreeMap::new();
 
     for ex_name in ex_names.split('.') {
