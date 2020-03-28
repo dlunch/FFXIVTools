@@ -12,8 +12,9 @@ default = ["std"]
 std = ["sqpack_reader/std", "nom/std", "util/std"]
 
 [dependencies]
-futures = {version = "^0.3", features = ["alloc"], default-features = false }
-serde = {version = "^1.0", default-features = false }
+futures = { version = "^0.3", features = ["alloc"], default-features = false }
+serde = { version = "^1.0", default-features = false }
+serde_repr = { version = "^0.1", default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 util = { version = "^0.1", default-features = false, path = "../../util" }
 
