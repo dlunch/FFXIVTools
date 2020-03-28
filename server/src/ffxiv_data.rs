@@ -13,6 +13,7 @@ use context::Context;
 
 #[derive(Deserialize)]
 struct GetExParameter {
+    version: String,
     ex_name: String,
     language: Option<Language>,
 }
@@ -22,13 +23,13 @@ lazy_static! {
 }
 
 async fn get_exl(context: Context) -> Result<impl Responder> {
-    let exl = ExList::new(&context.package).await?;
+    let exl = ExList::new(&context.all_package).await?;
 
     Ok(web::Json(exl.ex_names))
 }
 
 async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<impl Responder> {
-    let ex = Ex::new(&context.package, &param.ex_name).await?;
+    let ex = Ex::new(context.packages.get(&param.version).unwrap(), &param.ex_name).await?;
 
     let languages = if let Some(language) = param.language {
         if !ex.languages().iter().any(|&x| x == language) {
@@ -49,6 +50,6 @@ async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<im
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.data(CONTEXT.clone())
         .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
-        .service(web::resource("/parsed/ex/{ex_name}").route(web::get().to(get_ex)))
-        .service(web::resource("/parsed/ex/{language}/{ex_name}").route(web::get().to(get_ex)));
+        .service(web::resource("/parsed/ex/{version}/{ex_name}").route(web::get().to(get_ex)))
+        .service(web::resource("/parsed/ex/{version}/{language}/{ex_name}").route(web::get().to(get_ex)));
 }

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io;
 use std::ops::Deref;
 use std::path::Path;
@@ -18,11 +19,12 @@ lazy_static! {
 }
 
 pub struct ContextImpl {
-    pub package: SqPackReaderFile,
+    pub all_package: SqPackReaderFile,
+    pub packages: HashMap<String, SqPackReaderFile>,
 }
 
 impl ContextImpl {
-    pub fn new() -> Result<Self, io::Error> {
+    pub fn new() -> io::Result<Self> {
         let path_base = "./data";
 
         let packs = Path::new(path_base)
@@ -35,20 +37,25 @@ impl ContextImpl {
             })
             .filter_map(|x| x)
             .sorted_by_key(|(_, region, _)| REGIONS.iter().position(|x| x == region))
+            .map(|(path, region, version)| (path, format!("{}_{}", region, version)))
             .collect::<Vec<_>>();
 
-        info!(
-            "mounting {:?}",
-            packs
-                .iter()
-                .map(|(_, region, version)| format!("{}_{}", region, version))
-                .collect::<Vec<_>>()
-        );
+        info!("mounting {:?}", packs.iter().map(|(_, key)| key).collect::<Vec<_>>());
 
-        let paths = packs.into_iter().map(|(path, _, _)| path).collect::<Vec<_>>();
-        let package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(paths))?;
+        let packages = packs
+            .iter()
+            .map(|(path, key)| {
+                Ok((
+                    key.to_owned(),
+                    sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_path(&path))?,
+                ))
+            })
+            .collect::<io::Result<HashMap<_, _>>>()?;
 
-        Ok(Self { package })
+        let all_paths = packs.into_iter().map(|(path, _)| path).collect::<Vec<_>>();
+        let all_package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(all_paths))?;
+
+        Ok(Self { all_package, packages })
     }
 }
 
