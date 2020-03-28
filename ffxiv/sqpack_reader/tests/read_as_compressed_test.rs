@@ -1,10 +1,10 @@
 #[cfg(feature = "test_local")]
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
     use std::io;
+    use std::path::Path;
 
-    use sqpack_reader::{Package, SqPackReaderFile, SqPackReader, FileProviderFile};
+    use sqpack_reader::{FileProviderFile, Package, SqPackReader, SqPackReaderFile};
 
     #[tokio::test]
     #[cfg(unix)]
