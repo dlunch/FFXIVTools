@@ -2,10 +2,11 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use bytes::Bytes;
 use log::debug;
 
 use super::FileProvider;
-use crate::common::SqPackFileReference;
+use crate::reference::SqPackFileReference;
 
 pub struct FileProviderFile {
     base_dirs: Vec<PathBuf>,
@@ -41,10 +42,10 @@ impl FileProviderFile {
 
 #[async_trait]
 impl FileProvider for FileProviderFile {
-    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let path = self.find_path(reference)?;
         debug!("Reading {}", path.to_str().unwrap());
 
-        Ok(tokio::fs::read(path).await?)
+        Ok(Bytes::from(tokio::fs::read(path).await?))
     }
 }

@@ -1,6 +1,8 @@
-mod common;
+mod archive_id;
 mod file_provider;
 mod package;
+mod raw_file;
+mod reference;
 mod sqpack_reader;
 mod sqpack_reader_file;
 
