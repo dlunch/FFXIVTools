@@ -8,7 +8,7 @@ use log::debug;
 use tokio::sync::Mutex;
 
 use super::archive::SqPackArchive;
-use crate::common::SqPackArchiveId;
+use crate::archive_id::SqPackArchiveId;
 
 pub struct SqPackArchiveContainer {
     archive_paths: HashMap<SqPackArchiveId, PathBuf>,

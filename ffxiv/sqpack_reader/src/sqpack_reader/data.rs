@@ -8,7 +8,7 @@ use tokio::sync::Mutex;
 use util::{read_and_parse, ReadExt};
 
 use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
-use crate::common::decode_block_into;
+use crate::raw_file::SqPackRawFile;
 
 pub struct SqPackData {
     file: Mutex<File>,
@@ -23,6 +23,18 @@ impl SqPackData {
     }
 
     pub async fn read(&self, offset: u64) -> io::Result<Vec<u8>> {
+        let raw = self.read_raw(offset).await?;
+
+        Ok(raw.into_decoded())
+    }
+
+    pub async fn read_as_compressed(&self, offset: u64) -> io::Result<Vec<u8>> {
+        let raw = self.read_raw(offset).await?;
+
+        Ok(raw.into_compressed())
+    }
+
+    async fn read_raw(&self, offset: u64) -> io::Result<SqPackRawFile> {
         let mut file = self.file.lock().await;
 
         let file_header = read_and_parse!(file, offset, FileHeader).await?;
@@ -33,18 +45,18 @@ impl SqPackData {
         }
     }
 
-    async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+    async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
         let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameInfo).await?;
 
-        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
+        let mut blocks = Vec::with_capacity(frame_headers.len());
         for frame_header in frame_headers {
             let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
-            let block_data = file.read_bytes(offset, frame_header.block_size as usize).await?;
+            let block = file.read_bytes(offset, frame_header.block_size as usize).await?;
 
-            decode_block_into(&block_data, &mut result);
+            blocks.push(block);
         }
 
-        Ok(result)
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Vec::new(), blocks))
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
@@ -66,23 +78,13 @@ impl SqPackData {
         Ok(file.read_bytes(base_offset, total_size).await?)
     }
 
-    fn decode_contiguous_blocks_into(block_data: Vec<u8>, block_sizes: &[u16], mut result: &mut Vec<u8>) {
-        let mut offset = 0usize;
-
-        for &block_size in block_sizes {
-            decode_block_into(&block_data[offset..offset + block_size as usize], &mut result);
-
-            offset += block_size as usize;
-        }
-    }
-
-    async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+    async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
         let frame_info = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameInfo).await?;
-        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
 
         // header
-        result.extend(&frame_info.number_of_meshes.to_le_bytes());
-        result.extend(&frame_info.number_of_materials.to_le_bytes());
+        let mut header = Vec::with_capacity(std::mem::size_of::<u16>() * 2);
+        header.extend(&frame_info.number_of_meshes.to_le_bytes());
+        header.extend(&frame_info.number_of_materials.to_le_bytes());
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
@@ -90,22 +92,24 @@ impl SqPackData {
 
         let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
         let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-        Self::decode_contiguous_blocks_into(block_data, &block_sizes, &mut result);
 
-        Ok(result)
+        Ok(SqPackRawFile::from_contiguous_block(
+            file_header.uncompressed_size,
+            header,
+            block_data,
+            block_sizes,
+        ))
     }
 
-    async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<Vec<u8>> {
+    async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
         let frame_infos = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, ImageFrameInfo).await?;
         let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.frame_count as u64 * ImageFrameInfo::SIZE as u64;
 
-        let mut result = Vec::with_capacity(file_header.uncompressed_size as usize);
-
-        let additional_header = file
+        let header = file
             .read_bytes(base_offset + file_header.header_length as u64, frame_infos[0].block_offset as usize)
             .await?;
-        result.extend(additional_header);
 
+        let mut contiguous_blocks = Vec::with_capacity(frame_infos.len());
         for frame_info in frame_infos {
             let block_sizes = Self::read_block_sizes(
                 file,
@@ -116,9 +120,14 @@ impl SqPackData {
 
             let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
             let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
-            Self::decode_contiguous_blocks_into(block_data, &block_sizes, &mut result);
+
+            contiguous_blocks.push((block_data, block_sizes));
         }
 
-        Ok(result)
+        Ok(SqPackRawFile::from_contiguous_blocks(
+            file_header.uncompressed_size,
+            header,
+            contiguous_blocks,
+        ))
     }
 }

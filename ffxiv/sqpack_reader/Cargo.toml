@@ -19,6 +19,7 @@ crc32fast = { version = "^1.2.0", default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }
 log = { version = "^0.4", default-features = false }
 async-trait = { version = "^0.1.24", default-features = false }
+bytes = { version = "^0.5.4", default-features = false }
 util = { version = "^0.1", default-features = false, path = "../../util" }
 
 tokio = { version = "^0.2.11", features = ["fs", "sync"], default-features = false, optional = true }

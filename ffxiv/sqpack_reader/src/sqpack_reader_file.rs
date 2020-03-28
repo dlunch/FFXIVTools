@@ -2,9 +2,10 @@ use std::io;
 
 use async_trait::async_trait;
 
-use crate::common::{decode_compressed_data, SqPackFileReference};
 use crate::file_provider::FileProvider;
 use crate::package::Package;
+use crate::raw_file::SqPackRawFile;
+use crate::reference::SqPackFileReference;
 
 pub struct SqPackReaderFile {
     provider: Box<dyn FileProvider>,
@@ -26,6 +27,12 @@ impl Package for SqPackReaderFile {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let data = self.provider.read_file(reference).await?;
 
-        Ok(decode_compressed_data(&data))
+        Ok(SqPackRawFile::from_compressed_file(data).into_decoded())
+    }
+
+    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+        let result = self.provider.read_file(reference).await?;
+
+        Ok(Vec::from(&result[..]))
     }
 }

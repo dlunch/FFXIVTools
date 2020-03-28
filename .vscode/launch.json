@@ -26,16 +26,35 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug integration test 'read_test_file'",
+      "name": "Debug integration test 'read_as_compressed_test'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--test=read_test_file",
+          "--test=read_as_compressed_test",
           "--package=sqpack_reader"
         ],
         "filter": {
-          "name": "read_test_file",
+          "name": "read_as_compressed_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'read_file_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=read_file_test",
+          "--package=sqpack_reader"
+        ],
+        "filter": {
+          "name": "read_file_test",
           "kind": "test"
         }
       },

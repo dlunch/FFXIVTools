@@ -6,7 +6,7 @@ use log::debug;
 
 use super::data::SqPackData;
 use super::index::SqPackIndex;
-use crate::common::SqPackFileReference;
+use crate::reference::SqPackFileReference;
 
 pub struct SqPackArchive {
     pub index: SqPackIndex,
@@ -34,5 +34,14 @@ impl SqPackArchive {
         let offset = (file_offset & 0xffff_fff0) << 3;
 
         Ok(self.data[dat_index as usize].read(offset as u64).await?)
+    }
+
+    pub async fn read_as_compressed(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+        let file_offset = self.index.find_offset(reference)?;
+
+        let dat_index = (file_offset & 0x0f) >> 1;
+        let offset = (file_offset & 0xffff_fff0) << 3;
+
+        Ok(self.data[dat_index as usize].read_as_compressed(offset as u64).await?)
     }
 }
