@@ -45,7 +45,7 @@ impl Ex {
         Some(
             self.data
                 .all(language)?
-                .map(|x| (x.0, self.to_row(x.1)))
+                .map(|(row_id, row_data)| (row_id, self.to_row(row_data)))
                 .collect::<BTreeMap<u32, ExRow>>(),
         )
     }
