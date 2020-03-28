@@ -31,14 +31,14 @@ impl ExdMap {
 
     pub fn index(&self, index: u32, language: Language) -> Option<&[u8]> {
         let items = self.data.get(&language)?;
-        let item = items.iter().find(|x| x.0.start <= index && index < x.0.start + x.0.count)?;
+        let (_, ex_data) = items.iter().find(|(page, _)| page.start <= index && index < page.start + page.count)?;
 
-        item.1.index(index)
+        ex_data.index(index)
     }
 
     pub fn all(&self, language: Language) -> Option<impl Iterator<Item = (u32, &[u8])>> {
         let items = self.data.get(&language)?;
 
-        Some(items.iter().flat_map(|x| x.1.all()))
+        Some(items.iter().flat_map(|(_, ex_data)| ex_data.all()))
     }
 }
