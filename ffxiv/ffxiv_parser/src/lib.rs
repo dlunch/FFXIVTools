@@ -1,6 +1,9 @@
 mod ex;
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+use serde_repr::Deserialize_repr;
+
+#[derive(Deserialize_repr, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[repr(u8)]
 pub enum Language {
     None = 0,
     Japanese = 1,
