@@ -65,7 +65,8 @@ pub struct SqPackRawFile {
 }
 
 impl SqPackRawFile {
-    pub fn from_compressed_file(data: Bytes) -> Self {
+    pub fn from_compressed_file(data: Vec<u8>) -> Self {
+        let data = Bytes::from(data);
         let file_header = parse!(&data, CompressedFileHeader);
 
         let header = data.slice(CompressedFileHeader::SIZE..CompressedFileHeader::SIZE + file_header.header_size as usize);
