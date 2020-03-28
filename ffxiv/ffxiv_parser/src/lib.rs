@@ -1,8 +1,8 @@
 mod ex;
 
-use serde_repr::Deserialize_repr;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
-#[derive(Deserialize_repr, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Serialize_repr, Deserialize_repr, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 #[repr(u8)]
 pub enum Language {
     None = 0,
