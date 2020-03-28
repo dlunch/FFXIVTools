@@ -2,7 +2,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use log::debug;
 
 use super::FileProvider;
@@ -42,10 +41,10 @@ impl FileProviderFile {
 
 #[async_trait]
 impl FileProvider for FileProviderFile {
-    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
+    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
         let path = self.find_path(reference)?;
         debug!("Reading {}", path.to_str().unwrap());
 
-        Ok(Bytes::from(tokio::fs::read(path).await?))
+        Ok(tokio::fs::read(path).await?)
     }
 }

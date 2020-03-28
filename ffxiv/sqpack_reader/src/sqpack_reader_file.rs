@@ -31,8 +31,6 @@ impl Package for SqPackReaderFile {
     }
 
     async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
-        let result = self.provider.read_file(reference).await?;
-
-        Ok(Vec::from(&result[..]))
+        self.provider.read_file(reference).await
     }
 }
