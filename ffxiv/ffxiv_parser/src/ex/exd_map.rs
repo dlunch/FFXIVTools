@@ -16,12 +16,12 @@ pub struct ExdMap {
 
 impl ExdMap {
     pub async fn new(package: &dyn Package, name: &str, pages: &[ExhPage], languages: &[Language]) -> io::Result<Self> {
-        let futures = languages.iter().map(|&x| {
+        let futures = languages.iter().map(|&language| {
             let futures = pages
                 .iter()
-                .map(|&y| ExData::new(package, name, y.start, x).map(move |z| Ok::<_, io::Error>((y, z?))));
+                .map(|&page| ExData::new(package, name, page.start, language).map(move |ex_data| Ok::<_, io::Error>((page, ex_data?))));
 
-            join_all(futures).map(move |y| (x, y.into_iter().filter_map(Result::ok).collect::<Vec<_>>()))
+            join_all(futures).map(move |data| (language, data.into_iter().filter_map(Result::ok).collect::<Vec<_>>()))
         });
 
         let data = join_all(futures).await.into_iter().collect::<HashMap<_, _>>();
