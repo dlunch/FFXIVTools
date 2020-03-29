@@ -74,13 +74,14 @@ async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, Strin
     let (version, language, ex_names) = param.into_inner();
 
     let package = find_package(&context, &version)?;
-    let mut result = BTreeMap::new();
-
-    for ex_name in ex_names.split('.') {
-        let item = ex_to_json(package, Some(language), &ex_name).await?;
-
-        result.insert(ex_name.to_owned(), item);
-    }
+    let result = future::join_all(
+        ex_names
+            .split('.')
+            .map(|ex_name| ex_to_json(package, Some(language), &ex_name).map(move |data| Ok((ex_name.to_owned(), data?)))),
+    )
+    .await
+    .into_iter()
+    .collect::<Result<BTreeMap<_, _>>>()?;
 
     Ok(web::Json(result))
 }
@@ -97,22 +98,25 @@ async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> 
 }
 
 async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> Result<impl Responder> {
+    let (paths,) = param.into_inner();
+
+    let hashes = paths
+        .split('.')
+        .map(|path| {
+            let splitted = path
+                .split('-')
+                .map(|x| u32::from_str_radix(x, 16))
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| error::ErrorBadRequest("Invalid path"))?;
+            if splitted.len() != 3 {
+                Err(error::ErrorBadRequest("Invalid path"))
+            } else {
+                Ok(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]))
+            }
+        })
+        .collect::<Result<Vec<_>>>()?;
+
     const BULK_ITEM_HEADER_SIZE: u64 = (std::mem::size_of::<u32>() as u64) * 4;
-
-    let paths = param.0.split('.').collect::<Vec<_>>();
-    let mut hashes = Vec::with_capacity(paths.len());
-    for path in paths {
-        let splitted = path
-            .split('-')
-            .map(|x| u32::from_str_radix(x, 16))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| error::ErrorBadRequest("Invalid path"))?;
-        if splitted.len() < 3 {
-            return Err(error::ErrorBadRequest("Invalid path"));
-        }
-        hashes.push(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]));
-    }
-
     let total_size = future::join_all(hashes.iter().map(|hash| {
         context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
             Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE),
