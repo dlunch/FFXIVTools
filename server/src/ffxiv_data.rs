@@ -24,12 +24,6 @@ lazy_static! {
     static ref CONTEXT: Context = Context::new().unwrap();
 }
 
-async fn get_exl(context: Context) -> Result<impl Responder> {
-    let exl = ExList::new(&context.all_package).await?;
-
-    Ok(web::Json(exl.ex_names))
-}
-
 async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<serde_json::Value> {
     let ex = Ex::new(package, &ex_name).await?;
 
@@ -56,6 +50,14 @@ fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Pack
         .packages
         .get(version)
         .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No such package"))?)
+}
+
+/// routes
+
+async fn get_exl(context: Context) -> Result<impl Responder> {
+    let exl = ExList::new(&context.all_package).await?;
+
+    Ok(web::Json(exl.ex_names))
 }
 
 async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<impl Responder> {
