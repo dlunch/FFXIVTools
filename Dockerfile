@@ -2,9 +2,9 @@ FROM dlunch/ffxivtools:builder as builder
 FROM rust:stretch
 
 WORKDIR /src
-COPY . .
 COPY --from=builder /src /src
 COPY --from=builder /usr/local/cargo /usr/local/cargo
+COPY . .
 
 RUN apt-get update
 RUN apt-get install cmake -y
