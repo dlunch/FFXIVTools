@@ -5,6 +5,7 @@ use std::io;
 
 use actix_web::{error, web, HttpResponse, Responder, Result};
 use bytes::Bytes;
+use futures::{future, future::FutureExt};
 use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
 use serde::Deserialize;
@@ -100,7 +101,6 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
 
     let paths = param.0.split('.').collect::<Vec<_>>();
     let mut hashes = Vec::with_capacity(paths.len());
-    let mut total_size = 0u64;
     for path in paths {
         let splitted = path
             .split('-')
@@ -110,10 +110,20 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         if splitted.len() < 3 {
             return Err(error::ErrorBadRequest("Invalid path"));
         }
-        let hash = SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]);
-        total_size += context.all_package.read_compressed_size_by_hash(&hash).await.unwrap() + BULK_ITEM_HEADER_SIZE;
-        hashes.push(hash);
+        hashes.push(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]));
     }
+
+    let total_size = future::join_all(hashes.iter().map(|hash| {
+        context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
+            Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE),
+            None => Err(error::ErrorNotFound("No such file")),
+        })
+    }))
+    .await
+    .into_iter()
+    .collect::<Result<Vec<_>>>()?
+    .into_iter()
+    .sum();
 
     let stream = gen!({
         for hash in hashes {
