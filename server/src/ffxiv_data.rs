@@ -84,13 +84,11 @@ async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, Strin
     .collect::<Result<Vec<(_, _)>>>()?;
 
     let stream = gen!({
-        yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"{")));
-        let first = results[0].0.to_owned();
-        for (ex_name, result) in results {
-            if ex_name != first {
-                yield_!(Result::<Bytes>::Ok(Bytes::from_static(b",")));
+        yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"{\"")));
+        for (i, (ex_name, result)) in results.into_iter().enumerate() {
+            if i != 0 {
+                yield_!(Result::<Bytes>::Ok(Bytes::from_static(b",\"")));
             }
-            yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"\"")));
             yield_!(Result::<Bytes>::Ok(Bytes::from(ex_name)));
             yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"\":")));
             yield_!(Result::<Bytes>::Ok(Bytes::from(result)));
