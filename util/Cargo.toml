@@ -9,9 +9,10 @@ doctest = false
 
 [features]
 default = []
-std = ["tokio"]
+std = ["tokio", "bytes"]
 
 [dependencies]
 async-trait = { version = "^0.1.24", default-features = false }
 
+bytes = { version = "^0.5.4", default-features = false, optional = true }
 tokio = { version = "^0.2.11", features = ["fs"], default-features = false, optional = true }

@@ -1,6 +1,7 @@
 use std::io;
 use std::path::Path;
 
+use bytes::Bytes;
 use futures::future;
 use log::debug;
 
@@ -27,7 +28,7 @@ impl SqPackArchive {
         Ok(Self { index, data })
     }
 
-    pub async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;
@@ -36,7 +37,7 @@ impl SqPackArchive {
         Ok(self.data[dat_index as usize].read(offset as u64).await?)
     }
 
-    pub async fn read_as_compressed(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    pub async fn read_as_compressed(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let file_offset = self.index.find_offset(reference)?;
 
         let dat_index = (file_offset & 0x0f) >> 1;

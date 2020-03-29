@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::io;
 
 use actix_web::{error, web, HttpResponse, Responder, Result};
-use bytes::Bytes;
+use bytes::{BufMut, Bytes, BytesMut};
 use futures::{future, future::FutureExt};
 use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
@@ -129,14 +129,14 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         for hash in hashes {
             let data = context.all_package.read_as_compressed_by_hash(&hash).await.unwrap();
 
-            let mut header = Vec::with_capacity(BULK_ITEM_HEADER_SIZE as usize);
-            header.extend(&hash.folder.to_le_bytes());
-            header.extend(&hash.file.to_le_bytes());
-            header.extend(&hash.path.to_le_bytes());
-            header.extend(&(data.len() as u32).to_le_bytes());
+            let mut header = BytesMut::with_capacity(BULK_ITEM_HEADER_SIZE as usize);
+            header.put_u32_le(hash.folder);
+            header.put_u32_le(hash.file);
+            header.put_u32_le(hash.path);
+            header.put_u32_le(data.len() as u32);
 
-            yield_!(Result::<Bytes>::Ok(Bytes::from(header)));
-            yield_!(Result::<Bytes>::Ok(Bytes::from(data)));
+            yield_!(Result::<Bytes>::Ok(header.freeze()));
+            yield_!(Result::<Bytes>::Ok(data));
         }
     });
 
