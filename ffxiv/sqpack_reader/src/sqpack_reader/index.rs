@@ -42,14 +42,14 @@ impl SqPackIndex {
     pub fn find_offset(&self, reference: &SqPackFileReference) -> io::Result<u32> {
         let folder_index = self
             .folder_segments
-            .binary_search_by_key(&reference.folder_hash, |x| x.folder_hash)
+            .binary_search_by_key(&reference.hash.folder, |x| x.folder_hash)
             .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such folder"))?;
         let folder = &self.folder_segments[folder_index];
 
         let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
         let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
         let file_index = self.file_segments[file_begin..file_end]
-            .binary_search_by_key(&reference.file_hash, |x| x.file_hash)
+            .binary_search_by_key(&reference.hash.file, |x| x.file_hash)
             .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such file"))?;
         let file = &self.file_segments[file_index + file_begin];
 
