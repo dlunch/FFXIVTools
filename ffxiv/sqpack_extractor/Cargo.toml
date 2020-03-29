@@ -1,0 +1,11 @@
+[package]
+name = "sqpack_extractor"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[features]
+
+[dependencies]
+clap = { version = "^2.33", default-features = false }
+sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
