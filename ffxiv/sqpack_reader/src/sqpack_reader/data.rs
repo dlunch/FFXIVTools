@@ -78,7 +78,6 @@ impl SqPackData {
     async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
         let frame_info = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameInfo).await?;
 
-        // header
         let mut header = BytesMut::with_capacity(std::mem::size_of::<u16>() * 2);
         header.put_u16_le(frame_info.number_of_meshes);
         header.put_u16_le(frame_info.number_of_materials);
