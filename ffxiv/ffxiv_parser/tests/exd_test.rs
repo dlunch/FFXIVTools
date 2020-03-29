@@ -3,7 +3,7 @@ mod tests {
     use std::io;
 
     use ffxiv_parser::Ex;
-    use sqpack_reader::{FileProviderWeb, SqPackReaderFile};
+    use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
     #[tokio::test]
     async fn test_exd() -> io::Result<()> {
@@ -11,8 +11,8 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderFile::new(provider)?;
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let pack = SqPackReaderExtractedFile::new(provider)?;
 
         let ex = Ex::new(&pack, "classjob").await?;
         let languages = ex.languages();

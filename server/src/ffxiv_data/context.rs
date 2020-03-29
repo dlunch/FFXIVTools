@@ -10,7 +10,7 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use log::info;
 
-use sqpack_reader::SqPackReaderFile;
+use sqpack_reader::SqPackReaderExtractedFile;
 
 const REGIONS: [&str; 3] = ["kor", "chn", "global"];
 
@@ -19,8 +19,8 @@ lazy_static! {
 }
 
 pub struct ContextImpl {
-    pub all_package: SqPackReaderFile,
-    pub packages: HashMap<String, SqPackReaderFile>,
+    pub all_package: SqPackReaderExtractedFile,
+    pub packages: HashMap<String, SqPackReaderExtractedFile>,
 }
 
 impl ContextImpl {
@@ -48,13 +48,13 @@ impl ContextImpl {
             .map(|(path, key)| {
                 Ok((
                     key.to_owned(),
-                    sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_path(&path))?,
+                    sqpack_reader::SqPackReaderExtractedFile::new(sqpack_reader::ExtractedFileProviderLocal::with_path(&path))?,
                 ))
             })
             .collect::<io::Result<HashMap<_, _>>>()?;
 
         let all_paths = packs.into_iter().map(|(path, _)| path).collect::<Vec<_>>();
-        let all_package = sqpack_reader::SqPackReaderFile::new(sqpack_reader::FileProviderFile::with_paths(all_paths))?;
+        let all_package = sqpack_reader::SqPackReaderExtractedFile::new(sqpack_reader::ExtractedFileProviderLocal::with_paths(all_paths))?;
 
         Ok(Self { all_package, packages })
     }

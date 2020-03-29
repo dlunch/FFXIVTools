@@ -4,7 +4,7 @@ mod tests {
     use std::io;
     use std::path::Path;
 
-    use sqpack_reader::{FileProviderFile, Package, SqPackReader, SqPackReaderFile};
+    use sqpack_reader::{ExtractedFileProviderLocal, Package, SqPackReader, SqPackReaderExtractedFile};
 
     #[tokio::test]
     #[cfg(unix)]
@@ -17,7 +17,7 @@ mod tests {
             let pack = SqPackReader::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack"))?;
             #[cfg(unix)]
             let pack = SqPackReader::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack"))?;
-            let pack_file = SqPackReaderFile::new(FileProviderFile::with_path(Path::new("/mnt/i/FFXIVData/data/kor_510")))?;
+            let pack_file = SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_510")))?;
 
             let data = pack.read_as_compressed("exd/item.exh").await?;
             let data_file = pack_file.read_as_compressed("exd/item.exh").await?;
