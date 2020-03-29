@@ -36,8 +36,9 @@ impl ContextImpl {
                 Some((path, split.next()?.to_owned(), split.next()?.to_owned()))
             })
             .filter_map(|x| x)
-            .sorted_by_key(|(_, region, _)| REGIONS.iter().position(|x| x == region))
+            .sorted_by_key(|(_, region, version)| REGIONS.iter().position(|x| x == region).unwrap() * 1000 + version.parse::<usize>().unwrap())
             .map(|(path, region, version)| (path, format!("{}_{}", region, version)))
+            .rev()
             .collect::<Vec<_>>();
 
         info!("mounting {:?}", packs.iter().map(|(_, key)| key).collect::<Vec<_>>());
