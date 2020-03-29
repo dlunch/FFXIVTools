@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 use std::io;
 
 use actix_web::{error, web, HttpResponse, Responder, Result};
-use futures::{future, future::TryFutureExt};
-use itertools::Itertools;
+use bytes::Bytes;
+use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde_json;
@@ -96,42 +96,44 @@ async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> 
 }
 
 async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> Result<impl Responder> {
+    const BULK_ITEM_HEADER_SIZE: u64 = (std::mem::size_of::<u32>() as u64) * 4;
+
     let paths = param.0.split('.').collect::<Vec<_>>();
     let mut hashes = Vec::with_capacity(paths.len());
-    let mut futures = Vec::with_capacity(paths.len());
-
+    let mut total_size = 0u64;
     for path in paths {
         let splitted = path
             .split('-')
-            .map(|x| x.parse::<u32>())
+            .map(|x| u32::from_str_radix(x, 16))
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| error::ErrorBadRequest("Invalid path"))?;
         if splitted.len() < 3 {
             return Err(error::ErrorBadRequest("Invalid path"));
         }
-        hashes.push(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]));
+        let hash = SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]);
+        total_size += context.all_package.read_compressed_size_by_hash(&hash).await.unwrap() + BULK_ITEM_HEADER_SIZE;
+        hashes.push(hash);
     }
 
-    for hash in &hashes {
-        futures.push(context.all_package.read_as_compressed_by_hash(hash).map_ok(move |data| (hash, data)));
-    }
+    let stream = gen!({
+        for hash in hashes {
+            let data = context.all_package.read_as_compressed_by_hash(&hash).await.unwrap();
 
-    let result = future::join_all(futures)
-        .await
-        .into_iter()
-        .filter_map(Result::ok)
-        .map(|(hash, data)| {
-            let mut header = Vec::with_capacity(std::mem::size_of::<u32>() * 4);
+            let mut header = Vec::with_capacity(BULK_ITEM_HEADER_SIZE as usize);
             header.extend(&hash.folder.to_le_bytes());
             header.extend(&hash.file.to_le_bytes());
             header.extend(&hash.path.to_le_bytes());
             header.extend(&(data.len() as u32).to_le_bytes());
 
-            header.into_iter().chain(data.into_iter()).collect::<Vec<u8>>()
-        })
-        .concat();
+            yield_!(Result::<Bytes>::Ok(Bytes::from(header)));
+            yield_!(Result::<Bytes>::Ok(Bytes::from(data)));
+        }
+    });
 
-    Ok(HttpResponse::Ok().content_type("application/octet-stream").body(result))
+    Ok(HttpResponse::Ok()
+        .content_type("application/octet-stream")
+        .content_length(total_size)
+        .streaming(stream))
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
