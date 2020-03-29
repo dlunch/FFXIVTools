@@ -19,6 +19,14 @@ impl SqPackFileHash {
         Self { path, folder, file }
     }
 
+    pub fn from_raw_hash(path_hash: u32, folder_hash: u32, file_hash: u32) -> Self {
+        Self {
+            path: path_hash,
+            folder: folder_hash,
+            file: file_hash,
+        }
+    }
+
     fn hash(value: &str) -> u32 {
         let mut hasher = crc32fast::Hasher::new();
         hasher.update(value.as_bytes());

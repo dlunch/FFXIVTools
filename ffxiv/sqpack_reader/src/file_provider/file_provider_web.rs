@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use log::debug;
 
 use super::FileProvider;
-use crate::reference::SqPackFileReference;
+use crate::reference::SqPackFileHash;
 
 pub struct FileProviderWeb {
     base_uri: String,
@@ -17,11 +17,8 @@ impl FileProviderWeb {
         }
     }
 
-    async fn fetch(&self, reference: &SqPackFileReference) -> reqwest::Result<Vec<u8>> {
-        let uri = format!(
-            "{}{}/{}/{}",
-            self.base_uri, reference.hash.folder, reference.hash.file, reference.hash.path,
-        );
+    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
+        let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path,);
 
         debug!("Fetching {}", uri);
 
@@ -32,8 +29,8 @@ impl FileProviderWeb {
 
 #[async_trait]
 impl FileProvider for FileProviderWeb {
-    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
-        self.fetch(reference).await.map_err(|x| {
+    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>> {
+        self.fetch(hash).await.map_err(|x| {
             debug!("Error downloading file");
 
             io::Error::new(io::ErrorKind::NotFound, x.to_string())

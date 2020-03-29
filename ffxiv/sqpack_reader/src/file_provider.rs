@@ -8,9 +8,9 @@ use std::io;
 
 use async_trait::async_trait;
 
-use crate::reference::SqPackFileReference;
+use crate::reference::SqPackFileHash;
 
 #[async_trait]
 pub trait FileProvider: Sync + Send {
-    async fn read_file(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>>;
+    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>>;
 }
