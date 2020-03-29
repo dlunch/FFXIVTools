@@ -27,7 +27,7 @@ lazy_static! {
     static ref CONTEXT: Context = Context::new().unwrap();
 }
 
-async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<serde_json::Value> {
+async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String> {
     let ex = Ex::new(package, &ex_name).await?;
 
     let languages = if let Some(language) = language {
@@ -45,7 +45,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
 
     let result = languages.iter().map(|&x| (x as u32, ex.all(x).unwrap())).collect::<BTreeMap<_, _>>();
 
-    Ok(serde_json::to_value(result)?)
+    Ok(serde_json::to_string(&result)?)
 }
 
 fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Package> {
@@ -67,23 +67,38 @@ async fn get_ex(context: Context, param: web::Path<GetExParameter>) -> Result<im
     let package = find_package(&context, &param.version)?;
     let result = ex_to_json(package, param.language, &param.ex_name).await?;
 
-    Ok(web::Json(result))
+    Ok(HttpResponse::Ok().content_type("application/json").body(result))
 }
 
 async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, String)>) -> Result<impl Responder> {
     let (version, language, ex_names) = param.into_inner();
 
     let package = find_package(&context, &version)?;
-    let result = future::join_all(
+    let results = future::join_all(
         ex_names
             .split('.')
             .map(|ex_name| ex_to_json(package, Some(language), &ex_name).map(move |data| Ok((ex_name.to_owned(), data?)))),
     )
     .await
     .into_iter()
-    .collect::<Result<BTreeMap<_, _>>>()?;
+    .collect::<Result<Vec<(_, _)>>>()?;
 
-    Ok(web::Json(result))
+    let stream = gen!({
+        yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"{")));
+        let first = results[0].0.to_owned();
+        for (ex_name, result) in results {
+            if ex_name != first {
+                yield_!(Result::<Bytes>::Ok(Bytes::from_static(b",")));
+            }
+            yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"\"")));
+            yield_!(Result::<Bytes>::Ok(Bytes::from(ex_name)));
+            yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"\":")));
+            yield_!(Result::<Bytes>::Ok(Bytes::from(result)));
+        }
+        yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"}")));
+    });
+
+    Ok(HttpResponse::Ok().content_type("application/json").streaming(stream))
 }
 
 async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> Result<impl Responder> {
