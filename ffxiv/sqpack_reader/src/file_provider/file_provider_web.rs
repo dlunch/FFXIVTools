@@ -20,7 +20,7 @@ impl FileProviderWeb {
     async fn fetch(&self, reference: &SqPackFileReference) -> reqwest::Result<Vec<u8>> {
         let uri = format!(
             "{}{}/{}/{}",
-            self.base_uri, reference.folder_hash, reference.file_hash, reference.path_hash,
+            self.base_uri, reference.hash.folder, reference.hash.file, reference.hash.path,
         );
 
         debug!("Fetching {}", uri);

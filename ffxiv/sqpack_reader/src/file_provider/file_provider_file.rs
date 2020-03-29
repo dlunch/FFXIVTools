@@ -26,15 +26,15 @@ impl FileProviderFile {
         for path in &self.base_dirs {
             let mut path = path.clone();
 
-            path.push(reference.folder_hash.to_string());
-            path.push(reference.file_hash.to_string());
+            path.push(reference.hash.folder.to_string());
+            path.push(reference.hash.file.to_string());
 
             if path.exists() {
                 return Ok(path);
             }
         }
 
-        debug!("No such file {}/{}", reference.folder_hash, reference.file_hash);
+        debug!("No such file {}/{}", reference.hash.folder, reference.hash.file);
         Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
     }
 }
