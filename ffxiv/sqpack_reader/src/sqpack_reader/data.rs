@@ -2,6 +2,7 @@ use std::convert::TryInto;
 use std::io;
 use std::path::Path;
 
+use bytes::{BufMut, Bytes, BytesMut};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
@@ -22,13 +23,13 @@ impl SqPackData {
         Ok(Self { file: Mutex::new(file) })
     }
 
-    pub async fn read(&self, offset: u64) -> io::Result<Vec<u8>> {
+    pub async fn read(&self, offset: u64) -> io::Result<Bytes> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_decoded())
     }
 
-    pub async fn read_as_compressed(&self, offset: u64) -> io::Result<Vec<u8>> {
+    pub async fn read_as_compressed(&self, offset: u64) -> io::Result<Bytes> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_compressed())
@@ -56,7 +57,7 @@ impl SqPackData {
             blocks.push(block);
         }
 
-        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Vec::new(), blocks))
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Bytes::new(), blocks))
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
@@ -72,7 +73,7 @@ impl SqPackData {
             .collect::<Vec<_>>())
     }
 
-    async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Vec<u8>> {
+    async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
         let total_size = block_sizes.iter().map(|&x| x as usize).sum();
 
         Ok(file.read_bytes(base_offset, total_size).await?)
@@ -82,9 +83,9 @@ impl SqPackData {
         let frame_info = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameInfo).await?;
 
         // header
-        let mut header = Vec::with_capacity(std::mem::size_of::<u16>() * 2);
-        header.extend(&frame_info.number_of_meshes.to_le_bytes());
-        header.extend(&frame_info.number_of_materials.to_le_bytes());
+        let mut header = BytesMut::with_capacity(std::mem::size_of::<u16>() * 2);
+        header.put_u16_le(frame_info.number_of_meshes);
+        header.put_u16_le(frame_info.number_of_materials);
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
@@ -95,7 +96,7 @@ impl SqPackData {
 
         Ok(SqPackRawFile::from_contiguous_block(
             file_header.uncompressed_size,
-            header,
+            header.freeze(),
             block_data,
             block_sizes,
         ))

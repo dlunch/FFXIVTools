@@ -1,6 +1,7 @@
 use std::io;
 
 use async_trait::async_trait;
+use bytes::Bytes;
 use log::debug;
 
 use super::FileProvider;
@@ -17,19 +18,18 @@ impl FileProviderWeb {
         }
     }
 
-    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
+    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Bytes> {
         let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path,);
 
         debug!("Fetching {}", uri);
 
-        let result = reqwest::get(&uri).await?.bytes().await?;
-        Ok(Vec::from(&result[..]))
+        Ok(reqwest::get(&uri).await?.bytes().await?)
     }
 }
 
 #[async_trait]
 impl FileProvider for FileProviderWeb {
-    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>> {
+    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
         self.fetch(hash).await.map_err(|x| {
             debug!("Error downloading file");
 

@@ -1,6 +1,7 @@
 use std::io;
 
 use async_trait::async_trait;
+use bytes::Bytes;
 
 use crate::file_provider::FileProvider;
 use crate::package::Package;
@@ -21,7 +22,7 @@ impl SqPackReaderFile {
         })
     }
 
-    pub async fn read_as_compressed_by_hash(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>> {
+    pub async fn read_as_compressed_by_hash(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
         self.provider.read_file(hash).await
     }
 
@@ -32,13 +33,13 @@ impl SqPackReaderFile {
 
 #[async_trait]
 impl Package for SqPackReaderFile {
-    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let data = self.read_as_compressed_by_hash(&reference.hash).await?;
 
         Ok(SqPackRawFile::from_compressed_file(data).into_decoded())
     }
 
-    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Vec<u8>> {
+    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         self.read_as_compressed_by_hash(&reference.hash).await
     }
 }

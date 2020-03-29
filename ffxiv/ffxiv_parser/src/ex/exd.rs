@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::io;
 
+use bytes::Bytes;
 use sqpack_reader::Package;
 use util::parse;
 
@@ -8,7 +9,7 @@ use super::definition::{ExdData, ExdHeader, ExdRow};
 use crate::Language;
 
 pub struct ExData {
-    data: Vec<u8>,
+    data: Bytes,
     offsets: BTreeMap<u32, u32>,
 }
 
