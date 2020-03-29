@@ -19,7 +19,7 @@ impl ExtractedFileProviderWeb {
     }
 
     async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Bytes> {
-        let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path,);
+        let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path);
 
         debug!("Fetching {}", uri);
 
