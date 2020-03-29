@@ -47,4 +47,15 @@ impl FileProvider for FileProviderFile {
 
         Ok(tokio::fs::read(path).await?)
     }
+
+    async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64> {
+        let path = self.find_path(hash).ok()?;
+        let metadata = tokio::fs::metadata(path).await;
+
+        if let Ok(metadata) = metadata {
+            Some(metadata.len())
+        } else {
+            None
+        }
+    }
 }

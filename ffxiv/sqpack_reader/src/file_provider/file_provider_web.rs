@@ -36,4 +36,8 @@ impl FileProvider for FileProviderWeb {
             io::Error::new(io::ErrorKind::NotFound, x.to_string())
         })
     }
+
+    async fn read_file_size(&self, _: &SqPackFileHash) -> Option<u64> {
+        None
+    }
 }

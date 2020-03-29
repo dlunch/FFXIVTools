@@ -13,4 +13,5 @@ use crate::reference::SqPackFileHash;
 #[async_trait]
 pub trait FileProvider: Sync + Send {
     async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>>;
+    async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64>;
 }

@@ -24,6 +24,10 @@ impl SqPackReaderFile {
     pub async fn read_as_compressed_by_hash(&self, hash: &SqPackFileHash) -> io::Result<Vec<u8>> {
         self.provider.read_file(hash).await
     }
+
+    pub async fn read_compressed_size_by_hash(&self, hash: &SqPackFileHash) -> Option<u64> {
+        self.provider.read_file_size(hash).await
+    }
 }
 
 #[async_trait]
