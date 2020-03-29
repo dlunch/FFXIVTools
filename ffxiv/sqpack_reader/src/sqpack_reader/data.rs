@@ -1,8 +1,7 @@
-use std::convert::TryInto;
 use std::io;
 use std::path::Path;
 
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
 use tokio::sync::Mutex;
 
@@ -66,10 +65,7 @@ impl SqPackData {
 
         Ok((0..count * item_size)
             .step_by(item_size)
-            .map(|x| {
-                let data = &block_size_data[x..x + item_size];
-                u16::from_le_bytes(data.try_into().unwrap())
-            })
+            .map(|x| block_size_data.slice(x..).get_u16_le())
             .collect::<Vec<_>>())
     }
 

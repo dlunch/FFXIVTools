@@ -1,9 +1,7 @@
 mod parse_ext;
 mod read_ext;
-mod slice_ext;
 
 pub use read_ext::ReadExt;
-pub use slice_ext::SliceByteOrderExt;
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {
     if multiple == 0 {

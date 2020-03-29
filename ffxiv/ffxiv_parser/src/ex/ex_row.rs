@@ -1,8 +1,7 @@
 use std::str;
 
+use bytes::Buf;
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
-
-use util::SliceByteOrderExt;
 
 use super::definition::{ExFieldType, ExhColumnDefinition};
 
@@ -53,8 +52,7 @@ impl<'a> ExRow<'a> {
     pub fn string(&self, index: usize) -> &str {
         debug_assert!(self.columns[index].field_type == ExFieldType::String);
 
-        let data = self.data_slice(index);
-        let str_offset = data.read_int_be::<u32>() as usize + self.row_size as usize;
+        let str_offset = self.data_slice(index).get_u32() as usize + self.row_size as usize;
 
         let bytes = &self.data[str_offset..];
         let end = bytes.iter().position(|&x| x == b'\0').unwrap();
@@ -71,7 +69,7 @@ impl<'a> ExRow<'a> {
         let data;
         if field_type_value >= packed_bool_offset {
             // packed bool
-            let packed_data = self.data_slice(index).read_int_le::<u32>();
+            let packed_data = self.data_slice(index).get_u32_le();
             let index = field_type_value - packed_bool_offset;
             data = (packed_data & (1 << index)) as u8;
         } else {
@@ -87,37 +85,37 @@ impl<'a> ExRow<'a> {
 
     pub fn int8(&self, index: usize) -> i8 {
         debug_assert!(self.columns[index].field_type == ExFieldType::Int8);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_i8()
     }
 
     pub fn uint8(&self, index: usize) -> u8 {
         debug_assert!(self.columns[index].field_type == ExFieldType::UInt8);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_u8()
     }
 
     pub fn int16(&self, index: usize) -> i16 {
         debug_assert!(self.columns[index].field_type == ExFieldType::Int16);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_i16()
     }
 
     pub fn uint16(&self, index: usize) -> u16 {
         debug_assert!(self.columns[index].field_type == ExFieldType::UInt16);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_u16()
     }
 
     pub fn int32(&self, index: usize) -> i32 {
         debug_assert!(self.columns[index].field_type == ExFieldType::Int32);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_i32()
     }
 
     pub fn uint32(&self, index: usize) -> u32 {
         debug_assert!(self.columns[index].field_type == ExFieldType::UInt32);
-        self.data_slice(index).read_int_be()
+        self.data_slice(index).get_u32()
     }
 
     pub fn float(&self, index: usize) -> f32 {
         debug_assert!(self.columns[index].field_type == ExFieldType::Float);
-        self.data_slice(index).read_float_be()
+        self.data_slice(index).get_f32()
     }
 
     pub fn quad(&self, index: usize) -> (u16, u16, u16, u16) {
@@ -125,10 +123,10 @@ impl<'a> ExRow<'a> {
         let data = self.data_slice(index);
 
         (
-            (&data[0..]).read_int_be(),
-            (&data[2..]).read_int_be(),
-            (&data[4..]).read_int_be(),
-            (&data[6..]).read_int_be(),
+            (&data[0..]).get_u16(),
+            (&data[2..]).get_u16(),
+            (&data[4..]).get_u16(),
+            (&data[6..]).get_u16(),
         )
     }
 
