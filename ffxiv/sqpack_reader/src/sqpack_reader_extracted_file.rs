@@ -3,19 +3,19 @@ use std::io;
 use async_trait::async_trait;
 use bytes::Bytes;
 
-use crate::file_provider::FileProvider;
+use crate::extracted_file_provider::ExtractedFileProvider;
 use crate::package::Package;
 use crate::raw_file::SqPackRawFile;
 use crate::reference::{SqPackFileHash, SqPackFileReference};
 
-pub struct SqPackReaderFile {
-    provider: Box<dyn FileProvider>,
+pub struct SqPackReaderExtractedFile {
+    provider: Box<dyn ExtractedFileProvider>,
 }
 
-impl SqPackReaderFile {
+impl SqPackReaderExtractedFile {
     pub fn new<T>(provider: T) -> io::Result<Self>
     where
-        T: FileProvider + 'static,
+        T: ExtractedFileProvider + 'static,
     {
         Ok(Self {
             provider: Box::new(provider),
@@ -32,7 +32,7 @@ impl SqPackReaderFile {
 }
 
 #[async_trait]
-impl Package for SqPackReaderFile {
+impl Package for SqPackReaderExtractedFile {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
         let data = self.read_as_compressed_by_hash(&reference.hash).await?;
 

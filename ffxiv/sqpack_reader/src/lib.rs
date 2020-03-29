@@ -1,13 +1,13 @@
 mod archive_id;
-mod file_provider;
+mod extracted_file_provider;
 mod package;
 mod raw_file;
 mod reference;
 mod sqpack_reader;
-mod sqpack_reader_file;
+mod sqpack_reader_extracted_file;
 
-pub use self::file_provider::{FileProviderFile, FileProviderWeb};
+pub use self::extracted_file_provider::{ExtractedFileProviderLocal, ExtractedFileProviderWeb};
 pub use self::package::Package;
 pub use self::reference::SqPackFileHash;
 pub use self::sqpack_reader::SqPackReader;
-pub use self::sqpack_reader_file::SqPackReaderFile;
+pub use self::sqpack_reader_extracted_file::SqPackReaderExtractedFile;

@@ -4,14 +4,14 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use log::debug;
 
-use super::FileProvider;
+use super::ExtractedFileProvider;
 use crate::reference::SqPackFileHash;
 
-pub struct FileProviderWeb {
+pub struct ExtractedFileProviderWeb {
     base_uri: String,
 }
 
-impl FileProviderWeb {
+impl ExtractedFileProviderWeb {
     pub fn new(base_uri: &str) -> Self {
         Self {
             base_uri: base_uri.to_owned(),
@@ -28,7 +28,7 @@ impl FileProviderWeb {
 }
 
 #[async_trait]
-impl FileProvider for FileProviderWeb {
+impl ExtractedFileProvider for ExtractedFileProviderWeb {
     async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
         self.fetch(hash).await.map_err(|x| {
             debug!("Error downloading file");

@@ -5,14 +5,14 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use log::debug;
 
-use super::FileProvider;
+use super::ExtractedFileProvider;
 use crate::reference::SqPackFileHash;
 
-pub struct FileProviderFile {
+pub struct ExtractedFileProviderLocal {
     base_dirs: Vec<PathBuf>,
 }
 
-impl FileProviderFile {
+impl ExtractedFileProviderLocal {
     pub fn with_paths(base_dirs: Vec<PathBuf>) -> Self {
         Self { base_dirs }
     }
@@ -41,7 +41,7 @@ impl FileProviderFile {
 }
 
 #[async_trait]
-impl FileProvider for FileProviderFile {
+impl ExtractedFileProvider for ExtractedFileProviderLocal {
     async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
         let path = self.find_path(hash)?;
         debug!("Reading {}", path.to_str().unwrap());

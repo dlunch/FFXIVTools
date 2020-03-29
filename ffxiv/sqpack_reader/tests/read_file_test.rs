@@ -2,7 +2,7 @@
 mod tests {
     use std::io;
 
-    use sqpack_reader::{Package, SqPackReaderFile};
+    use sqpack_reader::{Package, SqPackReaderExtractedFile};
 
     #[cfg(feature = "test_local")]
     #[tokio::test]
@@ -10,14 +10,14 @@ mod tests {
     async fn read_file_test() -> io::Result<()> {
         use std::path::Path;
 
-        use sqpack_reader::FileProviderFile;
+        use sqpack_reader::ExtractedFileProviderLocal;
 
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
         {
-            let provider = FileProviderFile::with_path(Path::new("/mnt/i/FFXIVData/data/kor_505"));
-            let pack = SqPackReaderFile::new(provider)?;
+            let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_505"));
+            let pack = SqPackReaderExtractedFile::new(provider)?;
 
             let data = pack.read_file("exd/item.exh").await?;
             assert_eq!(data[0], b'E');
@@ -28,8 +28,8 @@ mod tests {
         }
 
         {
-            let provider = FileProviderFile::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackReaderFile::new(provider)?;
+            let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
+            let pack = SqPackReaderExtractedFile::new(provider)?;
 
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await?;
             assert_eq!(data[0], 3u8);
@@ -37,8 +37,8 @@ mod tests {
         }
 
         {
-            let provider = FileProviderFile::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackReaderFile::new(provider)?;
+            let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
+            let pack = SqPackReaderExtractedFile::new(provider)?;
 
             let data = pack.read_file("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex").await?;
             assert_eq!(data[0], 0u8);
@@ -53,14 +53,14 @@ mod tests {
 
     #[tokio::test]
     async fn read_web_test() -> io::Result<()> {
-        use sqpack_reader::FileProviderWeb;
+        use sqpack_reader::ExtractedFileProviderWeb;
 
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = FileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderFile::new(provider)?;
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let pack = SqPackReaderExtractedFile::new(provider)?;
         {
             let data = pack.read_file("exd/item.exh").await?;
             assert_eq!(data[0], b'E');

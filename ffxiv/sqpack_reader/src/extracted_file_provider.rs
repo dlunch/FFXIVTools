@@ -1,8 +1,8 @@
-mod file_provider_file;
-mod file_provider_web;
+mod extracted_file_provider_local;
+mod extracted_file_provider_web;
 
-pub use file_provider_file::FileProviderFile;
-pub use file_provider_web::FileProviderWeb;
+pub use extracted_file_provider_local::ExtractedFileProviderLocal;
+pub use extracted_file_provider_web::ExtractedFileProviderWeb;
 
 use std::io;
 
@@ -12,7 +12,7 @@ use bytes::Bytes;
 use crate::reference::SqPackFileHash;
 
 #[async_trait]
-pub trait FileProvider: Sync + Send {
+pub trait ExtractedFileProvider: Sync + Send {
     async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes>;
     async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64>;
 }
