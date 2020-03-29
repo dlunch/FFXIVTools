@@ -3,13 +3,13 @@ mod context;
 use std::collections::BTreeMap;
 use std::io;
 
-use actix_web::{error, web, Responder, Result};
+use actix_web::{error, web, HttpResponse, Responder, Result};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde_json;
 
 use ffxiv_parser::{Ex, ExList, Language};
-use sqpack_reader::Package;
+use sqpack_reader::{Package, SqPackFileHash};
 
 use context::Context;
 
@@ -82,10 +82,22 @@ async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, Strin
     Ok(web::Json(result))
 }
 
+async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> Result<impl Responder> {
+    let (folder_hash, file_hash, path_hash) = param.into_inner();
+
+    let result = context
+        .all_package
+        .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
+        .await?;
+
+    Ok(HttpResponse::Ok().content_type("application/octet-stream").body(result))
+}
+
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.data(CONTEXT.clone())
         .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
         .service(web::resource("/parsed/ex/{version}/{ex_name}").route(web::get().to(get_ex)))
         .service(web::resource("/parsed/ex/{version}/{language}/{ex_name}").route(web::get().to(get_ex)))
-        .service(web::resource("/parsed/ex/bulk/{version}/{language}/{ex_names}").route(web::get().to(get_ex_bulk)));
+        .service(web::resource("/parsed/ex/bulk/{version}/{language}/{ex_names}").route(web::get().to(get_ex_bulk)))
+        .service(web::resource("/compressed/{folder_hash}/{file_hash}/{full_hash}").route(web::get().to(get_compressed)));
 }
