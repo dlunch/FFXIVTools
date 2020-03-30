@@ -136,7 +136,7 @@ impl<'a> ExRow<'a> {
     }
 }
 
-impl<'a> Serialize for ExRow<'a> {
+impl Serialize for ExRow<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -151,7 +151,7 @@ impl<'a> Serialize for ExRow<'a> {
     }
 }
 
-impl<'a> Serialize for ExRowItem<'a> {
+impl Serialize for ExRowItem<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
