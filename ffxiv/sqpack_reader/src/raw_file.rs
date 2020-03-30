@@ -87,12 +87,7 @@ impl SqPackRawFile {
         }
     }
 
-    pub fn from_blocks(uncompressed_size: u32, header: Bytes, data: Vec<Bytes>) -> Self {
-        let mut blocks = Vec::with_capacity(data.len());
-        for data in data {
-            blocks.push(data);
-        }
-
+    pub fn from_blocks(uncompressed_size: u32, header: Bytes, blocks: Vec<Bytes>) -> Self {
         Self {
             uncompressed_size,
             header,
