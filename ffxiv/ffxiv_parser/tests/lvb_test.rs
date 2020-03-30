@@ -6,7 +6,7 @@ mod tests {
     use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
     #[tokio::test]
-    async fn test_lvb() -> io::Result<()> {
+    async fn lvb_test() -> io::Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
