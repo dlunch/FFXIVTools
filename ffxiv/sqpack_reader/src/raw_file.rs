@@ -69,16 +69,18 @@ impl SqPackRawFile {
         let file_header = parse!(&data, CompressedFileHeader);
 
         let header = data.slice(CompressedFileHeader::SIZE..CompressedFileHeader::SIZE + file_header.header_size as usize);
-        let mut blocks = Vec::with_capacity(file_header.block_count as usize);
 
-        let mut offset = CompressedFileHeader::SIZE + file_header.header_size as usize;
-        for _ in 0..file_header.block_count {
-            let block_size = Self::get_block_size(&data[offset..offset + BlockHeader::SIZE]);
-            let block = data.slice(offset..offset + block_size);
-            blocks.push(block);
+        let begin = CompressedFileHeader::SIZE + file_header.header_size as usize;
+        let blocks = (0..file_header.block_count)
+            .scan(begin, |offset, _| {
+                let block_size = Self::get_block_size(&data[*offset..*offset + BlockHeader::SIZE]);
+                let block = data.slice(*offset..*offset + block_size);
 
-            offset += round_up(block_size, 4usize);
-        }
+                *offset += round_up(block_size, 4usize);
+
+                Some(block)
+            })
+            .collect::<Vec<_>>();
 
         Self {
             uncompressed_size: file_header.uncompressed_size,
@@ -96,14 +98,7 @@ impl SqPackRawFile {
     }
 
     pub fn from_contiguous_block(uncompressed_size: u32, header: Bytes, block_data: Bytes, block_sizes: Vec<u16>) -> Self {
-        let mut blocks = Vec::new();
-        let mut offset = 0usize;
-
-        for block_size in block_sizes {
-            blocks.push(block_data.slice(offset..));
-
-            offset += block_size as usize;
-        }
+        let blocks = Self::iterate_blocks(block_data, block_sizes).collect::<Vec<_>>();
 
         Self {
             uncompressed_size,
@@ -113,21 +108,10 @@ impl SqPackRawFile {
     }
 
     pub fn from_contiguous_blocks(uncompressed_size: u32, header: Bytes, contiguous_blocks: Vec<(Bytes, Vec<u16>)>) -> Self {
-        let mut blocks = Vec::with_capacity(
-            contiguous_blocks
-                .iter()
-                .map(|(_, block_sizes)| block_sizes.iter().map(|&x| x as usize).sum::<usize>())
-                .sum(),
-        );
-
-        for (block_data, block_sizes) in contiguous_blocks {
-            let mut offset = 0usize;
-
-            for block_size in block_sizes {
-                blocks.push(block_data.slice(offset..));
-                offset += block_size as usize;
-            }
-        }
+        let blocks = contiguous_blocks
+            .into_iter()
+            .flat_map(|(block_data, block_sizes)| Self::iterate_blocks(block_data, block_sizes))
+            .collect::<Vec<_>>();
 
         Self {
             uncompressed_size,
@@ -140,8 +124,8 @@ impl SqPackRawFile {
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + self.header.len());
         result.extend(self.header);
 
-        for block in &self.blocks {
-            Self::decode_block_into(block, &mut result);
+        for block in self.blocks {
+            Self::decode_block_into(&block, &mut result);
         }
 
         result.freeze()
@@ -162,6 +146,15 @@ impl SqPackRawFile {
         }
 
         result.freeze()
+    }
+
+    fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {
+        block_sizes.into_iter().scan(0usize, move |offset, block_size| {
+            let result = block_data.slice(*offset..);
+            *offset += block_size as usize;
+
+            Some(result)
+        })
     }
 
     fn get_block_size(block: &[u8]) -> usize {
