@@ -3,6 +3,8 @@ use std::str;
 use bytes::Buf;
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
 
+use util::StrExt;
+
 use super::definition::{ExFieldType, ExhColumnDefinition};
 
 pub enum ExRowItem<'a> {
@@ -54,10 +56,7 @@ impl<'a> ExRow<'a> {
 
         let str_offset = self.data_slice(index).get_u32() as usize + self.row_size as usize;
 
-        let bytes = &self.data[str_offset..];
-        let end = bytes.iter().position(|&x| x == b'\0').unwrap();
-
-        str::from_utf8(&bytes[..end]).unwrap()
+        str::from_null_terminated_utf8(&self.data[str_offset..]).unwrap()
     }
 
     pub fn bool(&self, index: usize) -> bool {

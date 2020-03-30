@@ -1,4 +1,5 @@
 mod ex;
+mod lvb;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
@@ -16,3 +17,4 @@ pub enum Language {
 }
 
 pub use ex::{Ex, ExList};
+pub use lvb::Lvb;
