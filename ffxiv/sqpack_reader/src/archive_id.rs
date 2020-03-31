@@ -9,7 +9,7 @@ pub struct SqPackArchiveId {
 }
 
 impl SqPackArchiveId {
-    pub fn with_sqpack_path(path: &Path) -> Self {
+    pub fn from_sqpack_path(path: &Path) -> Self {
         let file_name = path.file_stem().and_then(OsStr::to_str).unwrap();
         let archive_id_str = file_name.split('.').next().unwrap();
         let archive_id = u32::from_str_radix(archive_id_str, 16).unwrap();
@@ -22,7 +22,7 @@ impl SqPackArchiveId {
         Self { root, ex, part }
     }
 
-    pub fn with_file_path(path: &str) -> Self {
+    pub fn from_file_path(path: &str) -> Self {
         let path_splitted = path.split('/').collect::<Vec<_>>();
 
         let root = Self::path_to_root_index(path_splitted[0]);

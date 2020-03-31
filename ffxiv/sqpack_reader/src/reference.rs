@@ -47,7 +47,7 @@ impl SqPackFileReference {
         let path_str = path.to_ascii_lowercase();
 
         Self {
-            archive_id: SqPackArchiveId::with_file_path(&path_str),
+            archive_id: SqPackArchiveId::from_file_path(&path_str),
             hash: SqPackFileHash::new(&path_str),
             #[cfg(debug_assertions)]
             path: path_str,
