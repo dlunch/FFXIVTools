@@ -9,7 +9,7 @@ members = [
     "util",
     "web"
 ]
-default-members = ["ffxiv/model_viewer", "server", "web"]
+default-members = ["ffxiv/model_viewer", "ffxiv/sqpack_extractor", "server", "web"]
 
 [profile.release]
 panic = "abort"

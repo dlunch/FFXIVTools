@@ -32,7 +32,7 @@ impl SqPackArchiveContainer {
                 .filter(|y| y.extension().and_then(OsStr::to_str).unwrap() == "index")
         });
 
-        let archive_paths = entries.map(|x| (SqPackArchiveId::with_sqpack_path(&x), x)).collect::<HashMap<_, _>>();
+        let archive_paths = entries.map(|x| (SqPackArchiveId::from_sqpack_path(&x), x)).collect::<HashMap<_, _>>();
 
         Ok(Self {
             archive_paths,
