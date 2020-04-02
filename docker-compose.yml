@@ -1,7 +1,5 @@
 version: "3.7"
 services:
-  builder:
-    image: dlunch/ffxivtools:builder
   server:
     image: dlunch/ffxivtools:server
     volumes:
