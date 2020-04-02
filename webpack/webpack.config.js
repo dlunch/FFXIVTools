@@ -9,7 +9,9 @@ module.exports = {
   context: root,
   mode: "development",
   entry: {
-    model_viewer: "apps/model_viewer/html/model_viewer.html"
+    model_viewer: "apps/model_viewer/html/model_viewer.html",
+    translation_compare:
+      "apps/translation_compare/html/translation_compare.html"
   },
   output: {
     path: dist,
@@ -45,6 +47,10 @@ module.exports = {
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, "apps/model_viewer"),
       outDir: path.resolve(root, "apps/model_viewer/pkg")
+    }),
+    new WasmPackPlugin({
+      crateDirectory: path.resolve(root, "apps/translation_compare"),
+      outDir: path.resolve(root, "apps/translation_compare/pkg")
     })
   ]
 };
