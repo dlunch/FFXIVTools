@@ -43,8 +43,8 @@ module.exports = {
     new HtmlLoader.EntryExtractPlugin(),
 
     new WasmPackPlugin({
-      crateDirectory: "apps/model_viewer",
-      outDir: "apps/model_viewer/pkg"
+      crateDirectory: path.resolve(root, "apps/model_viewer"),
+      outDir: path.resolve(root, "apps/model_viewer/pkg")
     })
   ]
 };
