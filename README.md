@@ -1,5 +1,9 @@
 # ffxiv.dlunch.net
 
+Reimplement [ffxiv.dlunch.net](ffxiv.dlunch.net) in rust.
+
+## Main website
+
 Build
 
 ```
@@ -12,7 +16,7 @@ Devserver
 npm run devserver
 ```
 
-# Server
+## Server
 
 Run
 
@@ -27,7 +31,7 @@ Stop
 docker-compose down
 ```
 
-## Uploading server image
+### Uploading server image
 
 Execute once
 
