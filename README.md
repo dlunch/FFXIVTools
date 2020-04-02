@@ -1,6 +1,12 @@
 # ffxiv.dlunch.net
 
-Reimplement [ffxiv.dlunch.net](ffxiv.dlunch.net) in rust.
+Reimplementation of [ffxiv.dlunch.net](ffxiv.dlunch.net) in rust.
+
+# Status
+
+Nothing is working.
+
+# Build instructions
 
 ## Main website
 
