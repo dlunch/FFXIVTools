@@ -2,14 +2,14 @@
 members = [
     "libs/sqpack_reader",
     "libs/ffxiv_parser",
-    "libs/model_viewer",
+    "libs/ffxiv_renderer",
     "libs/renderer",
     "libs/util",
     "utils/sqpack_extractor",
     "server",
     "apps/model_viewer"
 ]
-default-members = ["libs/model_viewer", "utils/sqpack_extractor", "server", "apps/model_viewer"]
+default-members = ["utils/sqpack_extractor", "server", "apps/model_viewer"]
 
 [profile.release]
 panic = "abort"
