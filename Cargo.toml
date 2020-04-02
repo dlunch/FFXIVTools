@@ -8,8 +8,8 @@ members = [
     "tools/sqpack_extractor",
     "tools/ffxiv_renderer_standalone",
     "server",
-    "apps/model_viewer",
-    "apps/translation_compare"
+    "pages/model_viewer",
+    "pages/translation_compare"
 ]
 
 [profile.release]
