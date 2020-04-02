@@ -707,6 +707,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ffxiv_renderer"
+version = "0.1.0"
+dependencies = [
+ "ffxiv_parser 0.1.0",
+ "renderer 0.1.0",
+ "sqpack_reader 0.1.0",
+ "winit 0.22.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1413,16 +1423,6 @@ dependencies = [
  "net2 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "model_viewer"
-version = "0.1.0"
-dependencies = [
- "ffxiv_parser 0.1.0",
- "renderer 0.1.0",
- "sqpack_reader 0.1.0",
- "winit 0.22.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2709,6 +2709,7 @@ name = "web"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ffxiv_renderer 0.1.0",
  "futures 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "js-sys 0.3.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-bindgen 0.2.60 (registry+https://github.com/rust-lang/crates.io-index)",
