@@ -1,0 +1,16 @@
+[package]
+name = "ffxiv_renderer_standalone"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "ffxiv_renderer_standalone"
+path = "src/main.rs"
+
+[features]
+
+[dependencies]
+winit = { version = "^0.22", default-features = false }
+
+ffxiv_renderer = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_renderer" }

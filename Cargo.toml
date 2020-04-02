@@ -6,10 +6,11 @@ members = [
     "libs/renderer",
     "libs/util",
     "utils/sqpack_extractor",
+    "utils/ffxiv_renderer_standalone",
     "server",
     "apps/model_viewer"
 ]
-default-members = ["utils/sqpack_extractor", "server", "apps/model_viewer"]
+default-members = ["utils/sqpack_extractor", "utils/ffxiv_renderer_standalone", "server", "apps/model_viewer"]
 
 [profile.release]
 panic = "abort"

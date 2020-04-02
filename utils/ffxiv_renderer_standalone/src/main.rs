@@ -1,6 +1,4 @@
-mod lib;
-
-use renderer::Renderer;
+use ffxiv_renderer::FFXIVRenderer;
 
 fn main() {
     use winit::{
@@ -15,7 +13,7 @@ fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut renderer = Renderer::new(&window);
+    let mut renderer = FFXIVRenderer::new(&window);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
