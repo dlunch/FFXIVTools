@@ -19,5 +19,5 @@ bytes = { version = "^0.5.4", default-features = false }
 actix-rt = { version = "^1.0", default-features = false }
 serde_json = {version = "^1.0", default-features = false }
 serde = { version = "^1.0", default-features = false }
-ffxiv_parser = { version = "^0.1", features = ["std"], default-features = false, path = "../ffxiv/ffxiv_parser" }
-sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../ffxiv/sqpack_reader"}
+ffxiv_parser = { version = "^0.1", features = ["std"], default-features = false, path = "../libs/ffxiv_parser" }
+sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../libs/sqpack_reader"}
