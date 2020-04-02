@@ -3,12 +3,11 @@
   "name": "ffxiv-tools",
   "version": "0.1.0",
   "scripts": {
-    "build": "webpack --config web/webpack/webpack.config.js",
-    "devserver": "webpack-dev-server --open -d --config web/webpack/webpack.config.js"
+    "build": "webpack --config webpack/webpack.config.js",
+    "devserver": "webpack-dev-server --open -d --config webpack/webpack.config.js"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
-    "copy-webpack-plugin": "^5.0.3",
     "loader-utils": "^2.0.0",
     "node-html-parser": "^1.2.13",
     "webpack": "^4.42.1",

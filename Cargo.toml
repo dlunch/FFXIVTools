@@ -1,15 +1,15 @@
 [workspace]
 members = [
-    "ffxiv/sqpack_reader",
-    "ffxiv/sqpack_extractor",
-    "ffxiv/ffxiv_parser",
-    "ffxiv/model_viewer",
+    "libs/sqpack_reader",
+    "libs/ffxiv_parser",
+    "libs/model_viewer",
+    "libs/renderer",
+    "libs/util",
+    "utils/sqpack_extractor",
     "server",
-    "renderer",
-    "util",
-    "web"
+    "apps/model_viewer"
 ]
-default-members = ["ffxiv/model_viewer", "ffxiv/sqpack_extractor", "server", "web"]
+default-members = ["libs/model_viewer", "utils/sqpack_extractor", "server", "apps/model_viewer"]
 
 [profile.release]
 panic = "abort"

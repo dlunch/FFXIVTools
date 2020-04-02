@@ -1,15 +1,15 @@
 const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const HtmlLoader = require("./html-loader");
 
-const dist = path.resolve(__dirname, "../../dist");
+const root = path.resolve(__dirname, "..");
+const dist = path.resolve(root, "dist");
 
 module.exports = {
-  context: path.resolve(__dirname, "../"),
+  context: root,
   mode: "development",
   entry: {
-    index: "html/index.html"
+    model_viewer: "apps/model_viewer/html/model_viewer.html"
   },
   output: {
     path: dist,
@@ -41,11 +41,10 @@ module.exports = {
   },
   plugins: [
     new HtmlLoader.EntryExtractPlugin(),
-    new CopyPlugin([path.resolve(__dirname, "../static")]),
 
     new WasmPackPlugin({
-      crateDirectory: __dirname,
-      outDir: path.resolve(__dirname, "../pkg")
+      crateDirectory: "apps/model_viewer",
+      outDir: "apps/model_viewer/pkg"
     })
   ]
 };
