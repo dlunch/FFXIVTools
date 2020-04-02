@@ -268,7 +268,7 @@ dependencies = [
  "rusttype 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 2.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "xdg 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "xml-rs 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xml-rs 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -711,8 +711,16 @@ name = "ffxiv_renderer"
 version = "0.1.0"
 dependencies = [
  "ffxiv_parser 0.1.0",
+ "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "renderer 0.1.0",
  "sqpack_reader 0.1.0",
+]
+
+[[package]]
+name = "ffxiv_renderer_standalone"
+version = "0.1.0"
+dependencies = [
+ "ffxiv_renderer 0.1.0",
  "winit 0.22.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -2692,7 +2700,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "xml-rs 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xml-rs 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2898,7 +2906,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -3281,7 +3289,7 @@ dependencies = [
 "checksum x11 2.18.2 (registry+https://github.com/rust-lang/crates.io-index)" = "77ecd092546cb16f25783a5451538e73afc8d32e242648d54f4ae5459ba1e773"
 "checksum x11-dl 2.18.5 (registry+https://github.com/rust-lang/crates.io-index)" = "2bf981e3a5b3301209754218f962052d4d9ee97e478f4d26d4a6eced34c1fef8"
 "checksum xdg 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d089681aa106a86fade1b0128fb5daf07d5867a509ab036d99988dec80429a57"
-"checksum xml-rs 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "541b12c998c5b56aa2b4e6f18f03664eef9a4fd0a246a55594efae6cc2d964b5"
+"checksum xml-rs 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "9afd061c1c7c8ef0a3d337fbf76fc8c098bd0dfefd4adaafef25a559352f2031"
 "checksum yew 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)" = "20c1d343cdf3d625752fd4d9fef73e1b6b2b8a08b00c832b0fc4a47f3b10fbef"
 "checksum yew-macro 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fb25d91f16265dd1643497ac3252be6c21c169d9cf3babcae32325c74200499f"
 "checksum zerocopy 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "992b9b31f80fd4a167f903f879b8ca43d6716cc368ea01df90538baa2dd34056"

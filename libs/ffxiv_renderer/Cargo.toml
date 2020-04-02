@@ -7,18 +7,11 @@ edition = "2018"
 [lib]
 doctest = false
 
-[[bin]]
-name = "ffxiv_renderer"
-path = "src/main.rs"
-
 [features]
-default = ["binary"]
-binary = ["sqpack_reader/std", "ffxiv_parser/std", "winit"]
-wasm = []
 
 [dependencies]
+raw-window-handle = { version = "^0.3", default-features = false }
+
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 renderer = { version = "^0.1", default-features = false, path = "../renderer" }
-
-winit = { version = "^0.22", default-features = false, optional = true }
