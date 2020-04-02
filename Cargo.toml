@@ -8,9 +8,10 @@ members = [
     "tools/sqpack_extractor",
     "tools/ffxiv_renderer_standalone",
     "server",
-    "apps/model_viewer"
+    "apps/model_viewer",
+    "apps/translation_compare"
 ]
-default-members = ["tools/sqpack_extractor", "tools/ffxiv_renderer_standalone", "server", "apps/model_viewer"]
+default-members = ["tools/sqpack_extractor", "tools/ffxiv_renderer_standalone", "server", "apps/model_viewer", "apps/translation_compare"]
 
 [profile.release]
 panic = "abort"
