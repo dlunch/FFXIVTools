@@ -10,7 +10,7 @@ doctest = false
 [features]
 default = []
 std = ["nom/std", "crc32fast/std", "compression/std", "tokio", "reqwest/default-tls", "util/std"]
-test_local = ["default"]
+test_local = ["std"]
 
 [dependencies]
 nom = { version = "^5.1", features = ["alloc"], default-features = false }
