@@ -37,13 +37,13 @@ impl SqPackReader {
 #[async_trait]
 impl Package for SqPackReader {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
-        let archive = self.archives.get_archive(reference.archive_id).await?;
+        let archive = self.archive(reference.archive_id).await?;
 
         archive.read_file(reference.hash.folder, reference.hash.file).await
     }
 
     async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> io::Result<Bytes> {
-        let archive = self.archives.get_archive(reference.archive_id).await?;
+        let archive = self.archive(reference.archive_id).await?;
 
         archive.read_as_compressed(reference.hash.folder, reference.hash.file).await
     }
