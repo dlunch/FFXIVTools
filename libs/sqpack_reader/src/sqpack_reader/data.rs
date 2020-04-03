@@ -1,9 +1,8 @@
 use std::io;
-use std::path::Path;
+use std::path::PathBuf;
 
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
-use tokio::sync::Mutex;
 
 use util::{read_and_parse, ReadExt};
 
@@ -11,15 +10,14 @@ use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, 
 use crate::raw_file::SqPackRawFile;
 
 pub struct SqPackData {
-    file: Mutex<File>,
+    file_path: PathBuf,
 }
 
 impl SqPackData {
     pub async fn new(base_path: &str, index: u32) -> io::Result<Self> {
-        let path = format!("{}.dat{}", base_path, index);
-        let file = File::open(Path::new(&path)).await?;
+        let file_path = PathBuf::from(format!("{}.dat{}", base_path, index));
 
-        Ok(Self { file: Mutex::new(file) })
+        Ok(Self { file_path })
     }
 
     pub async fn read(&self, offset: u64) -> io::Result<Bytes> {
@@ -35,7 +33,7 @@ impl SqPackData {
     }
 
     async fn read_raw(&self, offset: u64) -> io::Result<SqPackRawFile> {
-        let mut file = self.file.lock().await;
+        let mut file = File::open(&self.file_path).await?;
 
         let file_header = read_and_parse!(file, offset, FileHeader).await?;
         match file_header.file_type {
