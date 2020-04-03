@@ -8,7 +8,7 @@ edition = "2018"
 doctest = false
 
 [features]
-default = ["std"]
+default = []
 std = ["nom/std", "crc32fast/std", "compression/std", "tokio", "reqwest/default-tls", "util/std"]
 test_local = ["default"]
 

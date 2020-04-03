@@ -8,7 +8,7 @@ edition = "2018"
 doctest = false
 
 [features]
-default = ["std"]
+default = []
 std = ["sqpack_reader/std", "nom/std", "util/std"]
 
 [dependencies]
