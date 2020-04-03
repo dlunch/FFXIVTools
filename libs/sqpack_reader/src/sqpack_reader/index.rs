@@ -69,6 +69,6 @@ impl SqPackIndex {
         let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
         let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
 
-        Ok(self.file_segments[file_begin..file_end].into_iter().map(|x| x.file_hash))
+        Ok(self.file_segments[file_begin..file_end].iter().map(|x| x.file_hash))
     }
 }
