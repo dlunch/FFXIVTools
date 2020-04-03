@@ -45,7 +45,11 @@ impl SqPackArchive {
         Ok(self.data[dat_index as usize].read_as_compressed(offset as u64).await?)
     }
 
-    pub fn all<'a>(&'a self) -> impl Iterator<Item = (u32, u32)> + 'a {
-        self.index.all()
+    pub fn folders<'a>(&'a self) -> impl Iterator<Item = u32> + 'a {
+        self.index.folders()
+    }
+
+    pub fn files<'a>(&'a self, folder_hash: u32) -> io::Result<impl Iterator<Item = u32> + 'a> {
+        self.index.files(folder_hash)
     }
 }
