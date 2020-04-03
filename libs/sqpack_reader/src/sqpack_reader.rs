@@ -27,10 +27,17 @@ impl SqPackReader {
         })
     }
 
-    pub async fn all(&self, archive_id: SqPackArchiveId) -> io::Result<Vec<(u32, u32)>> {
+    pub async fn folders(&self, archive_id: SqPackArchiveId) -> io::Result<Vec<u32>> {
         let archive = self.archives.get_archive(archive_id).await?;
 
-        Ok(archive.all().collect::<Vec<_>>())
+        Ok(archive.folders().collect::<Vec<_>>())
+    }
+
+    pub async fn files(&self, archive_id: SqPackArchiveId, folder_hash: u32) -> io::Result<Vec<u32>> {
+        let archive = self.archives.get_archive(archive_id).await?;
+        let files = archive.files(folder_hash)?;
+
+        Ok(files.collect::<Vec<_>>())
     }
 
     pub async fn read_as_compressed_by_archive(&self, archive_id: SqPackArchiveId, folder_hash: u32, file_hash: u32) -> io::Result<Bytes> {

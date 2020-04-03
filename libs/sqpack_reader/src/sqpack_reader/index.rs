@@ -55,7 +55,20 @@ impl SqPackIndex {
         Ok(file.data_offset)
     }
 
-    pub fn all<'a>(&'a self) -> impl Iterator<Item = (u32, u32)> + 'a {
-        self.file_segments.iter().map(|x| (x.folder_hash, x.file_hash))
+    pub fn folders<'a>(&'a self) -> impl Iterator<Item = u32> + 'a {
+        self.folder_segments.iter().map(|x| x.folder_hash)
+    }
+
+    pub fn files<'a>(&'a self, folder_hash: u32) -> io::Result<impl Iterator<Item = u32> + 'a> {
+        let folder_index = self
+            .folder_segments
+            .binary_search_by_key(&folder_hash, |x| x.folder_hash)
+            .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "No such folder"))?;
+        let folder = &self.folder_segments[folder_index];
+
+        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
+        let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
+
+        Ok(self.file_segments[file_begin..file_end].into_iter().map(|x| x.file_hash))
     }
 }
