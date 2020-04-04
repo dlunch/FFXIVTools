@@ -2441,6 +2441,7 @@ name = "translation_compare"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ffxiv_parser 0.1.0",
  "futures 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "js-sys 0.3.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
