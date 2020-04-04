@@ -87,12 +87,9 @@ impl SqPackData {
         let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
         let block_data = Self::read_contiguous_blocks(file, block_base_offset, &block_sizes).await?;
 
-        Ok(SqPackRawFile::from_contiguous_block(
-            file_header.uncompressed_size,
-            header.freeze(),
-            block_data,
-            block_sizes,
-        ))
+        let blocks = Self::iterate_blocks(block_data, block_sizes).collect::<Vec<_>>();
+
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header.freeze(), blocks))
     }
 
     async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
@@ -118,10 +115,20 @@ impl SqPackData {
             contiguous_blocks.push((block_data, block_sizes));
         }
 
-        Ok(SqPackRawFile::from_contiguous_blocks(
-            file_header.uncompressed_size,
-            header,
-            contiguous_blocks,
-        ))
+        let blocks = contiguous_blocks
+            .into_iter()
+            .flat_map(|(block_data, block_sizes)| Self::iterate_blocks(block_data, block_sizes))
+            .collect::<Vec<_>>();
+
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header, blocks))
+    }
+
+    fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {
+        block_sizes.into_iter().scan(0usize, move |offset, block_size| {
+            let result = block_data.slice(*offset..);
+            *offset += block_size as usize;
+
+            Some(result)
+        })
     }
 }
