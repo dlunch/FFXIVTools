@@ -28,7 +28,7 @@ lazy_static! {
 }
 
 async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String> {
-    let ex = Ex::new(package, &ex_name).await?;
+    let ex = Ex::new(package, &ex_name).await.map_err(|_| error::ErrorNotFound("Not found"))?;
 
     let languages = if let Some(language) = language {
         if ex.languages()[0] == Language::None {
@@ -58,7 +58,7 @@ fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Pack
 /// routes
 
 async fn get_exl(context: Context) -> Result<impl Responder> {
-    let exl = ExList::new(&context.all_package).await?;
+    let exl = ExList::new(&context.all_package).await.map_err(|_| error::ErrorNotFound("Not found"))?;
 
     Ok(web::Json(exl.ex_names))
 }
@@ -105,7 +105,8 @@ async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> 
     let result = context
         .all_package
         .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
-        .await?;
+        .await
+        .map_err(|_| error::ErrorNotFound("Not found"))?;
 
     Ok(HttpResponse::Ok().content_type("application/octet-stream").body(result))
 }

@@ -1,13 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use std::io;
-
-    use sqpack_reader::{Package, SqPackReaderExtractedFile};
+    use sqpack_reader::{Package, Result, SqPackReaderExtractedFile};
 
     #[cfg(feature = "test_local")]
     #[tokio::test]
     #[cfg(unix)]
-    async fn read_file_test() -> io::Result<()> {
+    async fn read_file_test() -> Result<()> {
         use std::path::Path;
 
         use sqpack_reader::ExtractedFileProviderLocal;
@@ -52,7 +50,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn read_web_test() -> io::Result<()> {
+    async fn read_web_test() -> Result<()> {
         use sqpack_reader::ExtractedFileProviderWeb;
 
         let _ = pretty_env_logger::formatted_timed_builder()

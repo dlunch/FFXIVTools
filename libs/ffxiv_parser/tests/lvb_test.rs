@@ -1,12 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use std::io;
-
     use ffxiv_parser::Lvb;
-    use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
+    use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
-    async fn lvb_test() -> io::Result<()> {
+    async fn lvb_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();

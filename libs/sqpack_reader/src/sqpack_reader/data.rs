@@ -7,6 +7,7 @@ use tokio::fs::File;
 use util::{read_and_parse, ReadExt};
 
 use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
+use crate::error::Result;
 use crate::raw_file::SqPackRawFile;
 
 pub struct SqPackData {
@@ -20,13 +21,13 @@ impl SqPackData {
         Ok(Self { file_path })
     }
 
-    pub async fn read(&self, offset: u64) -> io::Result<Bytes> {
+    pub async fn read(&self, offset: u64) -> Result<Bytes> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_decoded())
     }
 
-    pub async fn read_as_compressed(&self, offset: u64) -> io::Result<Bytes> {
+    pub async fn read_as_compressed(&self, offset: u64) -> Result<Bytes> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_compressed())

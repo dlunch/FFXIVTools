@@ -1,4 +1,3 @@
-use std::io;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
@@ -6,6 +5,7 @@ use bytes::Bytes;
 use log::debug;
 
 use super::ExtractedFileProvider;
+use crate::error::{Result, SqPackReaderError};
 use crate::reference::SqPackFileHash;
 
 pub struct ExtractedFileProviderLocal {
@@ -23,7 +23,7 @@ impl ExtractedFileProviderLocal {
         }
     }
 
-    fn find_path(&self, hash: &SqPackFileHash) -> io::Result<PathBuf> {
+    fn find_path(&self, hash: &SqPackFileHash) -> Result<PathBuf> {
         for path in &self.base_dirs {
             let mut path = path.clone();
 
@@ -36,13 +36,13 @@ impl ExtractedFileProviderLocal {
         }
 
         debug!("No such file {}/{}", hash.folder, hash.file);
-        Err(io::Error::new(io::ErrorKind::NotFound, "No such file"))
+        Err(SqPackReaderError::NoSuchFile)
     }
 }
 
 #[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderLocal {
-    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
+    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Bytes> {
         let path = self.find_path(hash)?;
         debug!("Reading {}", path.to_str().unwrap());
 

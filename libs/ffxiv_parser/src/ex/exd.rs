@@ -1,8 +1,7 @@
 use std::collections::BTreeMap;
-use std::io;
 
 use bytes::Bytes;
-use sqpack_reader::Package;
+use sqpack_reader::{Package, Result};
 use util::parse;
 
 use super::definition::{ExdData, ExdHeader, ExdRow};
@@ -14,7 +13,7 @@ pub struct ExData {
 }
 
 impl ExData {
-    pub async fn new(package: &dyn Package, name: &str, page_start: u32, language: Language) -> io::Result<Self> {
+    pub async fn new(package: &dyn Package, name: &str, page_start: u32, language: Language) -> Result<Self> {
         let path = format!("exd/{}_{}{}.exd", name, page_start, Self::language_to_suffix(language));
         let data = package.read_file(&path).await?;
 

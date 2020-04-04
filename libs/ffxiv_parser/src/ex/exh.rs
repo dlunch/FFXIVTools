@@ -1,6 +1,4 @@
-use std::io;
-
-use sqpack_reader::Package;
+use sqpack_reader::{Package, Result};
 use util::parse;
 
 use super::definition::{ExhColumnDefinition, ExhHeader, ExhPage};
@@ -14,7 +12,7 @@ pub struct ExHeader {
 }
 
 impl ExHeader {
-    pub async fn new(package: &dyn Package, name: &str) -> io::Result<Self> {
+    pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let data = package.read_file(&format!("exd/{}.exh", name)).await?;
 
         let header = parse!(data, ExhHeader);

@@ -1,15 +1,13 @@
-use std::error::Error;
-use std::io;
 use std::path::Path;
 
 use clap::{App, Arg};
 use futures::future;
 use tokio::fs;
 
-use sqpack_reader::{SqPackArchiveId, SqPackReader};
+use sqpack_reader::{Result, SqPackArchiveId, SqPackReader, SqPackReaderError};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let matches = App::new("sqpack_extractor")
         .arg(Arg::with_name("base_path").takes_value(true).required(true))
         .arg(Arg::with_name("root").takes_value(true).required(true))
@@ -23,7 +21,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     future::join_all(archive.folders().map(|folder_hash| {
         let archive = &archive;
         async move {
-            fs::create_dir(folder_hash.to_string()).await?;
+            fs::create_dir(folder_hash.to_string()).await.unwrap();
             let files = archive.files(folder_hash)?;
 
             future::join_all(files.map(|file_hash| async move {
@@ -31,15 +29,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let path = format!("{}/{}", folder_hash, file_hash);
 
                 println!("{}", path);
-                fs::write(path, data).await?;
+                fs::write(path, data).await.unwrap();
 
-                Ok::<_, io::Error>(())
+                Ok::<_, SqPackReaderError>(())
             }))
             .await
             .into_iter()
-            .collect::<io::Result<Vec<_>>>()?;
+            .collect::<Result<Vec<_>>>()?;
 
-            Ok::<_, io::Error>(())
+            Ok::<_, SqPackReaderError>(())
         }
     }))
     .await;

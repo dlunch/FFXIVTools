@@ -8,9 +8,8 @@ mod exl;
 pub use exl::ExList;
 
 use std::collections::BTreeMap;
-use std::io;
 
-use sqpack_reader::Package;
+use sqpack_reader::{Package, Result};
 
 use ex_row::ExRow;
 use exd_map::ExdMap;
@@ -24,7 +23,7 @@ pub struct Ex {
 }
 
 impl Ex {
-    pub async fn new(package: &dyn Package, name: &str) -> io::Result<Self> {
+    pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let header = ExHeader::new(package, name).await?;
         let data = ExdMap::new(package, name, &header.pages, &header.languages).await?;
 
