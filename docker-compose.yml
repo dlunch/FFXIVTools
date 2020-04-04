@@ -1,6 +1,0 @@
-version: "3.7"
-services:
-  server:
-    image: dlunch/ffxivtools:server
-    volumes:
-      - ./data:/server/data
