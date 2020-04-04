@@ -1,7 +1,9 @@
 mod parse_ext;
+#[cfg(feature = "std")]
 mod read_ext;
 mod str_ext;
 
+#[cfg(feature = "std")]
 pub use read_ext::ReadExt;
 pub use str_ext::StrExt;
 

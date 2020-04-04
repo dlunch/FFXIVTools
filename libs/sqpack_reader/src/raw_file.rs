@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use std::iter;
 
 use compression::prelude::DecodeExt;
@@ -5,7 +6,9 @@ use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named};
 
-use bytes::{BufMut, Bytes, BytesMut};
+#[cfg(feature = "std")]
+use bytes::BufMut;
+use bytes::{Bytes, BytesMut};
 
 use util::{parse, round_up};
 
@@ -89,6 +92,7 @@ impl SqPackRawFile {
         }
     }
 
+    #[cfg(feature = "std")]
     pub fn from_blocks(uncompressed_size: u32, header: Bytes, blocks: Vec<Bytes>) -> Self {
         Self {
             uncompressed_size,
@@ -97,6 +101,7 @@ impl SqPackRawFile {
         }
     }
 
+    #[cfg(feature = "std")]
     pub fn from_contiguous_block(uncompressed_size: u32, header: Bytes, block_data: Bytes, block_sizes: Vec<u16>) -> Self {
         let blocks = Self::iterate_blocks(block_data, block_sizes).collect::<Vec<_>>();
 
@@ -107,6 +112,7 @@ impl SqPackRawFile {
         }
     }
 
+    #[cfg(feature = "std")]
     pub fn from_contiguous_blocks(uncompressed_size: u32, header: Bytes, contiguous_blocks: Vec<(Bytes, Vec<u16>)>) -> Self {
         let blocks = contiguous_blocks
             .into_iter()
@@ -131,6 +137,7 @@ impl SqPackRawFile {
         result.freeze()
     }
 
+    #[cfg(feature = "std")]
     pub fn into_compressed(self) -> Bytes {
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + CompressedFileHeader::SIZE);
         result.put_u32_le(self.uncompressed_size);
@@ -148,6 +155,7 @@ impl SqPackRawFile {
         result.freeze()
     }
 
+    #[cfg(feature = "std")]
     fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {
         block_sizes.into_iter().scan(0usize, move |offset, block_size| {
             let result = block_data.slice(*offset..);
