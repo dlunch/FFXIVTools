@@ -39,7 +39,7 @@ pub struct SqPackFileReference {
     pub hash: SqPackFileHash,
 
     #[cfg(debug_assertions)]
-    pub path: String,
+    pub path: alloc::string::String,
 }
 
 impl SqPackFileReference {

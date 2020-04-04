@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
 
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};
@@ -15,7 +15,7 @@ pub struct ExData {
 impl ExData {
     pub async fn new(package: &dyn Package, name: &str, page_start: u32, language: Language) -> Result<Self> {
         let path = format!("exd/{}_{}{}.exd", name, page_start, Self::language_to_suffix(language));
-        let data = package.read_file(&path).await?;
+        let data: Bytes = package.read_file(&path).await?;
 
         let header = parse!(data, ExdHeader);
 

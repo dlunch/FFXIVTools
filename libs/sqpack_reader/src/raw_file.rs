@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
@@ -110,7 +112,7 @@ impl SqPackRawFile {
     #[cfg(feature = "std")]
     pub fn into_compressed(self) -> Bytes {
         use bytes::BufMut;
-        use std::iter;
+        use core::iter;
 
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + CompressedFileHeader::SIZE);
         result.put_u32_le(self.uncompressed_size);

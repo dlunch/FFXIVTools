@@ -160,7 +160,7 @@ impl<'a> ExdData<'a> {
 }
 
 impl Language {
-    pub const SIZE: usize = std::mem::size_of::<u16>();
+    pub const SIZE: usize = core::mem::size_of::<u16>();
 
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let raw = le_u16(input)?;
@@ -210,7 +210,7 @@ impl ExFieldType {
             7 => ExFieldType::UInt32,
             9 => ExFieldType::Float,
             11 => ExFieldType::Quad,
-            25..=std::u16::MAX => ExFieldType::PackedBool,
+            25..=core::u16::MAX => ExFieldType::PackedBool,
             _ => panic!(),
         }
     }

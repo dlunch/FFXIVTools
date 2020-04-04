@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use alloc::{collections::BTreeMap, vec::Vec};
 
 use futures::future::join_all;
 use futures::future::FutureExt;
@@ -10,7 +10,7 @@ use super::exd::ExData;
 use crate::Language;
 
 pub struct ExdMap {
-    data: HashMap<Language, Vec<(ExhPage, ExData)>>,
+    data: BTreeMap<Language, Vec<(ExhPage, ExData)>>,
 }
 
 impl ExdMap {
@@ -23,7 +23,7 @@ impl ExdMap {
             join_all(futures).map(move |data| (language, data.into_iter().filter_map(Result::ok).collect::<Vec<_>>()))
         });
 
-        let data = join_all(futures).await.into_iter().collect::<HashMap<_, _>>();
+        let data = join_all(futures).await.into_iter().collect::<BTreeMap<_, _>>();
 
         Ok(Self { data })
     }

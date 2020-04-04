@@ -1,4 +1,4 @@
-use std::str;
+use alloc::{str, vec::Vec};
 
 use bytes::Buf;
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
