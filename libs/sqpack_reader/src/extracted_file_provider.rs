@@ -1,6 +1,4 @@
-use cfg_if::cfg_if;
-
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {
         mod extracted_file_provider_local;
         mod extracted_file_provider_web;
