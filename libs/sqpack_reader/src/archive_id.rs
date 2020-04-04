@@ -1,6 +1,3 @@
-use std::ffi::OsStr;
-use std::path::Path;
-
 #[derive(Eq, PartialEq, Hash, Clone, Copy)]
 pub struct SqPackArchiveId {
     pub root: u8,
@@ -9,8 +6,7 @@ pub struct SqPackArchiveId {
 }
 
 impl SqPackArchiveId {
-    pub fn from_sqpack_path(path: &Path) -> Self {
-        let file_name = path.file_stem().and_then(OsStr::to_str).unwrap();
+    pub fn from_sqpack_file_name(file_name: &str) -> Self {
         let archive_id_str = file_name.split('.').next().unwrap();
         let archive_id = u32::from_str_radix(archive_id_str, 16).unwrap();
 
