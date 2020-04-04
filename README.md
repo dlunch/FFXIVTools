@@ -27,14 +27,7 @@ npm run devserver
 Run
 
 ```
-docker-compose pull
-docker-compose up --detach
-```
-
-Stop
-
-```
-docker-compose down
+docker run -d --volume=<data path>:/server/data dlunch/ffxivtools:server
 ```
 
 ### Uploading server image
