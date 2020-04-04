@@ -7,10 +7,6 @@ edition = "2018"
 [lib]
 doctest = false
 
-[features]
-default = []
-std = ["sqpack_reader/std", "nom/std", "util/std"]
-
 [dependencies]
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
 bytes = { version = "^0.5.4", default-features = false }
@@ -18,10 +14,12 @@ serde = { version = "^1.0", default-features = false }
 serde_repr = { version = "^0.1", default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 util = { version = "^0.1", default-features = false, path = "../util" }
-
-nom = { version = "^5.1", features = ["alloc"], default-features = false, optional = true }
+# remove std after https://github.com/Geal/nom/issues/1038 closes
+nom = { version = "^5.1", features = ["alloc", "std"], default-features = false }
 
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
+
+sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../sqpack_reader" }

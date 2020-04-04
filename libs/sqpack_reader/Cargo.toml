@@ -9,11 +9,13 @@ doctest = false
 
 [features]
 default = []
-std = ["nom/std", "crc32fast/std", "compression/std", "tokio", "reqwest/default-tls", "util/std"]
+std = ["crc32fast/std", "tokio", "reqwest/default-tls", "util/std"]
 test_local = ["std"]
 
 [dependencies]
-nom = { version = "^5.1", features = ["alloc"], default-features = false }
+cfg-if = { version = "^0.1", default-features = false }
+# remove std after https://github.com/Geal/nom/issues/1038 closes
+nom = { version = "^5.1", features = ["alloc", "std"], default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }

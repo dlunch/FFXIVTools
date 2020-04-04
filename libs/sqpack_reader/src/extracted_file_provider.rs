@@ -1,8 +1,14 @@
-mod extracted_file_provider_local;
-mod extracted_file_provider_web;
+use cfg_if::cfg_if;
 
-pub use extracted_file_provider_local::ExtractedFileProviderLocal;
-pub use extracted_file_provider_web::ExtractedFileProviderWeb;
+cfg_if! {
+    if #[cfg(feature = "std")] {
+        mod extracted_file_provider_local;
+        mod extracted_file_provider_web;
+
+        pub use extracted_file_provider_local::ExtractedFileProviderLocal;
+        pub use extracted_file_provider_web::ExtractedFileProviderWeb;
+    }
+}
 
 use std::io;
 
