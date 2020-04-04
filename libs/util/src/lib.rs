@@ -1,11 +1,14 @@
 mod parse_ext;
-#[cfg(feature = "std")]
-mod read_ext;
 mod str_ext;
 
-#[cfg(feature = "std")]
-pub use read_ext::ReadExt;
 pub use str_ext::StrExt;
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "std")] {
+        mod read_ext;
+        pub use read_ext::ReadExt;
+    }
+}
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {
     if multiple == 0 {

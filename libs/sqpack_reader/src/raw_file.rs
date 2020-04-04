@@ -1,13 +1,8 @@
-#[cfg(feature = "std")]
-use std::iter;
-
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named};
 
-#[cfg(feature = "std")]
-use bytes::BufMut;
 use bytes::{Bytes, BytesMut};
 
 use util::{parse, round_up};
@@ -101,31 +96,6 @@ impl SqPackRawFile {
         }
     }
 
-    #[cfg(feature = "std")]
-    pub fn from_contiguous_block(uncompressed_size: u32, header: Bytes, block_data: Bytes, block_sizes: Vec<u16>) -> Self {
-        let blocks = Self::iterate_blocks(block_data, block_sizes).collect::<Vec<_>>();
-
-        Self {
-            uncompressed_size,
-            header,
-            blocks,
-        }
-    }
-
-    #[cfg(feature = "std")]
-    pub fn from_contiguous_blocks(uncompressed_size: u32, header: Bytes, contiguous_blocks: Vec<(Bytes, Vec<u16>)>) -> Self {
-        let blocks = contiguous_blocks
-            .into_iter()
-            .flat_map(|(block_data, block_sizes)| Self::iterate_blocks(block_data, block_sizes))
-            .collect::<Vec<_>>();
-
-        Self {
-            uncompressed_size,
-            header,
-            blocks,
-        }
-    }
-
     pub fn into_decoded(self) -> Bytes {
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + self.header.len());
         result.extend(self.header);
@@ -139,6 +109,9 @@ impl SqPackRawFile {
 
     #[cfg(feature = "std")]
     pub fn into_compressed(self) -> Bytes {
+        use bytes::BufMut;
+        use std::iter;
+
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + CompressedFileHeader::SIZE);
         result.put_u32_le(self.uncompressed_size);
         result.put_u32_le(self.header.len() as u32);
@@ -153,16 +126,6 @@ impl SqPackRawFile {
         }
 
         result.freeze()
-    }
-
-    #[cfg(feature = "std")]
-    fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {
-        block_sizes.into_iter().scan(0usize, move |offset, block_size| {
-            let result = block_data.slice(*offset..);
-            *offset += block_size as usize;
-
-            Some(result)
-        })
     }
 
     fn get_block_size(block: &[u8]) -> usize {
