@@ -1,14 +1,13 @@
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use std::io;
     use std::iter::FromIterator;
 
     use ffxiv_parser::ExList;
-    use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
+    use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
-    async fn exl_test() -> io::Result<()> {
+    async fn exl_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();

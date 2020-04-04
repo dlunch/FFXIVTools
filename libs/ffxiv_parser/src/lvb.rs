@@ -1,10 +1,8 @@
-use std::io;
-
 use bytes::Buf;
 use nom::number::complete::le_u32;
 use nom::{do_parse, named, tag};
 
-use sqpack_reader::Package;
+use sqpack_reader::{Package, Result};
 use util::{parse, StrExt};
 
 pub struct LvbHeader {
@@ -71,7 +69,7 @@ pub struct Lvb {
 }
 
 impl Lvb {
-    pub async fn new(package: &dyn Package, path: &str) -> io::Result<Self> {
+    pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
         let data = package.read_file(&format!("bg/{}.lvb", path)).await?;
 
         let _ = parse!(data, LvbHeader);

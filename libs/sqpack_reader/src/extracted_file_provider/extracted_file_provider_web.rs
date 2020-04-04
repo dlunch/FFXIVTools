@@ -1,10 +1,9 @@
-use std::io;
-
 use async_trait::async_trait;
 use bytes::Bytes;
 use log::debug;
 
 use super::ExtractedFileProvider;
+use crate::error::{Result, SqPackReaderError};
 use crate::reference::SqPackFileHash;
 
 pub struct ExtractedFileProviderWeb {
@@ -29,11 +28,11 @@ impl ExtractedFileProviderWeb {
 
 #[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderWeb {
-    async fn read_file(&self, hash: &SqPackFileHash) -> io::Result<Bytes> {
+    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Bytes> {
         self.fetch(hash).await.map_err(|x| {
-            debug!("Error downloading file");
+            debug!("Error downloading file, {}", x);
 
-            io::Error::new(io::ErrorKind::NotFound, x.to_string())
+            SqPackReaderError::NoSuchFile
         })
     }
 
