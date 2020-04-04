@@ -7,7 +7,7 @@ mod exl;
 
 pub use exl::ExList;
 
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
 
 use sqpack_reader::{Package, Result};
 

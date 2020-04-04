@@ -1,6 +1,5 @@
-use std::error::Error;
-use std::fmt;
-use std::result;
+use alloc::fmt;
+use core::result;
 
 #[derive(Debug)]
 pub enum SqPackReaderError {
@@ -8,8 +7,6 @@ pub enum SqPackReaderError {
     NoSuchFile,
     ReadError,
 }
-
-impl Error for SqPackReaderError {}
 
 impl fmt::Display for SqPackReaderError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -27,5 +24,8 @@ impl From<std::io::Error> for SqPackReaderError {
         SqPackReaderError::ReadError
     }
 }
+
+#[cfg(feature = "std")]
+impl std::error::Error for SqPackReaderError {}
 
 pub type Result<T> = result::Result<T, SqPackReaderError>;

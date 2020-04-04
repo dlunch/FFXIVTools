@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 #[derive(Eq, PartialEq, Hash, Clone, Copy)]
 pub struct SqPackArchiveId {
     pub root: u8,

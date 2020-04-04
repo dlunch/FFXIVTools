@@ -1,4 +1,6 @@
-use bytes::Buf;
+use alloc::{borrow::ToOwned, string::String, vec::Vec};
+
+use bytes::{Buf, Bytes};
 use nom::number::complete::le_u32;
 use nom::{do_parse, named, tag};
 
@@ -70,7 +72,7 @@ pub struct Lvb {
 
 impl Lvb {
     pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
-        let data = package.read_file(&format!("bg/{}.lvb", path)).await?;
+        let data: Bytes = package.read_file(&format!("bg/{}.lvb", path)).await?;
 
         let _ = parse!(data, LvbHeader);
         let entries = parse!(data[LvbHeader::SIZE..], LvbEntries);
@@ -78,7 +80,7 @@ impl Lvb {
         let entry4_base = LvbHeader::SIZE + entries.entry4_offset as usize;
         let lgb_paths = (0..entries.entry4_count as usize)
             .map(|x| {
-                let offset = entry4_base + x * std::mem::size_of::<u32>();
+                let offset = entry4_base + x * core::mem::size_of::<u32>();
                 let string_offset = entry4_base + (&data[offset..]).get_u32_le() as usize;
 
                 str::from_null_terminated_utf8(&data[string_offset..]).unwrap().to_owned()

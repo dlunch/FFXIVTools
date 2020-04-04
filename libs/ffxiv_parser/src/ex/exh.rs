@@ -1,3 +1,6 @@
+use alloc::vec::Vec;
+
+use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 use util::parse;
 
@@ -13,7 +16,7 @@ pub struct ExHeader {
 
 impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
-        let data = package.read_file(&format!("exd/{}.exh", name)).await?;
+        let data: Bytes = package.read_file(&format!("exd/{}.exh", name)).await?;
 
         let header = parse!(data, ExhHeader);
         let columns = parse!(&data[ExhHeader::SIZE..], header.column_count as usize, ExhColumnDefinition);
