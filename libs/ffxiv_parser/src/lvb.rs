@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, string::String, vec::Vec};
+use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 
 use bytes::{Buf, Bytes};
 use nom::number::complete::le_u32;

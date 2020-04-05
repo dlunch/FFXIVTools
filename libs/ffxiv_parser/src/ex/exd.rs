@@ -1,4 +1,4 @@
-use alloc::collections::BTreeMap;
+use alloc::{collections::BTreeMap, format};
 
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};
