@@ -1,8 +1,8 @@
-# ffxiv.dlunch.net
+# FFXIVTools
 
-Reimplementation of [ffxiv.dlunch.net](ffxiv.dlunch.net) in rust.
+Reimplementation of [https://ffxiv.dlunch.net](https://ffxiv.dlunch.net) in rust.
 
-`master` branch is automatically deployed to [ffxiv-dev-new.dlunch.net](ffxiv-dev-new.dlunch.net)
+`master` branch is automatically deployed to [https://ffxiv-dev-new.dlunch.net](https://ffxiv-dev-new.dlunch.net)
 
 # Status
 
