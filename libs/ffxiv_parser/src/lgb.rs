@@ -105,11 +105,11 @@ pub enum LayerGroupResourceItem {
 }
 
 impl LayerGroupResourceItem {
-    pub fn parse(data: &[u8]) -> Self {
+    pub fn parse(data: &[u8]) -> Option<Self> {
         let item_type = (&data[0..]).get_u32_le();
         match item_type {
-            8 => Self::parse_eventnpc(data).unwrap().1,
-            _ => Self::parse_unk(data).unwrap().1,
+            8 => Some(Self::parse_eventnpc(data).unwrap().1),
+            _ => None,
         }
     }
 
@@ -136,16 +136,6 @@ impl LayerGroupResourceItem {
                 y,
                 z,
                 npc_id,
-            })
-        )
-    );
-
-    #[rustfmt::skip]
-    named!(parse_unk<Self>,
-        do_parse!(
-            item_type:   le_u32  >>
-            (LayerGroupResourceItem::Unk {
-                item_type,
             })
         )
     );
@@ -188,7 +178,7 @@ impl Lgb {
 
         let base_offset = offset + entry.items_offset as usize;
         let items = (0..entry.item_count)
-            .map(|i| {
+            .filter_map(|i| {
                 let offset = base_offset + (i as usize) * core::mem::size_of::<u32>();
                 let data_offset = (&data[offset..]).get_u32_le();
 
