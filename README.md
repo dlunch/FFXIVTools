@@ -41,7 +41,7 @@ docker buildx build . --file server/Dockerfile.init --push --tag dlunch/ffxivtoo
 Build Builder
 
 ```
-docker buildx build . --file server/Dockerfile.builder --push --tag dlunch/ffxivtools:builder --platform linux/arm/v7,linux/amd64
+docker buildx build . --file server/Dockerfile --target builder --push --tag dlunch/ffxivtools:builder --platform linux/arm/v7,linux/amd64
 ```
 
 Build Server
