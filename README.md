@@ -27,7 +27,7 @@ npm run devserver
 Run
 
 ```
-docker run -d --volume=<data path>:/server/data dlunch/ffxivtools:server
+docker run -p 8080:8080 -d --volume=<data path>:/server/data dlunch/ffxivtools:server
 ```
 
 ### Uploading server image
