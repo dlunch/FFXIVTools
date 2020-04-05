@@ -1,7 +1,6 @@
 mod context;
 
 use std::collections::BTreeMap;
-use std::io;
 
 use actix_web::{error, web, HttpResponse, Responder, Result};
 use bytes::{BufMut, Bytes, BytesMut};
@@ -49,10 +48,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
 }
 
 fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Package> {
-    Ok(context
-        .packages
-        .get(version)
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No such package"))?)
+    Ok(context.packages.get(version).ok_or_else(|| error::ErrorNotFound("No such package"))?)
 }
 
 /// routes
