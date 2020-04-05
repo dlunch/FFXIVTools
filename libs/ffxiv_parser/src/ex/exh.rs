@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};

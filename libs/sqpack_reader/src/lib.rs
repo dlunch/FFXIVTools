@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate alloc;
 
 mod archive_id;
