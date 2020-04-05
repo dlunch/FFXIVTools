@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "build:dev": "webpack --config webpack/webpack.config.dev.js",
-    "build:release": "webpack --config webpack/webpack.config.release.js",
+    "build:prod": "webpack --config webpack/webpack.config.prod.js",
     "devserver": "webpack-dev-server --open -d --config webpack/webpack.config.dev.js"
   },
   "devDependencies": {
