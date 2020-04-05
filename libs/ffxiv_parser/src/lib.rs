@@ -1,3 +1,6 @@
+// after rust 1.44
+// #![no_std]
+
 extern crate alloc;
 
 mod ex;
