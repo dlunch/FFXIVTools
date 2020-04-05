@@ -1,5 +1,5 @@
-use std::str;
-use std::str::Utf8Error;
+use alloc::str;
+use alloc::str::Utf8Error;
 
 pub trait StrExt {
     fn from_null_terminated_utf8(buf: &[u8]) -> Result<&str, Utf8Error>;

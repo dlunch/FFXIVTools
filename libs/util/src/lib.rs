@@ -1,3 +1,5 @@
+extern crate alloc;
+
 mod parse_ext;
 mod str_ext;
 

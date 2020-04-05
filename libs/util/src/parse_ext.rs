@@ -9,20 +9,3 @@ macro_rules! parse {
             .collect::<Vec<_>>()
     };
 }
-
-#[macro_export]
-macro_rules! read_and_parse {
-    ($file: expr, $offset: expr, $type: ty) => {
-        async {
-            let data = $file.read_bytes($offset as u64, <$type>::SIZE as usize).await?;
-            Ok::<_, std::io::Error>($crate::parse!(data, $type))
-        }
-    };
-
-    ($file: expr, $offset: expr, $count: expr, $type: ty) => {
-        async {
-            let data = $file.read_bytes($offset as u64, $count as usize * <$type>::SIZE).await?;
-            Ok::<_, std::io::Error>($crate::parse!(data, $count, $type))
-        }
-    };
-}
