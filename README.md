@@ -1,9 +1,9 @@
 # FFXIVTools
 
-Reimplementation of [https://ffxiv.dlunch.net](https://ffxiv.dlunch.net) in rust.
+Reimplementation of <https://ffxiv.dlunch.net> in rust.
 
-- Latest `master` branch preview: [https://ffxiv-dev-new.dlunch.net](https://ffxiv-dev-new.dlunch.net)
-- Latest stable: [https://ffxiv-new.dlunch.net](https://ffxiv-new.dlunch.net)
+- Latest `master` branch preview: <https://ffxiv-dev-new.dlunch.net>
+- Latest stable: <https://ffxiv-new.dlunch.net>
 
 # Status
 
