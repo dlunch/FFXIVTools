@@ -4,6 +4,7 @@
 extern crate alloc;
 
 mod ex;
+mod lgb;
 mod lvb;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -22,4 +23,5 @@ pub enum Language {
 }
 
 pub use ex::{Ex, ExList};
+pub use lgb::Lgb;
 pub use lvb::Lvb;
