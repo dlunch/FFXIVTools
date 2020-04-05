@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, boxed::Box, collections::BTreeMap, string::String, vec::Vec};
+use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec::Vec};
 
 use bytes::{Buf, Bytes};
 use nom::number::complete::{le_f32, le_u32};
@@ -95,6 +95,7 @@ pub enum LayerGroupResourceItem {
         x: f32,
         y: f32,
         z: f32,
+        #[serde(rename = "npcId")]
         npc_id: u32,
     },
     Unk {
@@ -157,8 +158,8 @@ pub struct Lgb {
 }
 
 impl Lgb {
-    pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
-        let data: Bytes = package.read_file(path).await?;
+    pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
+        let data: Bytes = package.read_file(path.as_ref()).await?;
 
         let _ = parse!(data, LgbHeader);
         let resource_header = parse!(data[LgbHeader::SIZE..], LgbResourceHeader);

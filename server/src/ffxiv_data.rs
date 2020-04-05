@@ -7,10 +7,10 @@ use bytes::{BufMut, Bytes, BytesMut};
 use futures::{future, future::FutureExt};
 use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json;
 
-use ffxiv_parser::{Ex, ExList, Language};
+use ffxiv_parser::{Ex, ExList, Language, LayerGroupResourceItem, Lgb, Lvb};
 use sqpack_reader::{Package, SqPackFileHash};
 
 use context::Context;
@@ -160,12 +160,38 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         .streaming(stream))
 }
 
+async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result<impl Responder> {
+    let (version, path) = param.into_inner();
+    let package = find_package(&context, &version)?;
+
+    let lvb = Lvb::new(package, &path).await.map_err(|_| error::ErrorNotFound("Not found"))?;
+
+    let layers = future::join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(&context.all_package, lgb_path)))
+        .await
+        .into_iter()
+        .collect::<sqpack_reader::Result<Vec<_>>>()
+        .map_err(|_| error::ErrorNotFound("Not found"))?
+        .into_iter()
+        .map(|x| (x.name, x.entries))
+        .collect::<BTreeMap<_, _>>();
+
+    #[derive(Serialize)]
+    struct JsonLvb {
+        layers: BTreeMap<String, BTreeMap<String, Vec<LayerGroupResourceItem>>>,
+    }
+
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_string(&JsonLvb { layers })?))
+}
+
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.data(CONTEXT.clone())
         .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
         .service(web::resource("/parsed/ex/{version}/{ex_name}").route(web::get().to(get_ex)))
         .service(web::resource("/parsed/ex/{version}/{language}/{ex_name}").route(web::get().to(get_ex)))
         .service(web::resource("/parsed/ex/bulk/{version}/{language}/{ex_names}").route(web::get().to(get_ex_bulk)))
+        .service(web::resource("/parsed/lvb/{version}/{path:.*}").route(web::get().to(get_lvb)))
         .service(web::resource("/compressed/{folder_hash}/{file_hash}/{full_hash}").route(web::get().to(get_compressed)))
         .service(web::resource("/compressed/bulk/{paths}").route(web::get().to(get_compressed_bulk)));
 }
