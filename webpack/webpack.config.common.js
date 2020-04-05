@@ -9,7 +9,6 @@ const dist = path.resolve(root, "dist");
 
 module.exports = {
   context: root,
-  mode: "development",
   entry: {
     model_viewer: "pages/model_viewer/html/model_viewer.html",
     translation_compare:
