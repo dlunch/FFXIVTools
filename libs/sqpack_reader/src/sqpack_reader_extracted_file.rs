@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use std::io;
-
 use async_trait::async_trait;
 use bytes::Bytes;
 
@@ -16,7 +14,7 @@ pub struct SqPackReaderExtractedFile {
 }
 
 impl SqPackReaderExtractedFile {
-    pub fn new<T>(provider: T) -> io::Result<Self>
+    pub fn new<T>(provider: T) -> Result<Self>
     where
         T: ExtractedFileProvider + 'static,
     {
