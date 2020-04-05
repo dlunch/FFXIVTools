@@ -1,5 +1,7 @@
 const path = require("path");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlLoader = require("./html-loader");
 
 const root = path.resolve(__dirname, "..");
@@ -11,11 +13,11 @@ module.exports = {
   entry: {
     model_viewer: "pages/model_viewer/html/model_viewer.html",
     translation_compare:
-      "pages/translation_compare/html/translation_compare.html"
+      "pages/translation_compare/html/translation_compare.html",
   },
   output: {
     path: dist,
-    filename: "[name].js"
+    filename: "[name].js",
   },
   module: {
     rules: [
@@ -25,32 +27,34 @@ module.exports = {
           {
             loader: "html-loader",
             options: {
-              minimize: true
-            }
-          }
-        ]
-      }
-    ]
+              minimize: true,
+            },
+          },
+        ],
+      },
+    ],
   },
   resolve: {
-    modules: ["."]
+    modules: ["."],
   },
   resolveLoader: {
-    modules: ["node_modules", "webpack"]
+    modules: ["node_modules", "webpack"],
   },
   devServer: {
-    contentBase: dist
+    contentBase: dist,
   },
   plugins: [
     new HtmlLoader.EntryExtractPlugin(),
 
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, "pages/model_viewer"),
-      outDir: path.resolve(root, "pages/model_viewer/pkg")
+      outDir: path.resolve(root, "pages/model_viewer/pkg"),
     }),
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, "pages/translation_compare"),
-      outDir: path.resolve(root, "pages/translation_compare/pkg")
-    })
-  ]
+      outDir: path.resolve(root, "pages/translation_compare/pkg"),
+    }),
+    new CopyPlugin([{ from: "static" }]),
+    new CleanWebpackPlugin(),
+  ],
 };
