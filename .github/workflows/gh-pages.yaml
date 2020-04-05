@@ -1,15 +1,15 @@
 on: [push, pull_request]
 
-name: Rust CI
+name: Deploy to Github Pages
 
 jobs:
-  ci:
+  gh-pages:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest] #[macos-latest, ubuntu-latest, windows-latest]
-        rust: [stable] #[stable, beta, nightly]
+        os: [ubuntu-latest]
+        rust: [stable]
 
     steps:
       - uses: actions/checkout@v2
@@ -33,23 +33,28 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all
-
-      - uses: actions-rs/cargo@v1
+      - name: Cache .npm
         if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v1
         with:
-          command: fmt
-          args: --all -- --check
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
 
-      - uses: actions-rs/cargo@v1
-        if: matrix.os == 'ubuntu-latest'
+      - name: install wasm-pack
+        uses: jetli/wasm-pack-action@v0.2.0
         with:
-          command: clippy
-          args: -- -D warnings
+          version: "latest"
+
+      - name: npm install
+        run: npm install
+
+      - name: npm run build
+        run: npm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: ffxiv-dev-new.dlunch.net
