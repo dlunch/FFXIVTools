@@ -3,6 +3,7 @@ use alloc::{borrow::ToOwned, boxed::Box, collections::BTreeMap, string::String, 
 use bytes::{Buf, Bytes};
 use nom::number::complete::{le_f32, le_u32};
 use nom::{do_parse, named, tag};
+use serde::Serialize;
 
 use sqpack_reader::{Package, Result};
 use util::{parse, StrExt};
@@ -84,35 +85,35 @@ impl LgbResourceEntry {
     );
 }
 
-#[repr(u32)]
-enum LayerGroupResourceItemType {
-    Unk = 0,
-    EventNpc = 8,
+#[derive(Serialize)]
+#[serde(untagged)]
+pub enum LayerGroupResourceItem {
+    EventNpc {
+        #[serde(rename = "type")]
+        item_type: u32,
+        id: u32,
+        x: f32,
+        y: f32,
+        z: f32,
+        npc_id: u32,
+    },
+    Unk {
+        #[serde(rename = "type")]
+        item_type: u32,
+    },
 }
 
-impl LayerGroupResourceItemType {
-    pub fn parse(raw: u32) -> Self {
-        match raw {
-            8 => LayerGroupResourceItemType::EventNpc,
-            _ => LayerGroupResourceItemType::Unk,
+impl LayerGroupResourceItem {
+    pub fn parse(data: &[u8]) -> Self {
+        let item_type = (&data[0..]).get_u32_le();
+        match item_type {
+            8 => Self::parse_eventnpc(data).unwrap().1,
+            _ => Self::parse_unk(data).unwrap().1,
         }
     }
-}
 
-pub trait LgbItem {}
-
-struct LgbItemEventNpc {
-    pub item_type: u32,
-    pub id: u32,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub npc_id: u32,
-}
-
-impl LgbItemEventNpc {
     #[rustfmt::skip]
-    named!(pub parse<Self>,
+    named!(parse_eventnpc<Self>,
         do_parse!(
             item_type:      le_u32  >>
             id:             le_u32  >>
@@ -127,7 +128,7 @@ impl LgbItemEventNpc {
             /* unk6: */     le_f32  >>
             /* unk7: */     le_f32  >>
             npc_id:         le_u32  >>
-            (Self {
+            (LayerGroupResourceItem::EventNpc {
                 item_type,
                 id,
                 x,
@@ -137,31 +138,22 @@ impl LgbItemEventNpc {
             })
         )
     );
-}
 
-impl LgbItem for LgbItemEventNpc {}
-
-struct LgbItemUnk {
-    pub item_type: u32,
-}
-
-impl LgbItemUnk {
     #[rustfmt::skip]
-    named!(pub parse<Self>,
+    named!(parse_unk<Self>,
         do_parse!(
             item_type:   le_u32  >>
-            (Self {
+            (LayerGroupResourceItem::Unk {
                 item_type,
             })
         )
     );
 }
-impl LgbItem for LgbItemUnk {}
 
 // LayerGroupResource
 pub struct Lgb {
     pub name: String,
-    pub entries: BTreeMap<String, Vec<Box<dyn LgbItem>>>,
+    pub entries: BTreeMap<String, Vec<LayerGroupResourceItem>>,
 }
 
 impl Lgb {
@@ -187,7 +179,7 @@ impl Lgb {
         Ok(Self { name, entries })
     }
 
-    fn parse_entry(data: &Bytes, offset: usize) -> (String, Vec<Box<dyn LgbItem>>) {
+    fn parse_entry(data: &Bytes, offset: usize) -> (String, Vec<LayerGroupResourceItem>) {
         let entry = parse!(&data[offset..], LgbResourceEntry);
         let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..])
             .unwrap()
@@ -199,18 +191,10 @@ impl Lgb {
                 let offset = base_offset + (i as usize) * core::mem::size_of::<u32>();
                 let data_offset = (&data[offset..]).get_u32_le();
 
-                Self::parse_item(&data[base_offset + data_offset as usize..])
+                LayerGroupResourceItem::parse(&data[base_offset + data_offset as usize..])
             })
             .collect::<Vec<_>>();
 
         (name, items)
-    }
-
-    fn parse_item(data: &[u8]) -> Box<dyn LgbItem> {
-        let item_type = LayerGroupResourceItemType::parse((&data[0..]).get_u32_le());
-        match item_type {
-            LayerGroupResourceItemType::EventNpc => Box::new(parse!(data, LgbItemEventNpc)),
-            _ => Box::new(parse!(data, LgbItemUnk)),
-        }
     }
 }
