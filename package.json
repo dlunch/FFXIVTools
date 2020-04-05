@@ -9,7 +9,7 @@
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
     "loader-utils": "^2.0.0",
-    "node-html-parser": "^1.2.13",
+    "node-html-parser": "^1.2.14",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.3",
     "webpack-dev-server": "^3.7.1"
