@@ -1,3 +1,7 @@
+// after rust 1.44
+// #[cfg(feature = "std")]
+// #![no_std]
+
 extern crate alloc;
 
 mod archive_id;
