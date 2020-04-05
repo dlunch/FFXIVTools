@@ -7,7 +7,7 @@ use nom::{do_parse, named, tag};
 use sqpack_reader::{Package, Result};
 use util::{parse, StrExt};
 
-pub struct LvbHeader {
+struct LvbHeader {
     pub file_size: u32,
     pub header_size: u32,
 }
@@ -31,7 +31,7 @@ impl LvbHeader {
     );
 }
 
-pub struct LvbEntries {
+struct LvbEntries {
     pub entry1_offset: u32,
     pub entry2_offset: u32,
     pub entry3_offset: u32,

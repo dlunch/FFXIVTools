@@ -116,6 +116,25 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug integration test 'lgb_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=lgb_test",
+          "--package=ffxiv_parser"
+        ],
+        "filter": {
+          "name": "lgb_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug executable 'model_viewer'",
       "cargo": {
         "args": ["build", "--bin=model_viewer", "--package=model_viewer"],
