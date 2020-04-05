@@ -5,11 +5,7 @@ name: Deploy to Github Pages
 jobs:
   gh-pages:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        rust: [stable]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +23,6 @@ jobs:
           key: ${{ runner.os }}-wasm-rust-target
 
       - name: Cache .npm
-        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -37,7 +32,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
           override: true
 
       - name: install wasm-pack
