@@ -2,6 +2,8 @@
 
 Reimplementation of [ffxiv.dlunch.net](ffxiv.dlunch.net) in rust.
 
+`master` branch is automatically deployed to [ffxiv-dev-new.dlunch.net](ffxiv-dev-new.dlunch.net)
+
 # Status
 
 Nothing is working.
