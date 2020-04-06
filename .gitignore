@@ -3,5 +3,4 @@
 .env
 node_modules
 /dist
-/apps/model_viewer/pkg
-data
+/data
