@@ -2,6 +2,7 @@ const path = require("path");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const HtmlLoader = require("./html-loader");
 
 const root = path.resolve(__dirname, "..");
@@ -10,9 +11,8 @@ const dist = path.resolve(root, "dist");
 module.exports = {
   context: root,
   entry: {
-    model_viewer: "pages/model_viewer/html/model_viewer.html",
-    translation_compare:
-      "pages/translation_compare/html/translation_compare.html",
+    model_viewer: "web/model_viewer/model_viewer.html",
+    translation_compare: "web/translation_compare/translation_compare.html",
   },
   output: {
     path: dist,
@@ -31,9 +31,19 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.ts$/,
+        use: [
+          {
+            loader: "ts-loader",
+          },
+        ],
+      },
     ],
   },
   resolve: {
+    extensions: [".ts", ".js"],
+    plugins: [new TsconfigPathsPlugin()],
     modules: ["."],
   },
   resolveLoader: {
@@ -46,14 +56,16 @@ module.exports = {
     new HtmlLoader.EntryExtractPlugin(),
 
     new WasmPackPlugin({
-      crateDirectory: path.resolve(root, "pages/model_viewer"),
-      outDir: path.resolve(root, "pages/model_viewer/pkg"),
+      crateDirectory: path.resolve(root, "web/model_viewer"),
+      outDir: path.resolve(root, "web/model_viewer/pkg"),
+      outName: "index",
     }),
     new WasmPackPlugin({
-      crateDirectory: path.resolve(root, "pages/translation_compare"),
-      outDir: path.resolve(root, "pages/translation_compare/pkg"),
+      crateDirectory: path.resolve(root, "web/translation_compare"),
+      outDir: path.resolve(root, "web/translation_compare/pkg"),
+      outName: "index",
     }),
-    new CopyPlugin([{ from: "static" }]),
+    new CopyPlugin([{ from: "web/index.html" }]),
     new CleanWebpackPlugin(),
   ],
 };
