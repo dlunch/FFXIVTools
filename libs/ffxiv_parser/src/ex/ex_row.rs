@@ -1,14 +1,13 @@
-use alloc::{str, vec::Vec};
+use alloc::vec::Vec;
 
 use bytes::Buf;
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
 
-use util::StrExt;
-
 use super::definition::{ExFieldType, ExhColumnDefinition};
+use crate::ffxiv_string::FFXIVString;
 
 pub enum ExRowItem<'a> {
-    String(&'a str),
+    String(FFXIVString<'a>),
     Bool(bool),
     Int8(i8),
     UInt8(u8),
@@ -51,12 +50,12 @@ impl<'a> ExRow<'a> {
         }
     }
 
-    pub fn string(&self, index: usize) -> &str {
+    pub fn string(&self, index: usize) -> FFXIVString {
         debug_assert!(self.columns[index].field_type == ExFieldType::String);
 
         let str_offset = self.data_slice(index).get_u32() as usize + self.row_size as usize;
 
-        str::from_null_terminated_utf8(&self.data[str_offset..]).unwrap()
+        FFXIVString::new(&self.data[str_offset..])
     }
 
     pub fn bool(&self, index: usize) -> bool {
@@ -157,7 +156,7 @@ impl Serialize for ExRowItem<'_> {
         S: Serializer,
     {
         match self {
-            ExRowItem::String(x) => serializer.serialize_str(x),
+            ExRowItem::String(x) => serializer.serialize_str(&x.decode()),
             ExRowItem::Bool(x) => serializer.serialize_bool(*x),
             ExRowItem::Int8(x) => serializer.serialize_i8(*x),
             ExRowItem::UInt8(x) => serializer.serialize_u8(*x),
