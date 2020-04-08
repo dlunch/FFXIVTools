@@ -6,6 +6,7 @@ extern crate alloc;
 mod ex;
 mod lgb;
 mod lvb;
+mod ffxiv_string;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 

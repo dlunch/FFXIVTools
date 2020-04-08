@@ -16,7 +16,7 @@ mod tests {
         let languages = ex.languages();
 
         let row = ex.index(0, languages[0]).unwrap();
-        assert_eq!(row.string(1), "ADV");
+        assert_eq!(row.string(1).decode(), "ADV");
         assert_eq!(row.uint8(3), 30);
         assert_eq!(row.int8(4), -1);
         assert_eq!(row.uint16(9), 100);
