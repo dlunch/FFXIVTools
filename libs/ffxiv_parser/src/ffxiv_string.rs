@@ -62,7 +62,7 @@ impl<'a> FFXIVStringIterator<'a> {
                 let payload = &self.data[self.cursor..self.cursor + markup_size];
                 format!(
                     "<Unknown payload=\"{}\" />",
-                    payload.into_iter().map(|x| format!("{:x}", x)).collect::<String>()
+                    payload.iter().map(|x| format!("{:x}", x)).collect::<String>()
                 )
             }
         };
