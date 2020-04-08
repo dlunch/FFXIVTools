@@ -4,9 +4,9 @@
 extern crate alloc;
 
 mod ex;
+mod ffxiv_string;
 mod lgb;
 mod lvb;
-mod ffxiv_string;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
