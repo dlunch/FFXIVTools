@@ -12,12 +12,14 @@ use alloc::collections::BTreeMap;
 use sqpack_reader::{Package, Result};
 use util::parse;
 
-use definition::{ExRowType, ExdData, ExdMultiRowData};
+use definition::{ExdData, ExdMultiRowData};
 use ex_row::ExRow;
 use exd_map::ExdMap;
 use exh::ExHeader;
 
 use crate::Language;
+
+pub use definition::ExRowType;
 
 pub struct Ex {
     header: ExHeader,

@@ -23,6 +23,6 @@ pub enum Language {
     Korean = 7,
 }
 
-pub use ex::{Ex, ExList};
+pub use ex::{Ex, ExList, ExRowType};
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
