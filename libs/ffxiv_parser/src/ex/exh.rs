@@ -9,6 +9,7 @@ use crate::Language;
 
 pub struct ExHeader {
     pub row_size: u16,
+    pub row_type: u16,
     pub columns: Vec<ExhColumnDefinition>,
     pub pages: Vec<ExhPage>,
     pub languages: Vec<Language>,
@@ -29,6 +30,7 @@ impl ExHeader {
 
         Ok(Self {
             row_size: header.row_size,
+            row_type: header.row_type,
             columns,
             pages,
             languages,

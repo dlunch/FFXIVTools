@@ -138,6 +138,52 @@ impl ExdRow {
     );
 }
 
+pub struct ExdMultiRowDataItem<'a> {
+    pub sub_index: u16,
+    pub data: &'a [u8],
+}
+
+impl<'a> ExdMultiRowDataItem<'a> {
+    #[rustfmt::skip]
+    pub fn parse(input: &'a [u8], row_size: usize) -> IResult<&'a [u8], Self> {
+        do_parse!(
+            input,
+            sub_index:  be_u16          >>
+            data:       take!(row_size) >>
+            (Self {
+                sub_index,
+                data,
+            })
+        )
+    }
+}
+
+pub struct ExdMultiRowData<'a> {
+    pub length: u32,
+    pub count: u16,
+    pub data: Vec<ExdMultiRowDataItem<'a>>,
+}
+
+impl<'a> ExdMultiRowData<'a> {
+    #[rustfmt::skip]
+    pub fn parse(input: &'a [u8], row_size: usize) -> IResult<&'a [u8], Self> {
+        do_parse!(
+            input,
+            length: be_u32          >>
+            count:  be_u16          >>
+            data:   take!(length)   >>
+            (Self {
+                length,
+                count,
+                data: (0..count as usize).map(|x| {
+                    let offset = x * (row_size + core::mem::size_of::<u16>());
+                    ExdMultiRowDataItem::parse(&data[offset..], row_size).unwrap().1
+                }).collect::<Vec<_>>(),
+            })
+        )
+    }
+}
+
 pub struct ExdData<'a> {
     pub length: u32,
     pub data: &'a [u8],
