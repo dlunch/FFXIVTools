@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use ffxiv_parser::Ex;
+    use ffxiv_parser::{Ex, Language};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
@@ -23,6 +23,23 @@ mod tests {
         assert_eq!(row.int32(28), 0);
         assert_eq!(row.bool(44), false);
         assert_eq!(row.bool(45), false);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn exd_multi_test() -> Result<()> {
+        let _ = pretty_env_logger::formatted_timed_builder()
+            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .try_init();
+
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let pack = SqPackReaderExtractedFile::new(provider)?;
+
+        let ex = Ex::new(&pack, "gilshopitem").await?;
+
+        let row = ex.index_multi(262144, 0, Language::None).unwrap();
+        assert_eq!(row.int32(0), 4594);
 
         Ok(())
     }

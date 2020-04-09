@@ -4,7 +4,7 @@ use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 use util::parse;
 
-use super::definition::{ExdData, ExdHeader, ExdRow};
+use super::definition::{ExdHeader, ExdRow};
 use crate::Language;
 
 pub struct ExData {
@@ -31,15 +31,12 @@ impl ExData {
 
     pub fn index(&self, index: u32) -> Option<&[u8]> {
         let offset = *self.offsets.get(&index)? as usize;
-        let data = parse!(&self.data[offset..], ExdData);
 
-        Some(data.data)
+        Some(&self.data[offset..])
     }
 
     pub fn all(&self) -> impl Iterator<Item = (u32, &[u8])> {
-        self.offsets
-            .iter()
-            .map(move |(index, offset)| (*index, parse!(&self.data[*offset as usize..], ExdData).data))
+        self.offsets.iter().map(move |(index, offset)| (*index, &self.data[*offset as usize..]))
     }
 
     fn language_to_suffix(language: Language) -> &'static str {

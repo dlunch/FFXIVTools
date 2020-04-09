@@ -10,7 +10,9 @@ pub use exl::ExList;
 use alloc::collections::BTreeMap;
 
 use sqpack_reader::{Package, Result};
+use util::parse;
 
+use definition::{ExdData, ExdMultiRowData};
 use ex_row::ExRow;
 use exd_map::ExdMap;
 use exh::ExHeader;
@@ -35,17 +37,55 @@ impl Ex {
     }
 
     pub fn index(&self, index: u32, language: Language) -> Option<ExRow> {
-        let data = self.data.index(index, language)?;
+        debug_assert!(self.header.row_type == 1);
 
-        Some(self.to_row(data))
+        let data = parse!(self.data.index(index, language)?, ExdData);
+
+        Some(self.to_row(data.data))
     }
 
     pub fn all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
+        debug_assert!(self.header.row_type == 1);
+
         Some(
             self.data
                 .all(language)?
-                .map(|(row_id, row_data)| (row_id, self.to_row(row_data)))
+                .map(|(row_id, row_data)| {
+                    let data = parse!(row_data, ExdData);
+                    (row_id, self.to_row(data.data))
+                })
                 .collect::<BTreeMap<u32, ExRow>>(),
+        )
+    }
+
+    pub fn index_multi(&self, index: u32, sub_index: u16, language: Language) -> Option<ExRow> {
+        debug_assert!(self.header.row_type == 2);
+
+        let data = ExdMultiRowData::parse(self.data.index(index, language)?, self.header.row_size as usize)
+            .unwrap()
+            .1;
+        let item = &data.data[sub_index as usize];
+
+        Some(self.to_row(item.data))
+    }
+
+    pub fn all_multi(&self, language: Language) -> Option<BTreeMap<u32, BTreeMap<u16, ExRow>>> {
+        debug_assert!(self.header.row_type == 2);
+
+        Some(
+            self.data
+                .all(language)?
+                .map(|(row_id, row_data)| {
+                    let data = ExdMultiRowData::parse(row_data, self.header.row_size as usize).unwrap().1;
+                    let rows = data
+                        .data
+                        .into_iter()
+                        .map(|x| (x.sub_index, self.to_row(x.data)))
+                        .collect::<BTreeMap<u16, ExRow>>();
+
+                    (row_id, rows)
+                })
+                .collect::<BTreeMap<u32, BTreeMap<u16, ExRow>>>(),
         )
     }
 
