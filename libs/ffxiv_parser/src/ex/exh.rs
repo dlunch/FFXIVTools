@@ -4,12 +4,12 @@ use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 use util::parse;
 
-use super::definition::{ExhColumnDefinition, ExhHeader, ExhPage};
+use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
 
 pub struct ExHeader {
     pub row_size: u16,
-    pub row_type: u16,
+    pub row_type: ExRowType,
     pub columns: Vec<ExhColumnDefinition>,
     pub pages: Vec<ExhPage>,
     pub languages: Vec<Language>,

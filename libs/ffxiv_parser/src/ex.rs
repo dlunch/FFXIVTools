@@ -12,7 +12,7 @@ use alloc::collections::BTreeMap;
 use sqpack_reader::{Package, Result};
 use util::parse;
 
-use definition::{ExdData, ExdMultiRowData};
+use definition::{ExRowType, ExdData, ExdMultiRowData};
 use ex_row::ExRow;
 use exd_map::ExdMap;
 use exh::ExHeader;
@@ -36,8 +36,12 @@ impl Ex {
         &self.header.languages
     }
 
+    pub fn row_type(&self) -> ExRowType {
+        self.header.row_type
+    }
+
     pub fn index(&self, index: u32, language: Language) -> Option<ExRow> {
-        debug_assert!(self.header.row_type == 1);
+        debug_assert!(self.header.row_type == ExRowType::Single);
 
         let data = parse!(self.data.index(index, language)?, ExdData);
 
@@ -45,7 +49,7 @@ impl Ex {
     }
 
     pub fn all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
-        debug_assert!(self.header.row_type == 1);
+        debug_assert!(self.header.row_type == ExRowType::Single);
 
         Some(
             self.data
@@ -59,7 +63,7 @@ impl Ex {
     }
 
     pub fn index_multi(&self, index: u32, sub_index: u16, language: Language) -> Option<ExRow> {
-        debug_assert!(self.header.row_type == 2);
+        debug_assert!(self.header.row_type == ExRowType::Multi);
 
         let data = ExdMultiRowData::parse(self.data.index(index, language)?, self.header.row_size as usize)
             .unwrap()
@@ -70,7 +74,7 @@ impl Ex {
     }
 
     pub fn all_multi(&self, language: Language) -> Option<BTreeMap<u32, BTreeMap<u16, ExRow>>> {
-        debug_assert!(self.header.row_type == 2);
+        debug_assert!(self.header.row_type == ExRowType::Multi);
 
         Some(
             self.data

@@ -3,13 +3,20 @@ use nom::{do_parse, named, tag, take, IResult};
 
 use crate::Language;
 
+#[derive(Eq, PartialEq, Copy, Clone)]
+#[repr(u16)]
+pub enum ExRowType {
+    Single = 1,
+    Multi = 2,
+}
+
 pub struct ExhHeader {
     pub version: u16,
     pub row_size: u16,
     pub column_count: u16,
     pub page_count: u16,
     pub language_count: u16,
-    pub row_type: u16,
+    pub row_type: ExRowType,
     pub item_count: u32,
 }
 
@@ -37,7 +44,11 @@ impl ExhHeader {
                 column_count,
                 page_count,
                 language_count,
-                row_type,
+                row_type: match row_type {
+                    1 => ExRowType::Single,
+                    2 => ExRowType::Multi,
+                    _ => panic!()
+                },
                 item_count,
             })
         )
