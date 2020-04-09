@@ -67,7 +67,7 @@ impl<'a> ExRow<'a> {
         let data;
         if field_type_value >= packed_bool_offset {
             // packed bool
-            let packed_data = self.data_slice(index).get_u32_le();
+            let packed_data = self.data_slice(index).get_u8();
             let index = field_type_value - packed_bool_offset;
             data = (packed_data & (1 << index)) as u8;
         } else {
