@@ -10,7 +10,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use ffxiv_parser::{Ex, ExList, Language, LayerGroupResourceItem, Lgb, Lvb};
+use ffxiv_parser::{Ex, ExList, ExRowType, Language, LayerGroupResourceItem, Lgb, Lvb};
 use sqpack_reader::{Package, SqPackFileHash};
 
 use context::Context;
@@ -42,9 +42,16 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
         Vec::from(ex.languages())
     };
 
-    let result = languages.iter().map(|&x| (x as u32, ex.all(x).unwrap())).collect::<BTreeMap<_, _>>();
-
-    Ok(serde_json::to_string(&result)?)
+    if ex.row_type() == ExRowType::Single {
+        let result = languages.iter().map(|&x| (x as u32, ex.all(x).unwrap())).collect::<BTreeMap<_, _>>();
+        Ok(serde_json::to_string(&result)?)
+    } else {
+        let result = languages
+            .iter()
+            .map(|&x| (x as u32, ex.all_multi(x).unwrap()))
+            .collect::<BTreeMap<_, _>>();
+        Ok(serde_json::to_string(&result)?)
+    }
 }
 
 fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Package> {
