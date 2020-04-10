@@ -67,7 +67,7 @@ impl Ex {
     pub fn index_multi(&self, index: u32, sub_index: u16, language: Language) -> Option<ExRow> {
         debug_assert!(self.header.row_type == ExRowType::Multi);
 
-        let data = ExdMultiRowData::parse(self.data.index(index, language)?).unwrap().1;
+        let data = parse!(self.data.index(index, language)?, ExdMultiRowData);
         let (_, row) = self.to_multi_row_item(data.data, sub_index);
 
         Some(row)
@@ -80,7 +80,7 @@ impl Ex {
             self.data
                 .all(language)?
                 .map(|(row_id, row_data)| {
-                    let data = ExdMultiRowData::parse(row_data).unwrap().1;
+                    let data = parse!(row_data, ExdMultiRowData);
                     let rows = (0..data.count).map(|x| self.to_multi_row_item(data.data, x)).collect::<BTreeMap<_, _>>();
 
                     (row_id, rows)
