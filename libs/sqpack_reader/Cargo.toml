@@ -14,8 +14,7 @@ test_local = ["std"]
 
 [dependencies]
 cfg-if = { version = "^0.1", default-features = false }
-# remove std after https://github.com/Geal/nom/issues/1038 closes
-nom = { version = "^5.1", features = ["alloc", "std"], default-features = false }
+nom = { version = ">=6.0.0-alpha1", features = ["alloc"], default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }
