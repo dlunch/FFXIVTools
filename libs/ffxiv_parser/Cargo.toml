@@ -12,8 +12,7 @@ futures = { version = "^0.3", features = ["alloc"], default-features = false }
 bytes = { version = "^0.5.4", default-features = false }
 serde = { version = "^1.0", features = ["derive"], default-features = false }
 serde_repr = { version = "^0.1", default-features = false }
-# remove std after https://github.com/Geal/nom/issues/1038 closes
-nom = { version = "^5.1", features = ["alloc", "std"], default-features = false }
+nom = { version = ">=6.0.0-alpha1", features = ["alloc"], default-features = false }
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 util = { version = "^0.1", default-features = false, path = "../util" }
 
