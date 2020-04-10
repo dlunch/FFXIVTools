@@ -85,7 +85,8 @@ impl<'a> FFXIVString<'a> {
             }
         };
 
-        self.next_item(cursor); // 0x03
+        let end = self.next_item(cursor);
+        debug_assert_eq!(end, 0x03);
 
         result
     }
