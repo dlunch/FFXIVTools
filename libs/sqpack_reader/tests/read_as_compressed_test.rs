@@ -1,14 +1,13 @@
 #[cfg(feature = "test_local")]
 #[cfg(test)]
 mod tests {
-    use std::io;
     use std::path::Path;
 
-    use sqpack_reader::{ExtractedFileProviderLocal, Package, SqPackReader, SqPackReaderExtractedFile};
+    use sqpack_reader::{ExtractedFileProviderLocal, Package, Result, SqPackReader, SqPackReaderExtractedFile};
 
     #[tokio::test]
     #[cfg(unix)]
-    async fn read_as_compressed_test() -> io::Result<()> {
+    async fn read_as_compressed_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
