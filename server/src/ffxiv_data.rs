@@ -142,9 +142,7 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
     }))
     .await
     .into_iter()
-    .collect::<Result<Vec<_>>>()?
-    .into_iter()
-    .sum();
+    .sum::<Result<u64>>()?;
 
     let stream = gen!({
         for hash in hashes {
