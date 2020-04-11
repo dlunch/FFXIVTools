@@ -18,12 +18,18 @@ impl<'a> FFXIVString<'a> {
         while cursor < self.data.len() && self.data[cursor] != 0 {
             if self.data[cursor] == Self::MARKUP_START {
                 result.push_str(&self.next_markup(&mut cursor));
+            } else {
+                result.push_str(&self.next_str(&mut cursor));
             }
-
-            let next_offset = self.data[cursor..].iter().position(|&x| x == Self::MARKUP_START || x == 0).unwrap();
-            result.push_str(str::from_utf8(&self.data[cursor..next_offset + cursor]).unwrap());
-            cursor += next_offset;
         }
+
+        result
+    }
+
+    fn next_str(&self, cursor: &mut usize) -> &str {
+        let next_offset = self.data[*cursor..].iter().position(|&x| x == Self::MARKUP_START || x == 0).unwrap();
+        let result = str::from_utf8(&self.data[*cursor..next_offset + *cursor]).unwrap();
+        *cursor += next_offset;
 
         result
     }
