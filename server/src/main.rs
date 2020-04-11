@@ -4,7 +4,7 @@ use std::error::Error;
 
 use actix_web::{
     dev::Service,
-    http::{header, HeaderValue},
+    http::{header, HeaderMap, HeaderValue},
     web, App, HttpRequest, HttpResponse, HttpServer, Result,
 };
 use futures::FutureExt;
@@ -34,35 +34,38 @@ fn probe(req: HttpRequest) -> HttpResponse {
         .body(response)
 }
 
+fn get_allowed_origin(source_origin: Option<&HeaderValue>) -> HeaderValue {
+    const ALLOWD_ORIGINS: [&str; 2] = ["https://ffxiv-dev.dlunch.net", "http://localhost:8080"];
+
+    if let Some(origin) = source_origin {
+        if ALLOWD_ORIGINS.iter().any(|x| x == origin) {
+            origin.to_owned()
+        } else {
+            HeaderValue::from_static("https://ffxiv.dlunch.net")
+        }
+    } else {
+        HeaderValue::from_static("https://ffxiv.dlunch.net")
+    }
+}
+
+fn insert_headers(header_map: &mut HeaderMap, allowed_origin: HeaderValue) {
+    header_map.insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, allowed_origin);
+    header_map.insert(header::ACCESS_CONTROL_ALLOW_METHODS, HeaderValue::from_static("GET"));
+    header_map.insert(header::ACCESS_CONTROL_ALLOW_HEADERS, HeaderValue::from_static("Content-Type"));
+    header_map.insert(header::VARY, HeaderValue::from_static("Origin, Accept-Encoding"));
+}
+
 #[actix_rt::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Debug).init();
     HttpServer::new(move || {
         App::new()
             .wrap_fn(|req, srv| {
-                const ALLOWD_ORIGINS: [&str; 2] = ["https://ffxiv-dev.dlunch.net", "http://localhost:8080"];
-
-                let allow_origin;
-                if let Some(origin) = req.headers().get(header::ORIGIN) {
-                    if ALLOWD_ORIGINS.iter().any(|x| x == origin) {
-                        allow_origin = origin.to_owned();
-                    } else {
-                        allow_origin = HeaderValue::from_static("https://ffxiv.dlunch.net");
-                    };
-                } else {
-                    allow_origin = HeaderValue::from_static("https://ffxiv.dlunch.net");
-                }
+                let allowed_origin = get_allowed_origin(req.headers().get(header::ORIGIN));
 
                 srv.call(req).map(|res| {
                     let mut res = res?;
-
-                    res.headers_mut().insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, allow_origin);
-                    res.headers_mut()
-                        .insert(header::ACCESS_CONTROL_ALLOW_METHODS, HeaderValue::from_static("GET"));
-                    res.headers_mut()
-                        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, HeaderValue::from_static("Content-Type"));
-                    res.headers_mut()
-                        .insert(header::VARY, HeaderValue::from_static("Origin, Accept-Encoding"));
+                    insert_headers(res.headers_mut(), allowed_origin);
 
                     Ok(res)
                 })
