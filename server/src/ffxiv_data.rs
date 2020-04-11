@@ -133,10 +133,10 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         })
         .collect::<Result<Vec<_>>>()?;
 
-    const BULK_ITEM_HEADER_SIZE: u64 = (std::mem::size_of::<u32>() as u64) * 4;
+    const BULK_ITEM_HEADER_SIZE: usize = (std::mem::size_of::<u32>()) * 4;
     let total_size = future::join_all(hashes.iter().map(|hash| {
         context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
-            Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE),
+            Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
             None => Err(error::ErrorNotFound("No such file")),
         })
     }))
@@ -150,7 +150,7 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         for hash in hashes {
             let data = context.all_package.read_as_compressed_by_hash(&hash).await.unwrap();
 
-            let mut header = BytesMut::with_capacity(BULK_ITEM_HEADER_SIZE as usize);
+            let mut header = BytesMut::with_capacity(BULK_ITEM_HEADER_SIZE);
             header.put_u32_le(hash.folder);
             header.put_u32_le(hash.file);
             header.put_u32_le(hash.path);
