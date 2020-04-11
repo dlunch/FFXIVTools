@@ -176,11 +176,12 @@ async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result
     let layers = future::join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(&context.all_package, lgb_path)))
         .await
         .into_iter()
-        .collect::<sqpack_reader::Result<Vec<_>>>()
-        .map_err(|_| error::ErrorNotFound("Not found"))?
-        .into_iter()
-        .map(|x| (x.name, x.entries))
-        .collect::<BTreeMap<_, _>>();
+        .map(|x| {
+            let x = x?;
+            Ok((x.name, x.entries))
+        })
+        .collect::<sqpack_reader::Result<BTreeMap<_, _>>>()
+        .map_err(|_| error::ErrorNotFound("Not found"))?;
 
     #[derive(Serialize)]
     struct JsonLvb {
