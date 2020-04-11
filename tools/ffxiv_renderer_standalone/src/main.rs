@@ -1,6 +1,7 @@
 use ffxiv_renderer::FFXIVRenderer;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     use winit::{
         event,
         event::WindowEvent,
@@ -13,7 +14,7 @@ fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut renderer = FFXIVRenderer::new(&window);
+    let mut renderer = FFXIVRenderer::new(&window).await;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
