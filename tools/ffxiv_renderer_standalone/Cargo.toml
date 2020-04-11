@@ -12,5 +12,6 @@ path = "src/main.rs"
 
 [dependencies]
 winit = { version = "^0.22", default-features = false }
+tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
 
 ffxiv_renderer = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_renderer" }
