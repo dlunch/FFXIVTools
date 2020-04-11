@@ -34,15 +34,15 @@ impl<'a> FFXIVString<'a> {
         result
     }
 
-    fn next_item(&self, cursor: &mut usize) -> u8 {
-        let item = self.data[*cursor];
+    fn next_byte(&self, cursor: &mut usize) -> u8 {
+        let byte = self.data[*cursor];
         *cursor += 1;
 
-        item
+        byte
     }
 
     fn next_size(&self, cursor: &mut usize) -> usize {
-        let mut next = || self.next_item(cursor) as usize;
+        let mut next = || self.next_byte(cursor) as usize;
         let item = next();
 
         match item {
@@ -65,7 +65,7 @@ impl<'a> FFXIVString<'a> {
             0x10 => "\n".to_owned(),
             0x16 => "\u{00AD}".to_owned(), // soft hyphen
             0x1A => {
-                let payload = self.next_item(cursor);
+                let payload = self.next_byte(cursor);
                 match payload {
                     2 => "<i>",
                     1 => "</i>",
@@ -74,7 +74,7 @@ impl<'a> FFXIVString<'a> {
                 .to_owned()
             }
             0x20 => {
-                let payload = self.next_item(cursor);
+                let payload = self.next_byte(cursor);
                 (payload - 1).to_string()
             }
             _ => {
@@ -86,7 +86,7 @@ impl<'a> FFXIVString<'a> {
             }
         };
 
-        let end = self.next_item(cursor);
+        let end = self.next_byte(cursor);
         debug_assert_eq!(end, 0x03);
 
         result
