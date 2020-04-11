@@ -20,14 +20,9 @@ impl<'a> FFXIVString<'a> {
                 result.push_str(&self.next_markup(&mut cursor));
             }
 
-            let next_offset = self.data[cursor..].iter().position(|&x| x == Self::MARKUP_START || x == 0);
-            if let Some(next_offset) = next_offset {
-                result.push_str(str::from_utf8(&self.data[cursor..next_offset + cursor]).unwrap());
-                cursor += next_offset;
-            } else {
-                result.push_str(str::from_utf8(&self.data[cursor..]).unwrap());
-                break;
-            }
+            let next_offset = self.data[cursor..].iter().position(|&x| x == Self::MARKUP_START || x == 0).unwrap();
+            result.push_str(str::from_utf8(&self.data[cursor..next_offset + cursor]).unwrap());
+            cursor += next_offset;
         }
 
         result
