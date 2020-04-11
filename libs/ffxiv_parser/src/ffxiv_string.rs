@@ -11,7 +11,7 @@ impl<'a> FFXIVString<'a> {
         Self { data }
     }
 
-    pub fn decode(&'a self) -> String {
+    pub fn decode(&self) -> String {
         let mut result = String::with_capacity(self.data.len());
         let mut cursor = 0;
 
