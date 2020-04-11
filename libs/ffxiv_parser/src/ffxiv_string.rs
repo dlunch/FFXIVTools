@@ -19,7 +19,7 @@ impl<'a> FFXIVString<'a> {
             if self.data[cursor] == Self::MARKUP_START {
                 result.push_str(&self.next_markup(&mut cursor));
             } else {
-                result.push_str(&self.next_str(&mut cursor));
+                result.push_str(self.next_str(&mut cursor));
             }
         }
 
