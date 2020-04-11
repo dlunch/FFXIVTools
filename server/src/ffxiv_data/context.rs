@@ -30,13 +30,13 @@ impl ContextImpl {
         let packs = Path::new(path_base)
             .read_dir()?
             .filter_map(Result::ok)
-            .map(|x| (x.path(), x.path().file_name().unwrap().to_str().unwrap().to_owned()))
+            .filter_map(|x| Some((x.path(), x.path().file_name()?.to_str()?.to_owned())))
             .map(|(path, file_name)| {
                 let mut split = file_name.split('_');
-                Some((path, split.next()?.to_owned(), split.next()?.to_owned()))
+                Some((path, split.next()?.to_owned(), split.next()?.parse::<usize>().unwrap()))
             })
             .filter_map(|x| x)
-            .sorted_by_key(|(_, region, version)| REGIONS.iter().position(|x| x == region).unwrap() * 1000 + version.parse::<usize>().unwrap())
+            .sorted_by_key(|(_, region, version)| REGIONS.iter().position(|x| x == region).unwrap() * 1000 + version)
             .map(|(path, region, version)| (path, format!("{}_{}", region, version)))
             .rev()
             .collect::<Vec<_>>();
