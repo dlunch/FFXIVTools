@@ -5,6 +5,7 @@ mod exd_map;
 mod exh;
 mod exl;
 
+pub use definition::ExRowType;
 pub use exl::ExList;
 
 use alloc::collections::BTreeMap;
@@ -18,8 +19,6 @@ use exd_map::ExdMap;
 use exh::ExHeader;
 
 use crate::Language;
-
-pub use definition::ExRowType;
 
 pub struct Ex {
     header: ExHeader,
