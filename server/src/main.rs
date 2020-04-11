@@ -1,7 +1,5 @@
 mod ffxiv_data;
 
-use std::error::Error;
-
 use actix_web::{
     dev::Service,
     http::{header, HeaderMap, HeaderValue},
@@ -56,7 +54,7 @@ fn insert_headers(header_map: &mut HeaderMap, allowed_origin: HeaderValue) {
 }
 
 #[actix_rt::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Debug).init();
     HttpServer::new(move || {
         App::new()
