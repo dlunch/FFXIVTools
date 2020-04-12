@@ -13,7 +13,8 @@
           "test",
           "--no-run",
           "--test=read_test",
-          "--package=sqpack_reader"
+          "--package=sqpack_reader",
+          "--all-features"
         ],
         "filter": {
           "name": "read_test",
@@ -32,7 +33,8 @@
           "test",
           "--no-run",
           "--test=read_as_compressed_test",
-          "--package=sqpack_reader"
+          "--package=sqpack_reader",
+          "--all-features"
         ],
         "filter": {
           "name": "read_as_compressed_test",

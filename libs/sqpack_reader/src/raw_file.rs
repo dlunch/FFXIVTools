@@ -1,61 +1,29 @@
 use alloc::vec::Vec;
+use core::mem::size_of;
 
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
-use nom::number::complete::le_u32;
-use nom::{do_parse, named};
+use zerocopy::{FromBytes, LayoutVerified};
 
 use bytes::{Bytes, BytesMut};
 
-use util::{parse, round_up};
+use util::{cast, round_up};
 
+#[derive(FromBytes)]
+#[repr(C)]
 struct BlockHeader {
     pub header_size: u32,
+    _unk: u32,
     pub compressed_length: u32, // 32000 if not compressed
     pub uncompressed_length: u32,
 }
 
-impl BlockHeader {
-    const SIZE: usize = 16;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            header_size:            le_u32  >>
-            /* unk: */              le_u32  >>
-            compressed_length:      le_u32  >>
-            uncompressed_length:    le_u32  >>
-            (Self {
-                header_size,
-                compressed_length,
-                uncompressed_length,
-            })
-        )
-    );
-}
-
+#[derive(FromBytes)]
+#[repr(C)]
 struct CompressedFileHeader {
     uncompressed_size: u32,
     header_size: u32,
     block_count: u32,
-}
-
-impl CompressedFileHeader {
-    const SIZE: usize = 12;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            uncompressed_size:  le_u32  >>
-            header_size:        le_u32  >>
-            block_count:        le_u32  >>
-            (Self {
-                uncompressed_size,
-                header_size,
-                block_count,
-            })
-        )
-    );
 }
 
 pub struct SqPackRawFile {
@@ -66,14 +34,14 @@ pub struct SqPackRawFile {
 
 impl SqPackRawFile {
     pub fn from_compressed_file(data: Bytes) -> Self {
-        let file_header = parse!(&data, CompressedFileHeader);
+        let file_header = cast!(&data, CompressedFileHeader);
 
-        let header = data.slice(CompressedFileHeader::SIZE..CompressedFileHeader::SIZE + file_header.header_size as usize);
+        let header = data.slice(size_of::<CompressedFileHeader>()..size_of::<CompressedFileHeader>() + file_header.header_size as usize);
 
-        let begin = CompressedFileHeader::SIZE + file_header.header_size as usize;
+        let begin = size_of::<CompressedFileHeader>() + file_header.header_size as usize;
         let blocks = (0..file_header.block_count)
             .scan(begin, |offset, _| {
-                let block_size = Self::get_block_size(&data[*offset..*offset + BlockHeader::SIZE]);
+                let block_size = Self::get_block_size(&data[*offset..*offset + size_of::<BlockHeader>()]);
                 let block = data.slice(*offset..*offset + block_size);
 
                 *offset += round_up(block_size, 4usize);
@@ -114,7 +82,7 @@ impl SqPackRawFile {
         use bytes::BufMut;
         use core::iter;
 
-        let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + CompressedFileHeader::SIZE);
+        let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + size_of::<CompressedFileHeader>());
         result.put_u32_le(self.uncompressed_size);
         result.put_u32_le(self.header.len() as u32);
         result.put_u32_le(self.blocks.len() as u32);
@@ -131,7 +99,7 @@ impl SqPackRawFile {
     }
 
     fn get_block_size(block: &[u8]) -> usize {
-        let header = parse!(&block, BlockHeader);
+        let header = cast!(&block, BlockHeader);
 
         if header.compressed_length >= 32000 {
             header.header_size as usize + header.uncompressed_length as usize
@@ -141,7 +109,7 @@ impl SqPackRawFile {
     }
 
     fn decode_block_into(block: &[u8], result: &mut BytesMut) {
-        let header = parse!(&block, BlockHeader);
+        let header = cast!(&block, BlockHeader);
 
         if header.compressed_length >= 32000 {
             result.extend(&block[header.header_size as usize..header.header_size as usize + header.uncompressed_length as usize]);

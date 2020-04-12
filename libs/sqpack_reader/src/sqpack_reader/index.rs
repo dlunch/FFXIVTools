@@ -1,9 +1,11 @@
+use core::mem::size_of;
 use std::io;
 use std::path::Path;
 
-use tokio::fs::File;
+use tokio::fs;
+use zerocopy::LayoutVerified;
 
-use util::{read_and_parse, ReadExt};
+use util::cast;
 
 use super::definition::{FileSegment, FolderSegment, SqPackHeader, SqPackIndexHeader};
 use crate::error::{Result, SqPackReaderError};
@@ -15,21 +17,24 @@ pub struct SqPackIndex {
     file_segment_base: u32,
 }
 
-macro_rules! read_segment {
-    ($file: expr, $segment: expr, $type: ty) => {
-        read_and_parse!($file, $segment.offset, $segment.size as usize / <$type>::SIZE, $type)
-    };
+macro_rules! get_segment {
+    ($data: expr, $segment: expr, $type: ty) => {{
+        let segment_count = $segment.size as usize / size_of::<$type>();
+        (0..segment_count)
+            .map(|x| cast!($data[$segment.offset as usize + x * size_of::<$type>()..], $type).clone())
+            .collect::<Vec<_>>()
+    }};
 }
 
 impl SqPackIndex {
     pub async fn new(path: &Path) -> io::Result<Self> {
-        let mut f = File::open(path).await?;
+        let data = fs::read(path).await?;
 
-        let sqpack_header = read_and_parse!(f, 0, SqPackHeader).await?;
-        let index_header = read_and_parse!(f, sqpack_header.header_length, SqPackIndexHeader).await?;
+        let sqpack_header = cast!(data, SqPackHeader);
+        let index_header = cast!(&data[sqpack_header.header_length as usize..], SqPackIndexHeader);
 
-        let folder_segments = read_segment!(f, index_header.folder_segment, FolderSegment).await?;
-        let file_segments = read_segment!(f, index_header.file_segment, FileSegment).await?;
+        let folder_segments = get_segment!(data, index_header.folder_segment, FolderSegment);
+        let file_segments = get_segment!(data, index_header.file_segment, FileSegment);
 
         Ok(Self {
             folder_segments,
@@ -46,8 +51,8 @@ impl SqPackIndex {
             .map_err(|_| SqPackReaderError::NoSuchFolder)?;
         let folder = &self.folder_segments[folder_index];
 
-        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
-        let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
+        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / size_of::<FileSegment>();
+        let file_end = file_begin + folder.file_list_size as usize / size_of::<FileSegment>();
         let file_index = self.file_segments[file_begin..file_end]
             .binary_search_by_key(&file_hash, |x| x.file_hash)
             .map_err(|_| SqPackReaderError::NoSuchFile)?;
@@ -67,8 +72,8 @@ impl SqPackIndex {
             .map_err(|_| SqPackReaderError::NoSuchFolder)?;
         let folder = &self.folder_segments[folder_index];
 
-        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / FileSegment::SIZE;
-        let file_end = file_begin + folder.file_list_size as usize / FileSegment::SIZE;
+        let file_begin = (folder.file_list_offset - self.file_segment_base) as usize / size_of::<FileSegment>();
+        let file_end = file_begin + folder.file_list_size as usize / size_of::<FileSegment>();
 
         Ok(self.file_segments[file_begin..file_end].iter().map(|x| x.file_hash))
     }
