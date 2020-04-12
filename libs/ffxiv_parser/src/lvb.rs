@@ -37,7 +37,7 @@ impl Lvb {
     pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
         let data: Bytes = package.read_file(&format!("bg/{}.lvb", path)).await?;
 
-        let _ = cast::<LvbHeader>(data.as_ref());
+        let _ = cast::<LvbHeader>(&data);
         let entries = cast::<LvbEntries>(&data[size_of::<LvbHeader>()..]);
 
         let entry4_base = size_of::<LvbHeader>() + entries.entry4_offset as usize;

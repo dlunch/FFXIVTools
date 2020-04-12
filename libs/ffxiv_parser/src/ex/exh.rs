@@ -20,7 +20,7 @@ impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let data: Bytes = package.read_file(&format!("exd/{}.exh", name)).await?;
 
-        let header = cast::<ExhHeader>(data.as_ref());
+        let header = cast::<ExhHeader>(&data);
 
         let columns = (0..header.column_count.get() as usize)
             .map(|x| cast::<ExhColumnDefinition>(&data[size_of::<ExhHeader>() + x * size_of::<ExhColumnDefinition>()..]).clone())

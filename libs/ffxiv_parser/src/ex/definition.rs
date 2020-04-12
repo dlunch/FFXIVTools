@@ -1,7 +1,30 @@
-use byteorder::{BigEndian, ByteOrder, LittleEndian};
-use zerocopy::byteorder::{U16, U32};
-
 use crate::Language;
+
+use bytes::Buf;
+
+#[derive(Clone)]
+#[repr(C)]
+pub struct U16BE {
+    raw: [u8; 2],
+}
+
+impl U16BE {
+    pub fn get(&self) -> u16 {
+        u16::from_be_bytes(self.raw)
+    }
+}
+
+#[derive(Clone)]
+#[repr(C)]
+pub struct U32BE {
+    raw: [u8; 4],
+}
+
+impl U32BE {
+    pub fn get(&self) -> u32 {
+        u32::from_be_bytes(self.raw)
+    }
+}
 
 #[derive(Eq, PartialEq, Copy, Clone)]
 #[repr(u16)]
@@ -24,15 +47,15 @@ impl ExRowType {
 #[repr(C)]
 pub struct ExhHeader {
     _magic: [u8; 4],
-    pub version: U16<BigEndian>,
-    pub row_size: U16<BigEndian>,
-    pub column_count: U16<BigEndian>,
-    pub page_count: U16<BigEndian>,
-    pub language_count: U16<BigEndian>,
+    pub version: U16BE,
+    pub row_size: U16BE,
+    pub column_count: U16BE,
+    pub page_count: U16BE,
+    pub language_count: U16BE,
     _unk1: u16,
-    pub row_type: U16<BigEndian>,
+    pub row_type: U16BE,
     _unk2: u16,
-    pub item_count: U32<BigEndian>,
+    pub item_count: U32BE,
     _unk3: u32,
     _unk4: u32,
 }
@@ -40,8 +63,8 @@ pub struct ExhHeader {
 #[derive(Clone)]
 #[repr(C)]
 pub struct ExhColumnDefinition {
-    pub field_type: U16<BigEndian>,
-    pub offset: U16<BigEndian>,
+    pub field_type: U16BE,
+    pub offset: U16BE,
 }
 
 #[derive(Copy, Clone)]
@@ -53,8 +76,8 @@ pub struct ExhPage {
 
 impl ExhPage {
     pub fn from(raw: &[u8]) -> Self {
-        let start = BigEndian::read_u32(raw);
-        let count = BigEndian::read_u32(&raw[core::mem::size_of::<u32>()..]);
+        let start = (&raw[..]).get_u32();
+        let count = (&raw[core::mem::size_of::<u32>()..]).get_u32();
 
         Self { start, count }
     }
@@ -63,10 +86,10 @@ impl ExhPage {
 #[repr(C)]
 pub struct ExdHeader {
     _magic: [u8; 4],
-    pub version: U16<BigEndian>,
+    pub version: U16BE,
     _unk1: u16,
-    pub row_size: U32<BigEndian>,
-    pub data_size: U32<BigEndian>,
+    pub row_size: U32BE,
+    pub data_size: U32BE,
     _unk2: u32,
     _unk3: u32,
     _unk4: u32,
@@ -75,30 +98,30 @@ pub struct ExdHeader {
 
 #[repr(C)]
 pub struct ExdRow {
-    pub index: U32<BigEndian>,
-    pub offset: U32<BigEndian>,
+    pub index: U32BE,
+    pub offset: U32BE,
 }
 
 #[repr(C)]
 pub struct ExdMultiRowDataItemHeader {
-    pub sub_index: U16<BigEndian>,
+    pub sub_index: U16BE,
 }
 
 #[repr(C)]
 pub struct ExdMultiRowDataHeader {
-    pub length: U32<BigEndian>,
-    pub count: U16<BigEndian>,
+    pub length: U32BE,
+    pub count: U16BE,
 }
 
 #[repr(C)]
 pub struct ExdDataHeader {
-    pub length: U32<BigEndian>,
+    pub length: U32BE,
     _unk: u16,
 }
 
 impl Language {
     pub fn from(raw: &[u8]) -> Self {
-        match LittleEndian::read_u16(raw) {
+        match (&raw[..]).get_u16_le() {
             0 => Language::None,
             1 => Language::Japanese,
             2 => Language::English,

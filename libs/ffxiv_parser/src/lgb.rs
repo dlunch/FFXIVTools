@@ -94,7 +94,7 @@ impl Serialize for LayerGroupResourceItem<'_> {
 
 impl<'a> LayerGroupResourceItem<'a> {
     pub fn from(raw: &'a [u8]) -> Self {
-        let item_type = (raw.as_ref()).get_u32_le();
+        let item_type = (&raw[..]).get_u32_le();
 
         match item_type {
             8 => LayerGroupResourceItem::EventNpc(cast::<LayerGroupResourceItemEventNpc>(raw)),
@@ -114,7 +114,7 @@ impl Lgb {
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
         let data: Bytes = package.read_file(path.as_ref()).await?;
 
-        let _ = cast::<LgbHeader>(data.as_ref());
+        let _ = cast::<LgbHeader>(&data);
         let resource_header = cast::<LgbResourceHeader>(&data[size_of::<LgbHeader>()..]);
 
         Ok(Self {

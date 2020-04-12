@@ -31,7 +31,7 @@ pub struct SqPackRawFile {
 
 impl SqPackRawFile {
     pub fn from_compressed_file(data: Bytes) -> Self {
-        let file_header = cast::<CompressedFileHeader>(data.as_ref());
+        let file_header = cast::<CompressedFileHeader>(&data);
 
         let header = data.slice(size_of::<CompressedFileHeader>()..size_of::<CompressedFileHeader>() + file_header.header_size as usize);
 
