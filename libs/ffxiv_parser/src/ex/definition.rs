@@ -1,8 +1,5 @@
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
-use zerocopy::{
-    byteorder::{U16, U32},
-    FromBytes,
-};
+use zerocopy::byteorder::{U16, U32};
 
 use crate::Language;
 
@@ -24,7 +21,6 @@ impl ExRowType {
     }
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExhHeader {
     _magic: [u8; 4],
@@ -41,7 +37,7 @@ pub struct ExhHeader {
     _unk4: u32,
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct ExhColumnDefinition {
     pub field_type: U16<BigEndian>,
@@ -64,7 +60,6 @@ impl ExhPage {
     }
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExdHeader {
     _magic: [u8; 4],
@@ -78,27 +73,23 @@ pub struct ExdHeader {
     _unk5: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExdRow {
     pub index: U32<BigEndian>,
     pub offset: U32<BigEndian>,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExdMultiRowDataItemHeader {
     pub sub_index: U16<BigEndian>,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExdMultiRowDataHeader {
     pub length: U32<BigEndian>,
     pub count: U16<BigEndian>,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ExdDataHeader {
     pub length: U32<BigEndian>,

@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
-use zerocopy::LayoutVerified;
 
 use util::{cast, ReadExt};
 
@@ -39,11 +38,11 @@ impl SqPackData {
         let mut file = File::open(&self.file_path).await?;
 
         let file_header_data = file.read_bytes(offset, size_of::<FileHeader>()).await?;
-        let file_header = cast!(file_header_data, FileHeader);
+        let file_header = cast::<FileHeader>(&file_header_data);
         match FileType::from(file_header.file_type) {
-            FileType::Default => Ok(Self::read_default(&mut file, offset, &file_header).await?),
-            FileType::Model => Ok(Self::read_model(&mut file, offset, &file_header).await?),
-            FileType::Image => Ok(Self::read_image(&mut file, offset, &file_header).await?),
+            FileType::Default => Ok(Self::read_default(&mut file, offset, file_header).await?),
+            FileType::Model => Ok(Self::read_model(&mut file, offset, file_header).await?),
+            FileType::Image => Ok(Self::read_image(&mut file, offset, file_header).await?),
         }
     }
 
@@ -55,7 +54,7 @@ impl SqPackData {
             )
             .await?;
         let frame_infos = (0..file_header.frame_count as usize)
-            .map(|x| cast!(&frame_infos_data[x * size_of::<DefaultFrameInfo>()..], DefaultFrameInfo))
+            .map(|x| cast::<DefaultFrameInfo>(&frame_infos_data[x * size_of::<DefaultFrameInfo>()..]))
             .collect::<Vec<_>>();
 
         let mut blocks = Vec::with_capacity(frame_infos.len());
@@ -89,7 +88,7 @@ impl SqPackData {
         let frame_info_data = file
             .read_bytes(base_offset + size_of::<FileHeader>() as u64, size_of::<ModelFrameInfo>())
             .await?;
-        let frame_info = cast!(frame_info_data, ModelFrameInfo);
+        let frame_info = cast::<ModelFrameInfo>(&frame_info_data);
 
         let mut header = BytesMut::with_capacity(size_of::<u16>() * 2);
         header.put_u16_le(frame_info.number_of_meshes);
@@ -115,7 +114,7 @@ impl SqPackData {
             )
             .await?;
         let frame_infos = (0..file_header.frame_count as usize)
-            .map(|x| cast!(&frame_infos_data[x * size_of::<ImageFrameInfo>()..], ImageFrameInfo))
+            .map(|x| cast::<ImageFrameInfo>(&frame_infos_data[x * size_of::<ImageFrameInfo>()..]))
             .collect::<Vec<_>>();
 
         let sizes_table_base = base_offset + size_of::<FileHeader>() as u64 + file_header.frame_count as u64 * size_of::<ImageFrameInfo>() as u64;

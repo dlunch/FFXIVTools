@@ -2,12 +2,10 @@ use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 use core::mem::size_of;
 
 use bytes::{Buf, Bytes};
-use zerocopy::{FromBytes, LayoutVerified};
 
 use sqpack_reader::{Package, Result};
 use util::{cast, StrExt};
 
-#[derive(FromBytes)]
 #[repr(C)]
 struct LvbHeader {
     _magic1: [u8; 4],
@@ -17,7 +15,6 @@ struct LvbHeader {
     pub header_size: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 struct LvbEntries {
     pub entry1_offset: u32,
@@ -40,8 +37,8 @@ impl Lvb {
     pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
         let data: Bytes = package.read_file(&format!("bg/{}.lvb", path)).await?;
 
-        let _ = cast!(data, LvbHeader);
-        let entries = cast!(&data[size_of::<LvbHeader>()..], LvbEntries);
+        let _ = cast::<LvbHeader>(data.as_ref());
+        let entries = cast::<LvbEntries>(&data[size_of::<LvbHeader>()..]);
 
         let entry4_base = size_of::<LvbHeader>() + entries.entry4_offset as usize;
         let lgb_paths = (0..entries.entry4_count as usize)

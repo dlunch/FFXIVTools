@@ -3,12 +3,10 @@ use core::mem::size_of;
 
 use bytes::{Buf, Bytes};
 use serde::{Serialize, Serializer};
-use zerocopy::{FromBytes, LayoutVerified};
 
 use sqpack_reader::{Package, Result};
 use util::{cast, StrExt};
 
-#[derive(FromBytes)]
 #[repr(C)]
 struct LgbHeader {
     _magic1: [u8; 4],
@@ -18,7 +16,6 @@ struct LgbHeader {
     _unk2: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 struct LgbResourceHeader {
     _unk1: u32,
@@ -27,7 +24,6 @@ struct LgbResourceHeader {
     pub entry_count: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 struct LgbResourceEntry {
     _unk1: u32,
@@ -45,7 +41,7 @@ struct LgbResourceEntry {
     _unk10: u32,
 }
 
-#[derive(FromBytes, Serialize, Clone)]
+#[derive(Serialize, Clone)]
 #[repr(C)]
 pub struct LayerGroupResourceItemEventNpc {
     #[serde(rename = "type")]
@@ -72,7 +68,7 @@ pub struct LayerGroupResourceItemEventNpc {
     pub npc_id: u32,
 }
 
-#[derive(FromBytes, Serialize, Clone)]
+#[derive(Serialize, Clone)]
 #[repr(C)]
 pub struct LayerGroupResourceItemUnk {
     #[serde(rename = "type")]
@@ -80,8 +76,8 @@ pub struct LayerGroupResourceItemUnk {
 }
 
 pub enum LayerGroupResourceItem<'a> {
-    EventNpc(LayoutVerified<&'a [u8], LayerGroupResourceItemEventNpc>),
-    Unk(LayoutVerified<&'a [u8], LayerGroupResourceItemUnk>),
+    EventNpc(&'a LayerGroupResourceItemEventNpc),
+    Unk(&'a LayerGroupResourceItemUnk),
 }
 
 impl Serialize for LayerGroupResourceItem<'_> {
@@ -98,11 +94,11 @@ impl Serialize for LayerGroupResourceItem<'_> {
 
 impl<'a> LayerGroupResourceItem<'a> {
     pub fn from(raw: &'a [u8]) -> Self {
-        let item_type = (&raw[..]).get_u32_le();
+        let item_type = (raw.as_ref()).get_u32_le();
 
         match item_type {
-            8 => LayerGroupResourceItem::EventNpc(cast!(raw, LayerGroupResourceItemEventNpc)),
-            _ => LayerGroupResourceItem::Unk(cast!(raw, LayerGroupResourceItemUnk)),
+            8 => LayerGroupResourceItem::EventNpc(cast::<LayerGroupResourceItemEventNpc>(raw)),
+            _ => LayerGroupResourceItem::Unk(cast::<LayerGroupResourceItemUnk>(raw)),
         }
     }
 }
@@ -118,8 +114,8 @@ impl Lgb {
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
         let data: Bytes = package.read_file(path.as_ref()).await?;
 
-        let _ = cast!(data, LgbHeader);
-        let resource_header = cast!(&data[size_of::<LgbHeader>()..], LgbResourceHeader);
+        let _ = cast::<LgbHeader>(data.as_ref());
+        let resource_header = cast::<LgbResourceHeader>(&data[size_of::<LgbHeader>()..]);
 
         Ok(Self {
             data: data.clone(),
@@ -145,7 +141,7 @@ impl Lgb {
     }
 
     fn parse_entry<'a>(data: &'a Bytes, offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
-        let entry = cast!(&data[offset..], LgbResourceEntry);
+        let entry = cast::<LgbResourceEntry>(&data[offset..]);
         let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..]).unwrap();
 
         let base_offset = offset + entry.items_offset as usize;

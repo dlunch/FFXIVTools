@@ -3,7 +3,6 @@ use std::io;
 use std::path::Path;
 
 use tokio::fs;
-use zerocopy::LayoutVerified;
 
 use util::cast;
 
@@ -21,7 +20,7 @@ macro_rules! get_segment {
     ($data: expr, $segment: expr, $type: ty) => {{
         let segment_count = $segment.size as usize / size_of::<$type>();
         (0..segment_count)
-            .map(|x| cast!($data[$segment.offset as usize + x * size_of::<$type>()..], $type).clone())
+            .map(|x| cast::<$type>(&$data[$segment.offset as usize + x * size_of::<$type>()..]).clone())
             .collect::<Vec<_>>()
     }};
 }
@@ -30,11 +29,11 @@ impl SqPackIndex {
     pub async fn new(path: &Path) -> io::Result<Self> {
         let data = fs::read(path).await?;
 
-        let sqpack_header = cast!(data, SqPackHeader);
-        let index_header = cast!(&data[sqpack_header.header_length as usize..], SqPackIndexHeader);
+        let sqpack_header = cast::<SqPackHeader>(&data);
+        let index_header = cast::<SqPackIndexHeader>(&data[sqpack_header.header_length as usize..]);
 
-        let folder_segments = get_segment!(data, index_header.folder_segment, FolderSegment);
-        let file_segments = get_segment!(data, index_header.file_segment, FileSegment);
+        let folder_segments = get_segment!(&data, index_header.folder_segment, FolderSegment);
+        let file_segments = get_segment!(&data, index_header.file_segment, FileSegment);
 
         Ok(Self {
             folder_segments,
