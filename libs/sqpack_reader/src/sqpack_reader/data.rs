@@ -6,7 +6,7 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
 use zerocopy::LayoutVerified;
 
-use util::{read_as, ReadExt};
+use util::{cast, ReadExt};
 
 use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
 use crate::error::Result;
@@ -38,27 +38,30 @@ impl SqPackData {
     async fn read_raw(&self, offset: u64) -> io::Result<SqPackRawFile> {
         let mut file = File::open(&self.file_path).await?;
 
-        let file_header = read_as!(file, offset, FileHeader).await?;
+        let file_header_data = file.read_bytes(offset, size_of::<FileHeader>()).await?;
+        let file_header = cast!(file_header_data, FileHeader);
         match FileType::from(file_header.file_type) {
-            FileType::Default => Ok(Self::read_default(&mut file, offset, file_header).await?),
-            FileType::Model => Ok(Self::read_model(&mut file, offset, file_header).await?),
-            FileType::Image => Ok(Self::read_image(&mut file, offset, file_header).await?),
+            FileType::Default => Ok(Self::read_default(&mut file, offset, &file_header).await?),
+            FileType::Model => Ok(Self::read_model(&mut file, offset, &file_header).await?),
+            FileType::Image => Ok(Self::read_image(&mut file, offset, &file_header).await?),
         }
     }
 
-    async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_headers = read_as!(
-            file,
-            base_offset + size_of::<FileHeader>() as u64,
-            file_header.frame_count,
-            DefaultFrameInfo
-        )
-        .await?;
+    async fn read_default(file: &mut File, base_offset: u64, file_header: &FileHeader) -> io::Result<SqPackRawFile> {
+        let frame_infos_data = file
+            .read_bytes(
+                base_offset + size_of::<FileHeader>() as u64,
+                size_of::<DefaultFrameInfo>() * file_header.frame_count as usize,
+            )
+            .await?;
+        let frame_infos = (0..file_header.frame_count as usize)
+            .map(|x| cast!(&frame_infos_data[x * size_of::<DefaultFrameInfo>()..], DefaultFrameInfo))
+            .collect::<Vec<_>>();
 
-        let mut blocks = Vec::with_capacity(frame_headers.len());
-        for frame_header in frame_headers {
-            let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
-            let block = file.read_bytes(offset, frame_header.block_size as usize).await?;
+        let mut blocks = Vec::with_capacity(frame_infos.len());
+        for frame_info in frame_infos {
+            let offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
+            let block = file.read_bytes(offset, frame_info.block_size as usize).await?;
 
             blocks.push(Bytes::from(block));
         }
@@ -82,8 +85,11 @@ impl SqPackData {
         Ok(Bytes::from(file.read_bytes(base_offset, total_size).await?))
     }
 
-    async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_info = read_as!(file, base_offset + size_of::<FileHeader>() as u64, ModelFrameInfo).await?;
+    async fn read_model(file: &mut File, base_offset: u64, file_header: &FileHeader) -> io::Result<SqPackRawFile> {
+        let frame_info_data = file
+            .read_bytes(base_offset + size_of::<FileHeader>() as u64, size_of::<ModelFrameInfo>())
+            .await?;
+        let frame_info = cast!(frame_info_data, ModelFrameInfo);
 
         let mut header = BytesMut::with_capacity(size_of::<u16>() * 2);
         header.put_u16_le(frame_info.number_of_meshes);
@@ -101,14 +107,17 @@ impl SqPackData {
         Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header.freeze(), blocks))
     }
 
-    async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_infos = read_as!(
-            file,
-            base_offset + size_of::<FileHeader>() as u64,
-            file_header.frame_count,
-            ImageFrameInfo
-        )
-        .await?;
+    async fn read_image(file: &mut File, base_offset: u64, file_header: &FileHeader) -> io::Result<SqPackRawFile> {
+        let frame_infos_data = file
+            .read_bytes(
+                base_offset + size_of::<FileHeader>() as u64,
+                size_of::<ImageFrameInfo>() * file_header.frame_count as usize,
+            )
+            .await?;
+        let frame_infos = (0..file_header.frame_count as usize)
+            .map(|x| cast!(&frame_infos_data[x * size_of::<ImageFrameInfo>()..], ImageFrameInfo))
+            .collect::<Vec<_>>();
+
         let sizes_table_base = base_offset + size_of::<FileHeader>() as u64 + file_header.frame_count as u64 * size_of::<ImageFrameInfo>() as u64;
 
         let header = file

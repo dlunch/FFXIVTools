@@ -67,7 +67,7 @@ impl FileType {
     }
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(FromBytes)]
 #[repr(C)]
 pub struct FileHeader {
     pub header_length: u32,
@@ -78,7 +78,7 @@ pub struct FileHeader {
     pub frame_count: u32,
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(FromBytes)]
 #[repr(C)]
 pub struct DefaultFrameInfo {
     pub block_offset: u32,
@@ -88,7 +88,7 @@ pub struct DefaultFrameInfo {
 
 pub const MODEL_CHUNK_COUNT: usize = 11;
 
-#[derive(FromBytes, Clone)]
+#[derive(FromBytes)]
 #[repr(C)]
 pub struct ModelFrameInfo {
     pub uncompressed_chunk_sizes: [u32; MODEL_CHUNK_COUNT],
@@ -102,7 +102,7 @@ pub struct ModelFrameInfo {
     _unk2: u16,
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(FromBytes)]
 #[repr(C)]
 pub struct ImageFrameInfo {
     pub block_offset: u32,
