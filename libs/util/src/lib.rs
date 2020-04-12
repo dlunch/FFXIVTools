@@ -1,8 +1,6 @@
 extern crate alloc;
 
-mod parse_ext;
 mod str_ext;
-
 pub use str_ext::StrExt;
 
 cfg_if::cfg_if! {
@@ -10,6 +8,13 @@ cfg_if::cfg_if! {
         mod read_ext;
         pub use read_ext::ReadExt;
     }
+}
+
+#[macro_export]
+macro_rules! cast {
+    ($data: expr, $type: ty) => {
+        LayoutVerified::<&[u8], $type>::new(&$data[..core::mem::size_of::<$type>()]).unwrap()
+    };
 }
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {

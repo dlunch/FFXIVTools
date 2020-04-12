@@ -97,7 +97,7 @@ impl Ex {
     }
 
     fn to_multi_row_item<'a>(&'a self, multi_row_data: &'a [u8], sub_index: u16) -> (u16, ExRow<'a>) {
-        let offset = (sub_index as usize) * (self.header.row_size as usize + core::mem::size_of::<u16>());
+        let offset = (sub_index as usize) * (self.header.row_size as usize + size_of::<u16>());
         let header = cast!(&multi_row_data[offset..], ExdMultiRowDataItemHeader);
         let row_data = &multi_row_data[offset + size_of::<ExdMultiRowDataItemHeader>()..];
 
