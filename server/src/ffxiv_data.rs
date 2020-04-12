@@ -10,7 +10,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use ffxiv_parser::{Ex, ExList, ExRowType, Language, LayerGroupResourceItem, Lgb, Lvb};
+use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
 use sqpack_reader::{Package, SqPackFileHash};
 
 use context::Context;
@@ -176,14 +176,14 @@ async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result
         .into_iter()
         .map(|x| {
             let x = x?;
-            Ok((x.name, x.entries))
+            Ok((x.name().to_owned(), x))
         })
         .collect::<sqpack_reader::Result<BTreeMap<_, _>>>()
         .map_err(|_| error::ErrorNotFound("Not found"))?;
 
     #[derive(Serialize)]
     struct JsonLvb {
-        layers: BTreeMap<String, BTreeMap<String, Vec<LayerGroupResourceItem>>>,
+        layers: BTreeMap<String, Lgb>,
     }
 
     Ok(HttpResponse::Ok()
