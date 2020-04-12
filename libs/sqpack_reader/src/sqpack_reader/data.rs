@@ -60,7 +60,7 @@ impl SqPackData {
             let offset = base_offset + file_header.header_length as u64 + frame_header.block_offset as u64;
             let block = file.read_bytes(offset, frame_header.block_size as usize).await?;
 
-            blocks.push(block);
+            blocks.push(Bytes::from(block));
         }
 
         Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Bytes::new(), blocks))
@@ -68,7 +68,7 @@ impl SqPackData {
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
         let item_size = size_of::<u16>();
-        let block_size_data = file.read_bytes(offset, count * item_size).await?;
+        let block_size_data = Bytes::from(file.read_bytes(offset, count * item_size).await?);
 
         Ok((0..count * item_size)
             .step_by(item_size)
@@ -79,7 +79,7 @@ impl SqPackData {
     async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
         let total_size = block_sizes.iter().map(|&x| x as usize).sum();
 
-        Ok(file.read_bytes(base_offset, total_size).await?)
+        Ok(Bytes::from(file.read_bytes(base_offset, total_size).await?))
     }
 
     async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
@@ -135,7 +135,7 @@ impl SqPackData {
             .flat_map(|(block_data, block_sizes)| Self::iterate_blocks(block_data, block_sizes))
             .collect::<Vec<_>>();
 
-        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header, blocks))
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Bytes::from(header), blocks))
     }
 
     fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {
