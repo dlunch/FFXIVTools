@@ -9,7 +9,7 @@ pub struct ExList {
 impl ExList {
     pub async fn new(package: &dyn Package) -> Result<Self> {
         let data = package.read_file("exd/root.exl").await?;
-        let data_str = str::from_utf8(data.as_ref()).unwrap();
+        let data_str = str::from_utf8(&data).unwrap();
 
         let ex_names = data_str
             .lines()

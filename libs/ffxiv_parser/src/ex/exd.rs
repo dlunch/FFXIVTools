@@ -19,7 +19,7 @@ impl ExData {
         let path = format!("exd/{}_{}{}.exd", name, page_start, Self::language_to_suffix(language));
         let data: Bytes = package.read_file(&path).await?;
 
-        let header = cast::<ExdHeader>(data.as_ref());
+        let header = cast::<ExdHeader>(&data);
 
         let item_count = header.row_size.get() as usize / size_of::<ExdRow>();
         let items_base = size_of::<ExdHeader>();
