@@ -2,23 +2,22 @@ use std::io;
 use std::io::SeekFrom;
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
 #[async_trait]
 pub trait ReadExt {
-    async fn read_bytes(&mut self, offset: u64, size: usize) -> io::Result<Bytes>;
+    async fn read_bytes(&mut self, offset: u64, size: usize) -> io::Result<Vec<u8>>;
 }
 
 #[async_trait]
 impl ReadExt for File {
-    async fn read_bytes(&mut self, offset: u64, size: usize) -> io::Result<Bytes> {
+    async fn read_bytes(&mut self, offset: u64, size: usize) -> io::Result<Vec<u8>> {
         let mut data = vec![0; size];
         self.seek(SeekFrom::Start(offset)).await?;
         self.read_exact(&mut data).await?;
 
-        Ok(Bytes::from(data))
+        Ok(data)
     }
 }
 
@@ -27,7 +26,7 @@ macro_rules! read_as {
     ($file: expr, $offset: expr, $type: ty) => {
         async {
             let data = $file.read_bytes($offset as u64, core::mem::size_of::<$type>()).await?;
-            Ok::<_, std::io::Error>($crate::cast!(&data[..], $type).clone())
+            Ok::<_, std::io::Error>($crate::cast!(data, $type).clone())
         }
     };
 
