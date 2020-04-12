@@ -11,8 +11,6 @@ pub use exl::ExList;
 use alloc::collections::BTreeMap;
 use core::mem::size_of;
 
-use zerocopy::LayoutVerified;
-
 use sqpack_reader::{Package, Result};
 use util::cast;
 
@@ -84,7 +82,7 @@ impl Ex {
             self.data
                 .all(language)?
                 .map(|(row_id, row_data)| {
-                    let header = cast!(row_data, ExdMultiRowDataHeader);
+                    let header = cast::<ExdMultiRowDataHeader>(&row_data);
                     let multi_row_data = &row_data[size_of::<ExdMultiRowDataHeader>()..];
 
                     let rows = (0..header.count.get())
@@ -98,7 +96,7 @@ impl Ex {
 
     fn to_multi_row_item<'a>(&'a self, multi_row_data: &'a [u8], sub_index: u16) -> (u16, ExRow<'a>) {
         let offset = (sub_index as usize) * (self.header.row_size as usize + size_of::<u16>());
-        let header = cast!(&multi_row_data[offset..], ExdMultiRowDataItemHeader);
+        let header = cast::<ExdMultiRowDataItemHeader>(&multi_row_data[offset..]);
         let row_data = &multi_row_data[offset + size_of::<ExdMultiRowDataItemHeader>()..];
 
         (header.sub_index.get(), self.to_row(row_data))

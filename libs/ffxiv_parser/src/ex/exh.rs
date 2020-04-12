@@ -4,7 +4,6 @@ use core::mem::size_of;
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 use util::cast;
-use zerocopy::LayoutVerified;
 
 use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
@@ -17,20 +16,16 @@ pub struct ExHeader {
     pub languages: Vec<Language>,
 }
 
-macro_rules! cast_clone_vec {
-    ($data: expr, $count: expr, $type: ty) => {
-        (0..$count as usize)
-            .map(|x| cast!($data[x * size_of::<$type>()..], $type).clone())
-            .collect::<Vec<_>>()
-    };
-}
-
 impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let data: Bytes = package.read_file(&format!("exd/{}.exh", name)).await?;
 
-        let header = cast!(data, ExhHeader);
-        let columns = cast_clone_vec!(&data[size_of::<ExhHeader>()..], header.column_count.get(), ExhColumnDefinition);
+        let header = cast::<ExhHeader>(data.as_ref());
+
+        let columns = (0..header.column_count.get() as usize)
+            .map(|x| cast::<ExhColumnDefinition>(&data[size_of::<ExhHeader>() + x * size_of::<ExhColumnDefinition>()..]).clone())
+            .collect::<Vec<_>>();
+
         let pages_base = size_of::<ExhHeader>() + header.column_count.get() as usize * size_of::<ExhColumnDefinition>();
         let pages = (0..header.page_count.get() as usize)
             .map(|x| ExhPage::from(&data[pages_base + x * size_of::<ExhPage>()..]))

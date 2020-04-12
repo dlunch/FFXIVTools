@@ -1,6 +1,3 @@
-use zerocopy::FromBytes;
-
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct SqPackHeader {
     _signature: [u8; 12],
@@ -9,7 +6,6 @@ pub struct SqPackHeader {
     pub file_type: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct SqPackIndexHeader {
     pub header_length: u32,
@@ -21,17 +17,15 @@ pub struct SqPackIndexHeader {
     pub folder_segment: SqPackIndexSegment,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct SqPackIndexSegment {
     pub offset: u32,
     pub size: u32,
     _hash: [u8; 20],
-    _padding: [u8; 24],
-    _padding1: [u8; 20],
+    _padding: [u8; 44],
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct FileSegment {
     pub file_hash: u32,
@@ -40,7 +34,7 @@ pub struct FileSegment {
     _padding: u32,
 }
 
-#[derive(FromBytes, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct FolderSegment {
     pub folder_hash: u32,
@@ -67,7 +61,6 @@ impl FileType {
     }
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct FileHeader {
     pub header_length: u32,
@@ -78,7 +71,6 @@ pub struct FileHeader {
     pub frame_count: u32,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct DefaultFrameInfo {
     pub block_offset: u32,
@@ -88,7 +80,6 @@ pub struct DefaultFrameInfo {
 
 pub const MODEL_CHUNK_COUNT: usize = 11;
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ModelFrameInfo {
     pub uncompressed_chunk_sizes: [u32; MODEL_CHUNK_COUNT],
@@ -102,7 +93,6 @@ pub struct ModelFrameInfo {
     _unk2: u16,
 }
 
-#[derive(FromBytes)]
 #[repr(C)]
 pub struct ImageFrameInfo {
     pub block_offset: u32,

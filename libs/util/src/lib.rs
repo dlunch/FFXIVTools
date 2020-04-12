@@ -10,11 +10,8 @@ cfg_if::cfg_if! {
     }
 }
 
-#[macro_export]
-macro_rules! cast {
-    ($data: expr, $type: ty) => {
-        LayoutVerified::<&[u8], $type>::new(&$data[..core::mem::size_of::<$type>()]).unwrap()
-    };
+pub fn cast<T>(data: &[u8]) -> &T {
+    unsafe { &*(data.as_ptr() as *const T) }
 }
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {

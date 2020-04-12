@@ -2,7 +2,6 @@ use alloc::{collections::BTreeMap, format};
 use core::mem::size_of;
 
 use bytes::Bytes;
-use zerocopy::LayoutVerified;
 
 use sqpack_reader::{Package, Result};
 use util::cast;
@@ -20,12 +19,12 @@ impl ExData {
         let path = format!("exd/{}_{}{}.exd", name, page_start, Self::language_to_suffix(language));
         let data: Bytes = package.read_file(&path).await?;
 
-        let header = cast!(&data[..], ExdHeader);
+        let header = cast::<ExdHeader>(data.as_ref());
 
         let item_count = header.row_size.get() as usize / size_of::<ExdRow>();
         let items_base = size_of::<ExdHeader>();
         let offsets = (0..item_count)
-            .map(|x| cast!(&data[items_base + x * size_of::<ExdRow>()..], ExdRow))
+            .map(|x| cast::<ExdRow>(&data[items_base + x * size_of::<ExdRow>()..]))
             .map(|x| (x.index.get(), x.offset.get()))
             .collect::<BTreeMap<_, _>>();
 
