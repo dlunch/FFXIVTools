@@ -84,7 +84,7 @@ impl Example {
         #[rustfmt::skip]
         let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
             1.0, 0.0, 0.0, 0.0,
-            0.0, -1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.5, 0.5,
             0.0, 0.0, 0.0, 1.0,
         );
@@ -190,7 +190,7 @@ impl Example {
                 entry_point: "main",
             }),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Cw,
+                front_face: wgpu::FrontFace::Ccw,
                 cull_mode: wgpu::CullMode::Back,
                 depth_bias: 0,
                 depth_bias_slope_scale: 0.0,
