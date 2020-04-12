@@ -9,3 +9,12 @@ macro_rules! parse {
             .collect::<Vec<_>>()
     };
 }
+
+#[macro_export]
+macro_rules! cast {
+    ($data: expr, $type: ty) => {{
+        let size = core::mem::size_of::<$type>();
+        let result: LayoutVerified<&[u8], $type> = LayoutVerified::new(&$data[..size]).unwrap();
+        result
+    }};
+}

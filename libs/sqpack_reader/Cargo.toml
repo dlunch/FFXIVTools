@@ -13,8 +13,8 @@ std = ["crc32fast/std", "tokio", "reqwest/default-tls", "util/std"]
 test_local = ["std"]
 
 [dependencies]
+zerocopy = { version = "^0.3", default-features = false }
 cfg-if = { version = "^0.1", default-features = false }
-nom = { version = ">=6.0.0-alpha1", features = ["alloc"], default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 compression = { version = "^0.1", features = ["deflate"], default-features = false }

@@ -1,10 +1,12 @@
+use core::mem::size_of;
 use std::io;
 use std::path::PathBuf;
 
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio::fs::File;
+use zerocopy::LayoutVerified;
 
-use util::{read_and_parse, ReadExt};
+use util::{read_as, ReadExt};
 
 use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
 use crate::error::Result;
@@ -36,8 +38,8 @@ impl SqPackData {
     async fn read_raw(&self, offset: u64) -> io::Result<SqPackRawFile> {
         let mut file = File::open(&self.file_path).await?;
 
-        let file_header = read_and_parse!(file, offset, FileHeader).await?;
-        match file_header.file_type {
+        let file_header = read_as!(file, offset, FileHeader).await?;
+        match FileType::from(file_header.file_type) {
             FileType::Default => Ok(Self::read_default(&mut file, offset, file_header).await?),
             FileType::Model => Ok(Self::read_model(&mut file, offset, file_header).await?),
             FileType::Image => Ok(Self::read_image(&mut file, offset, file_header).await?),
@@ -45,7 +47,13 @@ impl SqPackData {
     }
 
     async fn read_default(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_headers = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, DefaultFrameInfo).await?;
+        let frame_headers = read_as!(
+            file,
+            base_offset + size_of::<FileHeader>() as u64,
+            file_header.frame_count,
+            DefaultFrameInfo
+        )
+        .await?;
 
         let mut blocks = Vec::with_capacity(frame_headers.len());
         for frame_header in frame_headers {
@@ -59,7 +67,7 @@ impl SqPackData {
     }
 
     async fn read_block_sizes(file: &mut File, offset: u64, count: usize) -> io::Result<Vec<u16>> {
-        let item_size = std::mem::size_of::<u16>();
+        let item_size = size_of::<u16>();
         let block_size_data = file.read_bytes(offset, count * item_size).await?;
 
         Ok((0..count * item_size)
@@ -75,14 +83,14 @@ impl SqPackData {
     }
 
     async fn read_model(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_info = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, ModelFrameInfo).await?;
+        let frame_info = read_as!(file, base_offset + size_of::<FileHeader>() as u64, ModelFrameInfo).await?;
 
-        let mut header = BytesMut::with_capacity(std::mem::size_of::<u16>() * 2);
+        let mut header = BytesMut::with_capacity(size_of::<u16>() * 2);
         header.put_u16_le(frame_info.number_of_meshes);
         header.put_u16_le(frame_info.number_of_materials);
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
-        let sizes_offset = base_offset + FileHeader::SIZE as u64 + ModelFrameInfo::SIZE as u64;
+        let sizes_offset = base_offset + size_of::<FileHeader>() as u64 + size_of::<ModelFrameInfo>() as u64;
         let block_sizes = Self::read_block_sizes(file, sizes_offset, total_block_count).await?;
 
         let block_base_offset = base_offset + file_header.header_length as u64 + frame_info.offsets[0] as u64;
@@ -94,8 +102,14 @@ impl SqPackData {
     }
 
     async fn read_image(file: &mut File, base_offset: u64, file_header: FileHeader) -> io::Result<SqPackRawFile> {
-        let frame_infos = read_and_parse!(file, base_offset + FileHeader::SIZE as u64, file_header.frame_count, ImageFrameInfo).await?;
-        let sizes_table_base = base_offset + FileHeader::SIZE as u64 + file_header.frame_count as u64 * ImageFrameInfo::SIZE as u64;
+        let frame_infos = read_as!(
+            file,
+            base_offset + size_of::<FileHeader>() as u64,
+            file_header.frame_count,
+            ImageFrameInfo
+        )
+        .await?;
+        let sizes_table_base = base_offset + size_of::<FileHeader>() as u64 + file_header.frame_count as u64 * size_of::<ImageFrameInfo>() as u64;
 
         let header = file
             .read_bytes(base_offset + file_header.header_length as u64, frame_infos[0].block_offset as usize)
