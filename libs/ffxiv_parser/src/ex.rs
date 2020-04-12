@@ -9,11 +9,14 @@ pub use definition::ExRowType;
 pub use exl::ExList;
 
 use alloc::collections::BTreeMap;
+use core::mem::size_of;
+
+use zerocopy::LayoutVerified;
 
 use sqpack_reader::{Package, Result};
-use util::parse;
+use util::cast;
 
-use definition::{ExdData, ExdMultiRowData, ExdMultiRowDataItem};
+use definition::{ExdDataHeader, ExdMultiRowDataHeader, ExdMultiRowDataItemHeader};
 use ex_row::ExRow;
 use exd_map::ExdMap;
 use exh::ExHeader;
@@ -44,9 +47,10 @@ impl Ex {
     pub fn index(&self, index: u32, language: Language) -> Option<ExRow> {
         debug_assert!(self.header.row_type == ExRowType::Single);
 
-        let data = parse!(self.data.index(index, language)?, ExdData);
+        let raw = self.data.index(index, language)?;
+        let row_data = &raw[size_of::<ExdDataHeader>()..];
 
-        Some(self.to_row(data.data))
+        Some(self.to_row(row_data))
     }
 
     pub fn all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
@@ -56,8 +60,8 @@ impl Ex {
             self.data
                 .all(language)?
                 .map(|(row_id, row_data)| {
-                    let data = parse!(row_data, ExdData);
-                    (row_id, self.to_row(data.data))
+                    let data = &row_data[size_of::<ExdDataHeader>()..];
+                    (row_id, self.to_row(data))
                 })
                 .collect::<BTreeMap<u32, ExRow>>(),
         )
@@ -66,8 +70,9 @@ impl Ex {
     pub fn index_multi(&self, index: u32, sub_index: u16, language: Language) -> Option<ExRow> {
         debug_assert!(self.header.row_type == ExRowType::Multi);
 
-        let data = parse!(self.data.index(index, language)?, ExdMultiRowData);
-        let (_, row) = self.to_multi_row_item(data.data, sub_index);
+        let raw = self.data.index(index, language)?;
+        let data = &raw[size_of::<ExdMultiRowDataHeader>()..];
+        let (_, row) = self.to_multi_row_item(data, sub_index);
 
         Some(row)
     }
@@ -79,23 +84,27 @@ impl Ex {
             self.data
                 .all(language)?
                 .map(|(row_id, row_data)| {
-                    let data = parse!(row_data, ExdMultiRowData);
-                    let rows = (0..data.count).map(|x| self.to_multi_row_item(data.data, x)).collect::<BTreeMap<_, _>>();
+                    let header = cast!(row_data, ExdMultiRowDataHeader);
+                    let multi_row_data = &row_data[size_of::<ExdMultiRowDataHeader>()..];
 
+                    let rows = (0..header.count.get())
+                        .map(|x| self.to_multi_row_item(multi_row_data, x))
+                        .collect::<BTreeMap<_, _>>();
                     (row_id, rows)
                 })
                 .collect::<BTreeMap<u32, BTreeMap<u16, ExRow>>>(),
         )
     }
 
-    fn to_multi_row_item<'a>(&'a self, data: &'a [u8], sub_index: u16) -> (u16, ExRow<'a>) {
+    fn to_multi_row_item<'a>(&'a self, multi_row_data: &'a [u8], sub_index: u16) -> (u16, ExRow<'a>) {
         let offset = (sub_index as usize) * (self.header.row_size as usize + core::mem::size_of::<u16>());
-        let item = ExdMultiRowDataItem::parse(&data[offset..], self.header.row_size as usize).unwrap().1;
+        let header = cast!(&multi_row_data[offset..], ExdMultiRowDataItemHeader);
+        let row_data = &multi_row_data[offset + size_of::<ExdMultiRowDataItemHeader>()..];
 
-        (item.sub_index, self.to_row(item.data))
+        (header.sub_index.get(), self.to_row(row_data))
     }
 
-    fn to_row<'a>(&'a self, data: &'a [u8]) -> ExRow<'a> {
-        ExRow::new(data, self.header.row_size, &self.header.columns)
+    fn to_row<'a>(&'a self, row_data: &'a [u8]) -> ExRow<'a> {
+        ExRow::new(row_data, self.header.row_size, &self.header.columns)
     }
 }

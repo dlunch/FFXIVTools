@@ -1,144 +1,100 @@
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec::Vec};
+use core::mem::size_of;
 
 use bytes::{Buf, Bytes};
-use nom::number::complete::{le_f32, le_u32};
-use nom::{do_parse, named, tag};
 use serde::Serialize;
+use zerocopy::{FromBytes, LayoutVerified};
 
 use sqpack_reader::{Package, Result};
-use util::{parse, StrExt};
+use util::{cast, StrExt};
 
+#[derive(FromBytes)]
+#[repr(C)]
 struct LgbHeader {
+    _magic1: [u8; 4],
     pub file_size: u32,
+    _unk1: u32,
+    _magic2: [u8; 4],
+    _unk2: u32,
 }
 
-impl LgbHeader {
-    pub const SIZE: usize = 20;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            /* magic: */    tag!(b"LGB1")   >>
-            file_size:      le_u32          >>
-            /* unk1: */     le_u32          >>
-            /* magic: */    tag!(b"LGP1")   >>
-            /* unk2: */     le_u32          >>
-            (Self {
-                file_size,
-            })
-        )
-    );
-}
-
+#[derive(FromBytes)]
+#[repr(C)]
 struct LgbResourceHeader {
+    _unk1: u32,
     pub name_offset: u32,
+    _unk2: u32,
     pub entry_count: u32,
 }
 
-impl LgbResourceHeader {
-    pub const SIZE: usize = 16;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            /* unk1: */     le_u32  >>
-            name_offset:    le_u32  >>
-            /* unk2: */     le_u32  >>
-            entry_count:    le_u32  >>
-            (Self {
-                name_offset,
-                entry_count,
-            })
-        )
-    );
-}
-
+#[derive(FromBytes)]
+#[repr(C)]
 struct LgbResourceEntry {
+    _unk1: u32,
     name_offset: u32,
     items_offset: u32,
     item_count: u32,
+    _unk2: u32,
+    _unk3: u32,
+    _unk4: u32,
+    _unk5: u32,
+    _unk6: u32,
+    _unk7: u32,
+    _unk8: u32,
+    _unk9: u32,
+    _unk10: u32,
 }
 
-impl LgbResourceEntry {
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            /* unk1: */     le_u32  >>
-            name_offset:    le_u32  >>
-            items_offset:   le_u32  >>
-            item_count:     le_u32  >>
-            /* unk2: */     le_u32  >>
-            /* unk3: */     le_u32  >>
-            /* unk4: */     le_u32  >>
-            /* unk5: */     le_u32  >>
-            /* unk6: */     le_u32  >>
-            /* unk7: */     le_u32  >>
-            /* unk8: */     le_u32  >>
-            /* unk9: */     le_u32  >>
-            /* unk10: */    le_u32  >>
-            (Self {
-                name_offset,
-                items_offset,
-                item_count,
-            })
-        )
-    );
+#[derive(FromBytes, Serialize, Clone)]
+#[repr(C)]
+pub struct LayerGroupResourceItemEventNpc {
+    #[serde(rename = "type")]
+    pub item_type: u32,
+    pub id: u32,
+    #[serde(skip)]
+    _unk1: u32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    #[serde(skip)]
+    _unk2: u32,
+    #[serde(skip)]
+    _unk3: u32,
+    #[serde(skip)]
+    _unk4: u32,
+    #[serde(skip)]
+    _unk5: u32,
+    #[serde(skip)]
+    _unk6: u32,
+    #[serde(skip)]
+    _unk7: u32,
+    #[serde(rename = "npcId")]
+    pub npc_id: u32,
+}
+
+#[derive(FromBytes, Serialize, Clone)]
+#[repr(C)]
+pub struct LayerGroupResourceItemUnk {
+    #[serde(rename = "type")]
+    pub item_type: u32,
 }
 
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum LayerGroupResourceItem {
-    EventNpc {
-        #[serde(rename = "type")]
-        item_type: u32,
-        id: u32,
-        x: f32,
-        y: f32,
-        z: f32,
-        #[serde(rename = "npcId")]
-        npc_id: u32,
-    },
-    Unk {
-        #[serde(rename = "type")]
-        item_type: u32,
-    },
+    EventNpc(LayerGroupResourceItemEventNpc),
+    Unk(LayerGroupResourceItemUnk),
 }
 
 impl LayerGroupResourceItem {
-    pub fn parse(data: &[u8]) -> Option<Self> {
-        let item_type = (&data[0..]).get_u32_le();
+    pub fn from(raw: &[u8]) -> Self {
+        let item_type = (&raw[..]).get_u32_le();
+
         match item_type {
-            8 => Some(Self::parse_eventnpc(data).unwrap().1),
-            _ => None,
+            8 => LayerGroupResourceItem::EventNpc(cast!(raw, LayerGroupResourceItemEventNpc).clone()),
+            _ => LayerGroupResourceItem::Unk(cast!(raw, LayerGroupResourceItemUnk).clone()),
         }
     }
-
-    #[rustfmt::skip]
-    named!(parse_eventnpc<Self>,
-        do_parse!(
-            item_type:      le_u32  >>
-            id:             le_u32  >>
-            /* unk1: */     le_u32  >>
-            x:              le_f32  >>
-            y:              le_f32  >>
-            z:              le_f32  >>
-            /* unk2: */     le_f32  >>
-            /* unk3: */     le_f32  >>
-            /* unk4: */     le_f32  >>
-            /* unk5: */     le_f32  >>
-            /* unk6: */     le_f32  >>
-            /* unk7: */     le_f32  >>
-            npc_id:         le_u32  >>
-            (LayerGroupResourceItem::EventNpc {
-                item_type,
-                id,
-                x,
-                y,
-                z,
-                npc_id,
-            })
-        )
-    );
 }
 
 // LayerGroupResource
@@ -151,16 +107,16 @@ impl Lgb {
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
         let data: Bytes = package.read_file(path.as_ref()).await?;
 
-        let _ = parse!(data, LgbHeader);
-        let resource_header = parse!(data[LgbHeader::SIZE..], LgbResourceHeader);
-        let name = str::from_null_terminated_utf8(&data[LgbHeader::SIZE + resource_header.name_offset as usize..])
+        let _ = cast!(data, LgbHeader);
+        let resource_header = cast!(&data[size_of::<LgbHeader>()..], LgbResourceHeader);
+        let name = str::from_null_terminated_utf8(&data[size_of::<LgbHeader>() + resource_header.name_offset as usize..])
             .unwrap()
             .to_owned();
 
-        let base_offset = LgbHeader::SIZE + LgbResourceHeader::SIZE;
+        let base_offset = size_of::<LgbHeader>() + size_of::<LgbResourceHeader>();
         let entries = (0..resource_header.entry_count)
             .map(|i| {
-                let offset = base_offset + (i as usize) * core::mem::size_of::<u32>();
+                let offset = base_offset + (i as usize) * size_of::<u32>();
                 let data_offset = (&data[offset..]).get_u32_le();
 
                 Self::parse_entry(&data, base_offset + data_offset as usize)
@@ -171,18 +127,18 @@ impl Lgb {
     }
 
     fn parse_entry(data: &Bytes, offset: usize) -> (String, Vec<LayerGroupResourceItem>) {
-        let entry = parse!(&data[offset..], LgbResourceEntry);
+        let entry = cast!(&data[offset..], LgbResourceEntry);
         let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..])
             .unwrap()
             .to_owned();
 
         let base_offset = offset + entry.items_offset as usize;
         let items = (0..entry.item_count)
-            .filter_map(|i| {
-                let offset = base_offset + (i as usize) * core::mem::size_of::<u32>();
+            .map(|i| {
+                let offset = base_offset + (i as usize) * size_of::<u32>();
                 let data_offset = (&data[offset..]).get_u32_le();
 
-                LayerGroupResourceItem::parse(&data[base_offset + data_offset as usize..])
+                LayerGroupResourceItem::from(&data[base_offset + data_offset as usize..])
             })
             .collect::<Vec<_>>();
 

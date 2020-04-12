@@ -1,8 +1,10 @@
 use alloc::{format, vec::Vec};
+use core::mem::size_of;
 
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};
-use util::parse;
+use util::cast;
+use zerocopy::LayoutVerified;
 
 use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
@@ -15,22 +17,35 @@ pub struct ExHeader {
     pub languages: Vec<Language>,
 }
 
+macro_rules! cast_clone_vec {
+    ($data: expr, $count: expr, $type: ty) => {
+        (0..$count as usize)
+            .map(|x| cast!($data[x * size_of::<$type>()..], $type).clone())
+            .collect::<Vec<_>>()
+    };
+}
+
 impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let data: Bytes = package.read_file(&format!("exd/{}.exh", name)).await?;
 
-        let header = parse!(data, ExhHeader);
-        let columns = parse!(&data[ExhHeader::SIZE..], header.column_count, ExhColumnDefinition);
+        let header = cast!(data, ExhHeader);
+        let columns = cast_clone_vec!(&data[size_of::<ExhHeader>()..], header.column_count.get(), ExhColumnDefinition);
+        let pages_base = size_of::<ExhHeader>() + header.column_count.get() as usize * size_of::<ExhColumnDefinition>();
+        let pages = (0..header.page_count.get() as usize)
+            .map(|x| ExhPage::from(&data[pages_base + x * size_of::<ExhPage>()..]))
+            .collect::<Vec<_>>();
 
-        let pages_base = ExhHeader::SIZE + header.column_count as usize * ExhColumnDefinition::SIZE;
-        let pages = parse!(&data[pages_base..], header.page_count, ExhPage);
-
-        let languages_base = ExhHeader::SIZE + header.column_count as usize * ExhColumnDefinition::SIZE + header.page_count as usize * ExhPage::SIZE;
-        let languages = parse!(&data[languages_base..], header.language_count, Language);
+        let languages_base = size_of::<ExhHeader>()
+            + header.column_count.get() as usize * size_of::<ExhColumnDefinition>()
+            + header.page_count.get() as usize * size_of::<ExhPage>();
+        let languages = (0..header.language_count.get() as usize)
+            .map(|x| Language::from(&data[languages_base + x * size_of::<Language>()..]))
+            .collect::<Vec<_>>();
 
         Ok(Self {
-            row_size: header.row_size,
-            row_type: header.row_type,
+            row_size: header.row_size.get(),
+            row_type: ExRowType::from(header.row_type.get()),
             columns,
             pages,
             languages,

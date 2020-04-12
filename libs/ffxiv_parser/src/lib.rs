@@ -11,7 +11,7 @@ mod lvb;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[derive(Serialize_repr, Deserialize_repr, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
-#[repr(u8)]
+#[repr(u16)]
 pub enum Language {
     None = 0,
     Japanese = 1,

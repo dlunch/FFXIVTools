@@ -12,9 +12,7 @@ macro_rules! parse {
 
 #[macro_export]
 macro_rules! cast {
-    ($data: expr, $type: ty) => {{
-        let size = core::mem::size_of::<$type>();
-        let result: LayoutVerified<&[u8], $type> = LayoutVerified::new(&$data[..size]).unwrap();
-        result
-    }};
+    ($data: expr, $type: ty) => {
+        LayoutVerified::<&[u8], $type>::new(&$data[..core::mem::size_of::<$type>()]).unwrap()
+    };
 }

@@ -1,5 +1,8 @@
-use nom::number::complete::{be_u16, be_u32, le_u16};
-use nom::{do_parse, named, tag, take, IResult};
+use byteorder::{BigEndian, ByteOrder, LittleEndian};
+use zerocopy::{
+    byteorder::{U16, U32},
+    FromBytes,
+};
 
 use crate::Language;
 
@@ -10,216 +13,101 @@ pub enum ExRowType {
     Multi = 2,
 }
 
+impl ExRowType {
+    pub fn from(raw: u16) -> Self {
+        match raw {
+            1 => ExRowType::Single,
+            2 => ExRowType::Multi,
+
+            _ => panic!(),
+        }
+    }
+}
+
+#[derive(FromBytes)]
+#[repr(C)]
 pub struct ExhHeader {
-    pub version: u16,
-    pub row_size: u16,
-    pub column_count: u16,
-    pub page_count: u16,
-    pub language_count: u16,
-    pub row_type: ExRowType,
-    pub item_count: u32,
+    _magic: [u8; 4],
+    pub version: U16<BigEndian>,
+    pub row_size: U16<BigEndian>,
+    pub column_count: U16<BigEndian>,
+    pub page_count: U16<BigEndian>,
+    pub language_count: U16<BigEndian>,
+    _unk1: u16,
+    pub row_type: U16<BigEndian>,
+    _unk2: u16,
+    pub item_count: U32<BigEndian>,
+    _unk3: u32,
+    _unk4: u32,
 }
 
-impl ExhHeader {
-    pub const SIZE: usize = 32;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            /* magic: */    tag!(b"EXHF")   >>
-            version:        be_u16          >>
-            row_size:       be_u16          >>
-            column_count:   be_u16          >>
-            page_count:     be_u16          >>
-            language_count: be_u16          >>
-            /* unk1: */     be_u16          >>
-            row_type:       be_u16          >>
-            /* unk2: */     be_u16          >>
-            item_count:     be_u32          >>
-            /* unk3: */     be_u32          >>
-            /* unk4: */     be_u32          >>
-            (Self {
-                version,
-                row_size,
-                column_count,
-                page_count,
-                language_count,
-                row_type: match row_type {
-                    1 => ExRowType::Single,
-                    2 => ExRowType::Multi,
-                    _ => panic!()
-                },
-                item_count,
-            })
-        )
-    );
-}
-
+#[derive(FromBytes, Clone)]
+#[repr(C)]
 pub struct ExhColumnDefinition {
-    pub field_type: ExFieldType,
-    pub offset: u16,
-}
-
-impl ExhColumnDefinition {
-    pub const SIZE: usize = 4;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            field_type: be_u16  >>
-            offset:     be_u16  >>
-            (Self {
-                field_type: ExFieldType::parse(field_type),
-                offset,
-            })
-        )
-    );
+    pub field_type: U16<BigEndian>,
+    pub offset: U16<BigEndian>,
 }
 
 #[derive(Copy, Clone)]
+#[repr(C)]
 pub struct ExhPage {
     pub start: u32,
     pub count: u32,
 }
 
 impl ExhPage {
-    pub const SIZE: usize = 8;
+    pub fn from(raw: &[u8]) -> Self {
+        let start = BigEndian::read_u32(raw);
+        let count = BigEndian::read_u32(&raw[core::mem::size_of::<u32>()..]);
 
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            start:  be_u32  >>
-            count:  be_u32  >>
-            (Self {
-                start,
-                count,
-            })
-        )
-    );
+        Self { start, count }
+    }
 }
 
+#[derive(FromBytes)]
+#[repr(C)]
 pub struct ExdHeader {
-    pub version: u16,
-    pub row_size: u32,
-    pub data_size: u32,
+    _magic: [u8; 4],
+    pub version: U16<BigEndian>,
+    _unk1: u16,
+    pub row_size: U32<BigEndian>,
+    pub data_size: U32<BigEndian>,
+    _unk2: u32,
+    _unk3: u32,
+    _unk4: u32,
+    _unk5: u32,
 }
 
-impl ExdHeader {
-    pub const SIZE: usize = 32;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            /* magic: */    tag!(b"EXDF")   >>
-            version:        be_u16          >>
-            /* unk1: */     be_u16          >>
-            row_size:       be_u32          >>
-            data_size:      be_u32          >>
-            /* unk2: */     be_u32          >>
-            /* unk3: */     be_u32          >>
-            /* unk4: */     be_u32          >>
-            /* unk5: */     be_u32          >>
-            (Self {
-                version,
-                row_size,
-                data_size,
-            })
-        )
-    );
-}
-
+#[derive(FromBytes)]
+#[repr(C)]
 pub struct ExdRow {
-    pub index: u32,
-    pub offset: u32,
+    pub index: U32<BigEndian>,
+    pub offset: U32<BigEndian>,
 }
 
-impl ExdRow {
-    pub const SIZE: usize = 8;
-
-    #[rustfmt::skip]
-    named!(pub parse<Self>,
-        do_parse!(
-            index:  be_u32  >>
-            offset: be_u32  >>
-            (Self {
-                index,
-                offset,
-            })
-        )
-    );
+#[derive(FromBytes)]
+#[repr(C)]
+pub struct ExdMultiRowDataItemHeader {
+    pub sub_index: U16<BigEndian>,
 }
 
-pub struct ExdMultiRowDataItem<'a> {
-    pub sub_index: u16,
-    pub data: &'a [u8],
+#[derive(FromBytes)]
+#[repr(C)]
+pub struct ExdMultiRowDataHeader {
+    pub length: U32<BigEndian>,
+    pub count: U16<BigEndian>,
 }
 
-impl<'a> ExdMultiRowDataItem<'a> {
-    #[rustfmt::skip]
-    pub fn parse(input: &'a [u8], row_size: usize) -> IResult<&'a [u8], Self> {
-        do_parse!(
-            input,
-            sub_index:  be_u16          >>
-            data:       take!(row_size) >>
-            (Self {
-                sub_index,
-                data,
-            })
-        )
-    }
-}
-
-pub struct ExdMultiRowData<'a> {
-    pub length: u32,
-    pub count: u16,
-    pub data: &'a [u8],
-}
-
-impl<'a> ExdMultiRowData<'a> {
-    #[rustfmt::skip]
-    pub fn parse(input: &'a [u8]) -> IResult<&'a [u8], Self> {
-        do_parse!(
-            input,
-            length: be_u32          >>
-            count:  be_u16          >>
-            data:   take!(length)   >>
-            (Self {
-                length,
-                count,
-                data,
-            })
-        )
-    }
-}
-
-pub struct ExdData<'a> {
-    pub length: u32,
-    pub data: &'a [u8],
-}
-
-impl<'a> ExdData<'a> {
-    #[rustfmt::skip]
-    pub fn parse(input: &'a [u8]) -> IResult<&'a [u8], Self> {
-        do_parse!(
-            input,
-            length:     be_u32          >>
-            /* unk: */  be_u16          >>
-            data:       take!(length)   >>
-            (Self {
-                length,
-                data,
-            })
-        )
-    }
+#[derive(FromBytes)]
+#[repr(C)]
+pub struct ExdDataHeader {
+    pub length: U32<BigEndian>,
+    _unk: u16,
 }
 
 impl Language {
-    pub const SIZE: usize = core::mem::size_of::<u16>();
-
-    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let raw = le_u16(input)?;
-
-        let result = match raw.1 {
+    pub fn from(raw: &[u8]) -> Self {
+        match LittleEndian::read_u16(raw) {
             0 => Language::None,
             1 => Language::Japanese,
             2 => Language::English,
@@ -229,9 +117,7 @@ impl Language {
             6 => Language::ChineseTraditional,
             7 => Language::Korean,
             _ => panic!(),
-        };
-
-        Ok((raw.0, result))
+        }
     }
 }
 
@@ -252,7 +138,7 @@ pub enum ExFieldType {
 }
 
 impl ExFieldType {
-    pub fn parse(raw: u16) -> Self {
+    pub fn from(raw: u16) -> Self {
         match raw {
             0 => ExFieldType::String,
             1 => ExFieldType::Bool,
