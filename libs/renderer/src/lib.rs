@@ -81,6 +81,8 @@ struct Example {
 impl Example {
     fn generate_matrix(aspect_ratio: f32) -> nalgebra::Matrix4<f32> {
         use std::f32::consts::PI;
+
+        // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
         #[rustfmt::skip]
         let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
             1.0, 0.0, 0.0, 0.0,
