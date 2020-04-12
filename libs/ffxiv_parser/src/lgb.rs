@@ -128,7 +128,7 @@ impl Lgb {
         })
     }
 
-    pub fn name<'a>(&'a self) -> &'a str {
+    pub fn name(&self) -> &str {
         str::from_null_terminated_utf8(&self.data[size_of::<LgbHeader>() + self.name_offset as usize..]).unwrap()
     }
 
