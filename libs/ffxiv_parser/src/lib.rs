@@ -24,5 +24,5 @@ pub enum Language {
 }
 
 pub use ex::{Ex, ExList, ExRowType};
-pub use lgb::{LayerGroupResourceItem, Lgb};
+pub use lgb::Lgb;
 pub use lvb::Lvb;

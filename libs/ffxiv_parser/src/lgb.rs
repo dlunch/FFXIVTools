@@ -1,8 +1,8 @@
-use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec::Vec};
+use alloc::{collections::BTreeMap, vec::Vec};
 use core::mem::size_of;
 
 use bytes::{Buf, Bytes};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use zerocopy::{FromBytes, LayoutVerified};
 
 use sqpack_reader::{Package, Result};
@@ -79,28 +79,39 @@ pub struct LayerGroupResourceItemUnk {
     pub item_type: u32,
 }
 
-#[derive(Serialize)]
-#[serde(untagged)]
-pub enum LayerGroupResourceItem {
-    EventNpc(LayerGroupResourceItemEventNpc),
-    Unk(LayerGroupResourceItemUnk),
+pub enum LayerGroupResourceItem<'a> {
+    EventNpc(LayoutVerified<&'a [u8], LayerGroupResourceItemEventNpc>),
+    Unk(LayoutVerified<&'a [u8], LayerGroupResourceItemUnk>),
 }
 
-impl LayerGroupResourceItem {
-    pub fn from(raw: &[u8]) -> Self {
+impl Serialize for LayerGroupResourceItem<'_> {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            LayerGroupResourceItem::EventNpc(x) => x.serialize(serializer),
+            LayerGroupResourceItem::Unk(x) => x.serialize(serializer),
+        }
+    }
+}
+
+impl<'a> LayerGroupResourceItem<'a> {
+    pub fn from(raw: &'a [u8]) -> Self {
         let item_type = (&raw[..]).get_u32_le();
 
         match item_type {
-            8 => LayerGroupResourceItem::EventNpc(cast!(raw, LayerGroupResourceItemEventNpc).clone()),
-            _ => LayerGroupResourceItem::Unk(cast!(raw, LayerGroupResourceItemUnk).clone()),
+            8 => LayerGroupResourceItem::EventNpc(cast!(raw, LayerGroupResourceItemEventNpc)),
+            _ => LayerGroupResourceItem::Unk(cast!(raw, LayerGroupResourceItemUnk)),
         }
     }
 }
 
 // LayerGroupResource
 pub struct Lgb {
-    pub name: String,
-    pub entries: BTreeMap<String, Vec<LayerGroupResourceItem>>,
+    data: Bytes,
+    name_offset: u32,
+    entry_count: u32,
 }
 
 impl Lgb {
@@ -109,28 +120,33 @@ impl Lgb {
 
         let _ = cast!(data, LgbHeader);
         let resource_header = cast!(&data[size_of::<LgbHeader>()..], LgbResourceHeader);
-        let name = str::from_null_terminated_utf8(&data[size_of::<LgbHeader>() + resource_header.name_offset as usize..])
-            .unwrap()
-            .to_owned();
 
-        let base_offset = size_of::<LgbHeader>() + size_of::<LgbResourceHeader>();
-        let entries = (0..resource_header.entry_count)
-            .map(|i| {
-                let offset = base_offset + (i as usize) * size_of::<u32>();
-                let data_offset = (&data[offset..]).get_u32_le();
-
-                Self::parse_entry(&data, base_offset + data_offset as usize)
-            })
-            .collect::<BTreeMap<_, _>>();
-
-        Ok(Self { name, entries })
+        Ok(Self {
+            data: data.clone(),
+            name_offset: resource_header.name_offset,
+            entry_count: resource_header.entry_count,
+        })
     }
 
-    fn parse_entry(data: &Bytes, offset: usize) -> (String, Vec<LayerGroupResourceItem>) {
+    pub fn name<'a>(&'a self) -> &'a str {
+        str::from_null_terminated_utf8(&self.data[size_of::<LgbHeader>() + self.name_offset as usize..]).unwrap()
+    }
+
+    pub fn entries<'a>(&'a self) -> BTreeMap<&'a str, Vec<LayerGroupResourceItem<'a>>> {
+        let base_offset = size_of::<LgbHeader>() + size_of::<LgbResourceHeader>();
+        (0..self.entry_count)
+            .map(|i| {
+                let offset = base_offset + (i as usize) * size_of::<u32>();
+                let data_offset = (&self.data[offset..]).get_u32_le();
+
+                Self::parse_entry(&self.data, base_offset + data_offset as usize)
+            })
+            .collect::<BTreeMap<_, _>>()
+    }
+
+    fn parse_entry<'a>(data: &'a Bytes, offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
         let entry = cast!(&data[offset..], LgbResourceEntry);
-        let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..])
-            .unwrap()
-            .to_owned();
+        let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..]).unwrap();
 
         let base_offset = offset + entry.items_offset as usize;
         let items = (0..entry.item_count)
@@ -143,5 +159,14 @@ impl Lgb {
             .collect::<Vec<_>>();
 
         (name, items)
+    }
+}
+
+impl Serialize for Lgb {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.entries().serialize(serializer)
     }
 }
