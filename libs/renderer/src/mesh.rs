@@ -1,26 +1,20 @@
 pub struct Mesh {
-    vertex: wgpu::Buffer,
-    index: wgpu::Buffer,
-    index_count: usize,
+    pub(crate) vertex: wgpu::Buffer,
+    pub(crate) stride: usize,
+    pub(crate) index: wgpu::Buffer,
+    pub(crate) index_count: usize,
 }
 
 impl Mesh {
-    pub fn new(device: &wgpu::Device, vertex: &[u8], index: &[u8], index_count: usize) -> Self {
+    pub fn new(device: &wgpu::Device, vertex: &[u8], stride: usize, index: &[u8], index_count: usize) -> Self {
         let vertex = device.create_buffer_with_data(vertex, wgpu::BufferUsage::VERTEX);
         let index = device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
 
-        Self { vertex, index, index_count }
-    }
-
-    pub fn vertex(&self) -> &wgpu::Buffer {
-        &self.vertex
-    }
-
-    pub fn index(&self) -> &wgpu::Buffer {
-        &self.index
-    }
-
-    pub fn index_count(&self) -> usize {
-        self.index_count
+        Self {
+            vertex,
+            stride,
+            index,
+            index_count,
+        }
     }
 }

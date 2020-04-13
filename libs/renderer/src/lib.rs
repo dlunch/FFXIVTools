@@ -1,16 +1,16 @@
+mod material;
 mod mesh;
+mod model;
 mod texture;
 
+pub use material::Material;
+pub use mesh::Mesh;
+pub use model::Model;
 pub use texture::Texture;
 
 use raw_window_handle::HasRawWindowHandle;
 
 use zerocopy::{AsBytes, FromBytes};
-
-pub enum ShaderStage {
-    Vertex,
-    Fragment,
-}
 
 pub struct Renderer {
     device: wgpu::Device,
@@ -72,34 +72,10 @@ impl Renderer {
 }
 
 struct Example {
-    mesh: mesh::Mesh,
-    bind_group: wgpu::BindGroup,
-    pipeline: wgpu::RenderPipeline,
+    model: Model,
 }
 
 impl Example {
-    fn generate_matrix(aspect_ratio: f32) -> nalgebra::Matrix4<f32> {
-        use std::f32::consts::PI;
-
-        // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
-        #[rustfmt::skip]
-        let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.5, 0.5,
-            0.0, 0.0, 0.0, 1.0,
-        );
-
-        let projection = nalgebra::Matrix4::new_perspective(aspect_ratio, 45.0 * PI / 180.0, 1.0, 10.0);
-        let view = nalgebra::Matrix4::look_at_rh(
-            &nalgebra::Point3::new(1.5f32, -5.0, 3.0),
-            &nalgebra::Point3::new(0.0, 0.0, 0.0),
-            &nalgebra::Vector3::z_axis(),
-        );
-
-        correction * projection * view
-    }
-
     fn init(device: &wgpu::Device) -> (Self, Option<wgpu::CommandBuffer>) {
         use std::mem;
 
@@ -108,126 +84,18 @@ impl Example {
         // Create the vertex and index buffers
         let vertex_size = mem::size_of::<Vertex>();
         let (vertex_data, index_data) = create_vertices();
-        let mesh = mesh::Mesh::new(&device, vertex_data.as_bytes(), index_data.as_bytes(), index_data.len());
-
-        // Create pipeline layout
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            bindings: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStage::VERTEX,
-                    ty: wgpu::BindingType::UniformBuffer { dynamic: false },
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::SampledTexture {
-                        multisampled: false,
-                        component_type: wgpu::TextureComponentType::Float,
-                        dimension: wgpu::TextureViewDimension::D2,
-                    },
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler { comparison: false },
-                },
-            ],
-            label: None,
-        });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            bind_group_layouts: &[&bind_group_layout],
-        });
+        let mesh = mesh::Mesh::new(&device, vertex_data.as_bytes(), vertex_size, index_data.as_bytes(), index_data.len());
 
         // Create the texture
         let size = 256u32;
         let texels = create_texels(size as usize);
         let texture = texture::Texture::from_texels(&device, &mut init_encoder, size, size, &texels);
+        let material = Material::new(&device, texture);
 
-        let mx_total = Self::generate_matrix(1024.0 / 768.0);
-        let mx_ref = mx_total.as_slice();
-        let uniform_buf = device.create_buffer_with_data(mx_ref.as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
-
-        // Create bind group
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            bindings: &[
-                wgpu::Binding {
-                    binding: 0,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &uniform_buf,
-                        range: 0..64,
-                    },
-                },
-                wgpu::Binding {
-                    binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&texture.view()),
-                },
-                wgpu::Binding {
-                    binding: 2,
-                    resource: wgpu::BindingResource::Sampler(&texture.sampler()),
-                },
-            ],
-            label: None,
-        });
-
-        // Create the render pipeline
-        let vs_bytes = load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
-        let fs_bytes = load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
-        let vs_module = device.create_shader_module(vs_bytes.as_binary());
-        let fs_module = device.create_shader_module(fs_bytes.as_binary());
-
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &pipeline_layout,
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vs_module,
-                entry_point: "main",
-            },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &fs_module,
-                entry_point: "main",
-            }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
-                depth_bias: 0,
-                depth_bias_slope_scale: 0.0,
-                depth_bias_clamp: 0.0,
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: wgpu::TextureFormat::Bgra8UnormSrgb,
-                color_blend: wgpu::BlendDescriptor::REPLACE,
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            depth_stencil_state: None,
-            vertex_state: wgpu::VertexStateDescriptor {
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                    stride: vertex_size as wgpu::BufferAddress,
-                    step_mode: wgpu::InputStepMode::Vertex,
-                    attributes: &[
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float4,
-                            offset: 0,
-                            shader_location: 0,
-                        },
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float2,
-                            offset: 4 * 4,
-                            shader_location: 1,
-                        },
-                    ],
-                }],
-            },
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
-        });
+        let model = model::Model::new(&device, mesh, material);
 
         // Done
-        let this = Example { mesh, bind_group, pipeline };
+        let this = Example { model };
         (this, Some(init_encoder.finish()))
     }
 
@@ -249,11 +117,11 @@ impl Example {
                 }],
                 depth_stencil_attachment: None,
             });
-            rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &self.bind_group, &[]);
-            rpass.set_index_buffer(&self.mesh.index(), 0, 0);
-            rpass.set_vertex_buffer(0, &self.mesh.vertex(), 0, 0);
-            rpass.draw_indexed(0..self.mesh.index_count() as u32, 0, 0..1);
+            rpass.set_pipeline(&self.model.pipeline);
+            rpass.set_bind_group(0, &self.model.bind_group, &[]);
+            rpass.set_index_buffer(&self.model.mesh.index, 0, 0);
+            rpass.set_vertex_buffer(0, &self.model.mesh.vertex, 0, 0);
+            rpass.draw_indexed(0..self.model.mesh.index_count as u32, 0, 0..1);
         }
 
         encoder.finish()
@@ -341,14 +209,4 @@ fn create_texels(size: usize) -> Vec<u8> {
                 .chain(iter::once(1))
         })
         .collect()
-}
-
-fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
-    let ty = match stage {
-        ShaderStage::Vertex => shaderc::ShaderKind::Vertex,
-        ShaderStage::Fragment => shaderc::ShaderKind::Fragment,
-    };
-
-    let mut compiler = shaderc::Compiler::new().unwrap();
-    compiler.compile_into_spirv(code, ty, "shader.glsl", "main", None).unwrap()
 }
