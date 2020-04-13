@@ -1,6 +1,6 @@
 pub struct Texture {
-    texture: wgpu::Texture,
-    sampler: wgpu::Sampler,
+    pub(crate) texture: wgpu::Texture,
+    pub(crate) sampler: wgpu::Sampler,
 }
 
 impl Texture {
@@ -47,13 +47,5 @@ impl Texture {
         });
 
         Self { texture, sampler }
-    }
-
-    pub fn view(&self) -> wgpu::TextureView {
-        self.texture.create_default_view()
-    }
-
-    pub fn sampler(&self) -> &wgpu::Sampler {
-        &self.sampler
     }
 }
