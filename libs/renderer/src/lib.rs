@@ -1,3 +1,4 @@
+mod mesh;
 mod texture;
 
 pub use texture::Texture;
@@ -71,9 +72,7 @@ impl Renderer {
 }
 
 struct Example {
-    vertex_buf: wgpu::Buffer,
-    index_buf: wgpu::Buffer,
-    index_count: usize,
+    mesh: mesh::Mesh,
     bind_group: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
 }
@@ -109,10 +108,7 @@ impl Example {
         // Create the vertex and index buffers
         let vertex_size = mem::size_of::<Vertex>();
         let (vertex_data, index_data) = create_vertices();
-
-        let vertex_buf = device.create_buffer_with_data(vertex_data.as_bytes(), wgpu::BufferUsage::VERTEX);
-
-        let index_buf = device.create_buffer_with_data(index_data.as_bytes(), wgpu::BufferUsage::INDEX);
+        let mesh = mesh::Mesh::new(&device, vertex_data.as_bytes(), index_data.as_bytes(), index_data.len());
 
         // Create pipeline layout
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -231,13 +227,7 @@ impl Example {
         });
 
         // Done
-        let this = Example {
-            vertex_buf,
-            index_buf,
-            index_count: index_data.len(),
-            bind_group,
-            pipeline,
-        };
+        let this = Example { mesh, bind_group, pipeline };
         (this, Some(init_encoder.finish()))
     }
 
@@ -261,9 +251,9 @@ impl Example {
             });
             rpass.set_pipeline(&self.pipeline);
             rpass.set_bind_group(0, &self.bind_group, &[]);
-            rpass.set_index_buffer(&self.index_buf, 0, 0);
-            rpass.set_vertex_buffer(0, &self.vertex_buf, 0, 0);
-            rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
+            rpass.set_index_buffer(&self.mesh.index(), 0, 0);
+            rpass.set_vertex_buffer(0, &self.mesh.vertex(), 0, 0);
+            rpass.draw_indexed(0..self.mesh.index_count() as u32, 0, 0..1);
         }
 
         encoder.finish()
