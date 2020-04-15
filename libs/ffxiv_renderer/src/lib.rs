@@ -6,9 +6,9 @@ pub struct FFXIVRenderer {
 }
 
 impl FFXIVRenderer {
-    pub async fn new<W: HasRawWindowHandle>(window: &W) -> Self {
+    pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
         Self {
-            renderer: Renderer::new(window).await,
+            renderer: Renderer::new(window, width, height).await,
         }
     }
     pub fn redraw(&mut self) {

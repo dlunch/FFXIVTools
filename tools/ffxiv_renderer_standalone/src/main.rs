@@ -14,7 +14,8 @@ async fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut renderer = FFXIVRenderer::new(&window).await;
+    let size = window.inner_size();
+    let mut renderer = FFXIVRenderer::new(&window, size.width, size.height).await;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
