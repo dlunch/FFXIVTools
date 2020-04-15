@@ -20,7 +20,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub async fn new<W: HasRawWindowHandle>(window: &W) -> Self {
+    pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
         let surface = wgpu::Surface::create(window);
 
         let adapter = wgpu::Adapter::request(
@@ -45,8 +45,8 @@ impl Renderer {
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8UnormSrgb,
-            width: 1024,
-            height: 768,
+            width,
+            height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
