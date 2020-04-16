@@ -11,6 +11,7 @@ doctest = false
 
 [dependencies]
 raw-window-handle = { version = "^0.3", default-features = false }
+zerocopy = { version = "^0.3", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
