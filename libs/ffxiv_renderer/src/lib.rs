@@ -3,6 +3,11 @@ use zerocopy::{AsBytes, FromBytes};
 
 use renderer::{Material, Mesh, Model, Renderer, Texture};
 
+enum ShaderStage {
+    Vertex,
+    Fragment,
+}
+
 pub struct FFXIVRenderer {
     model: Model,
     renderer: Renderer,
@@ -23,11 +28,13 @@ impl FFXIVRenderer {
             index_data.len(),
         );
 
-        // Create the texture
         let size = 256u32;
         let texels = create_texels(size as usize);
         let texture = Texture::from_texels(&renderer.device, &mut renderer.command_encoder, size, size, &texels);
-        let material = Material::new(&renderer.device, texture);
+
+        let vs = Self::load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
+        let fs = Self::load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
+        let material = Material::new(&renderer.device, texture, vs.as_binary(), fs.as_binary());
 
         let model = Model::new(&renderer.device, mesh, material);
 
@@ -36,6 +43,16 @@ impl FFXIVRenderer {
 
     pub fn redraw(&mut self) {
         self.renderer.render(&self.model)
+    }
+
+    fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
+        let ty = match stage {
+            ShaderStage::Vertex => shaderc::ShaderKind::Vertex,
+            ShaderStage::Fragment => shaderc::ShaderKind::Fragment,
+        };
+
+        let mut compiler = shaderc::Compiler::new().unwrap();
+        compiler.compile_into_spirv(code, ty, "shader.glsl", "main", None).unwrap()
     }
 }
 

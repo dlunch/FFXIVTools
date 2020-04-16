@@ -723,6 +723,7 @@ dependencies = [
  "ffxiv_parser 0.1.0",
  "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "renderer 0.1.0",
+ "shaderc 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
  "zerocopy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1906,7 +1907,6 @@ version = "0.1.0"
 dependencies = [
  "nalgebra 0.21.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "shaderc 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wgpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "zerocopy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

@@ -1,10 +1,5 @@
 use crate::Texture;
 
-pub enum ShaderStage {
-    Vertex,
-    Fragment,
-}
-
 pub struct Material {
     pub(crate) texture: Texture,
     pub(crate) vs_module: wgpu::ShaderModule,
@@ -14,7 +9,7 @@ pub struct Material {
 }
 
 impl Material {
-    pub fn new(device: &wgpu::Device, texture: Texture) -> Self {
+    pub fn new(device: &wgpu::Device, texture: Texture, vs_bytes: &[u32], fs_bytes: &[u32]) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             bindings: &[
                 wgpu::BindGroupLayoutEntry {
@@ -43,11 +38,8 @@ impl Material {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        // Create the render pipeline
-        let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
-        let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
-        let vs_module = device.create_shader_module(vs_bytes.as_binary());
-        let fs_module = device.create_shader_module(fs_bytes.as_binary());
+        let vs_module = device.create_shader_module(vs_bytes);
+        let fs_module = device.create_shader_module(fs_bytes);
 
         Self {
             texture,
@@ -56,15 +48,5 @@ impl Material {
             bind_group_layout,
             pipeline_layout,
         }
-    }
-
-    fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
-        let ty = match stage {
-            ShaderStage::Vertex => shaderc::ShaderKind::Vertex,
-            ShaderStage::Fragment => shaderc::ShaderKind::Fragment,
-        };
-
-        let mut compiler = shaderc::Compiler::new().unwrap();
-        compiler.compile_into_spirv(code, ty, "shader.glsl", "main", None).unwrap()
     }
 }
