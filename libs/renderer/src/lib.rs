@@ -58,6 +58,7 @@ impl Renderer {
             command_encoder,
         }
     }
+
     pub fn render(&mut self, model: &Model) {
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         std::mem::swap(&mut command_encoder, &mut self.command_encoder);
