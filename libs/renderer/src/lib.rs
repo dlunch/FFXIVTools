@@ -16,6 +16,7 @@ pub struct Renderer {
     device: wgpu::Device,
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
+    command_encoder: wgpu::CommandEncoder,
     example: Example,
 }
 
@@ -51,23 +52,28 @@ impl Renderer {
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        let (example, init_command_buf) = Example::init(&device);
-        if let Some(command_buf) = init_command_buf {
-            queue.submit(&[command_buf]);
-        }
+        let mut command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let example = Example::init(&device, &mut command_encoder);
+        queue.submit(&[command_encoder.finish()]);
+
+        let command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         Self {
             device,
             swap_chain,
             queue,
+            command_encoder,
             example,
         }
     }
 
     pub fn redraw(&mut self) {
+        let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        std::mem::swap(&mut command_encoder, &mut self.command_encoder);
+
         let frame = self.swap_chain.get_next_texture().unwrap();
-        let command_buf = self.example.render(&frame, &self.device);
-        self.queue.submit(&[command_buf]);
+        self.example.render(&frame, &mut command_encoder);
+        self.queue.submit(&[command_encoder.finish()]);
     }
 }
 
@@ -76,10 +82,8 @@ struct Example {
 }
 
 impl Example {
-    fn init(device: &wgpu::Device) -> (Self, Option<wgpu::CommandBuffer>) {
+    fn init(device: &wgpu::Device, mut command_encoder: &mut wgpu::CommandEncoder) -> Self {
         use std::mem;
-
-        let mut init_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         // Create the vertex and index buffers
         let vertex_size = mem::size_of::<Vertex>();
@@ -89,20 +93,17 @@ impl Example {
         // Create the texture
         let size = 256u32;
         let texels = create_texels(size as usize);
-        let texture = texture::Texture::from_texels(&device, &mut init_encoder, size, size, &texels);
+        let texture = texture::Texture::from_texels(&device, &mut command_encoder, size, size, &texels);
         let material = Material::new(&device, texture);
 
         let model = model::Model::new(&device, mesh, material);
 
-        // Done
-        let this = Example { model };
-        (this, Some(init_encoder.finish()))
+        Example { model }
     }
 
-    fn render(&mut self, frame: &wgpu::SwapChainOutput, device: &wgpu::Device) -> wgpu::CommandBuffer {
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+    fn render(&mut self, frame: &wgpu::SwapChainOutput, command_encoder: &mut wgpu::CommandEncoder) {
         {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,
@@ -123,8 +124,6 @@ impl Example {
             rpass.set_vertex_buffer(0, &self.model.mesh.vertex, 0, 0);
             rpass.draw_indexed(0..self.model.mesh.index_count as u32, 0, 0..1);
         }
-
-        encoder.finish()
     }
 }
 
