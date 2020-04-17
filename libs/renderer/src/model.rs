@@ -37,6 +37,11 @@ impl Model {
             label: None,
         });
 
+        let state_descriptor = wgpu::VertexStateDescriptor {
+            index_format: mesh.index_format(),
+            vertex_buffers: &[mesh.buffer_descriptor()],
+        };
+
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
@@ -62,25 +67,7 @@ impl Model {
                 write_mask: wgpu::ColorWrite::ALL,
             }],
             depth_stencil_state: None,
-            vertex_state: wgpu::VertexStateDescriptor {
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                    stride: mesh.stride as wgpu::BufferAddress,
-                    step_mode: wgpu::InputStepMode::Vertex,
-                    attributes: &[
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float4,
-                            offset: 0,
-                            shader_location: 0,
-                        },
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float2,
-                            offset: 4 * 4,
-                            shader_location: 1,
-                        },
-                    ],
-                }],
-            },
+            vertex_state: state_descriptor,
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,
