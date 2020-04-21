@@ -34,7 +34,7 @@ impl Mesh {
         }
     }
 
-    pub fn buffer_descriptor<'a>(&'a self) -> wgpu::VertexBufferDescriptor<'a> {
+    pub fn buffer_descriptor(&self) -> wgpu::VertexBufferDescriptor {
         wgpu::VertexBufferDescriptor {
             stride: self.stride as wgpu::BufferAddress,
             step_mode: wgpu::InputStepMode::Vertex,
