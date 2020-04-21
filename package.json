@@ -8,8 +8,8 @@
     "devserver": "webpack-dev-server --open -d --config webpack/webpack.config.dev.js"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
@@ -18,9 +18,9 @@
     "eslint-import-resolver-typescript": "^2.0.0",
     "eslint-plugin-import": "^2.20.2",
     "loader-utils": "^2.0.0",
-    "node-html-parser": "^1.2.14",
-    "prettier": "^2.0.3",
-    "ts-loader": "^6.2.2",
+    "node-html-parser": "^1.2.16",
+    "prettier": "^2.0.4",
+    "ts-loader": "^7.0.1",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
