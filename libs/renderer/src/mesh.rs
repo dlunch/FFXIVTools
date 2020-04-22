@@ -1,3 +1,5 @@
+use super::VertexFormat;
+
 pub struct Mesh {
     pub(crate) vertex: wgpu::Buffer,
     stride: usize,
@@ -8,22 +10,11 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new(device: &wgpu::Device, vertex: &[u8], stride: usize, index: &[u8], index_count: usize) -> Self {
+    pub fn new(device: &wgpu::Device, vertex: &[u8], stride: usize, index: &[u8], index_count: usize, vertex_format: VertexFormat) -> Self {
         let vertex = device.create_buffer_with_data(vertex, wgpu::BufferUsage::VERTEX);
         let index = device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
 
-        let attributes = vec![
-            wgpu::VertexAttributeDescriptor {
-                format: wgpu::VertexFormat::Float4,
-                offset: 0,
-                shader_location: 0,
-            },
-            wgpu::VertexAttributeDescriptor {
-                format: wgpu::VertexFormat::Float2,
-                offset: 4 * 4,
-                shader_location: 1,
-            },
-        ];
+        let attributes = vertex_format.into_attributes();
 
         Self {
             vertex,
