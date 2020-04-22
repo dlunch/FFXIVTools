@@ -36,14 +36,10 @@ impl VertexFormat {
         self.items
             .into_iter()
             .enumerate()
-            .map(|(i, x)| {
-                let result = wgpu::VertexAttributeDescriptor {
-                    format: x.item_type.wgpu_type(),
-                    offset: x.offset as u64,
-                    shader_location: i as u32,
-                };
-
-                result
+            .map(|(i, x)| wgpu::VertexAttributeDescriptor {
+                format: x.item_type.wgpu_type(),
+                offset: x.offset as u64,
+                shader_location: i as u32,
             })
             .collect::<Vec<_>>()
     }
