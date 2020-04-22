@@ -4,7 +4,7 @@ pub enum VertexItemType {
 }
 
 impl VertexItemType {
-    pub fn wgpu_type(&self) -> wgpu::VertexFormat {
+    pub(crate) fn wgpu_type(&self) -> wgpu::VertexFormat {
         match self {
             VertexItemType::Float4 => wgpu::VertexFormat::Float4,
             VertexItemType::Float2 => wgpu::VertexFormat::Float2,
@@ -32,7 +32,7 @@ impl VertexFormat {
         Self { items }
     }
 
-    pub(crate) fn into_attributes(self) -> Vec<wgpu::VertexAttributeDescriptor> {
+    pub(crate) fn into_wgpu_attributes(self) -> Vec<wgpu::VertexAttributeDescriptor> {
         self.items
             .into_iter()
             .enumerate()

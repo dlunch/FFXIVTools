@@ -14,7 +14,7 @@ impl Mesh {
         let vertex = device.create_buffer_with_data(vertex, wgpu::BufferUsage::VERTEX);
         let index = device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
 
-        let attributes = vertex_format.into_attributes();
+        let attributes = vertex_format.into_wgpu_attributes();
 
         Self {
             vertex,
