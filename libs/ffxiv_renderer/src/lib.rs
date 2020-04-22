@@ -1,7 +1,7 @@
 use raw_window_handle::HasRawWindowHandle;
 use zerocopy::{AsBytes, FromBytes};
 
-use renderer::{Material, Mesh, Model, Renderer, Texture};
+use renderer::{Material, Mesh, Model, Renderer, Texture, VertexFormat, VertexFormatItem, VertexItemType};
 
 enum ShaderStage {
     Vertex,
@@ -20,12 +20,18 @@ impl FFXIVRenderer {
         // Create the vertex and index buffers
         let vertex_size = std::mem::size_of::<Vertex>();
         let (vertex_data, index_data) = create_vertices();
+        let vertex_format = VertexFormat::new(vec![
+            VertexFormatItem::new(VertexItemType::Float4, 0),
+            VertexFormatItem::new(VertexItemType::Float2, 16),
+        ]);
+
         let mesh = Mesh::new(
             &renderer.device,
             vertex_data.as_bytes(),
             vertex_size,
             index_data.as_bytes(),
             index_data.len(),
+            vertex_format,
         );
 
         let size = 256u32;
