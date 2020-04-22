@@ -4,7 +4,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn from_texels(device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32, texels: &[u8]) -> Self {
+    pub fn new(device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32, texels: &[u8]) -> Self {
         let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             size: texture_extent,

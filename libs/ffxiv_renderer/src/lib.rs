@@ -36,7 +36,7 @@ impl FFXIVRenderer {
 
         let size = 256u32;
         let texels = create_texels(size as usize);
-        let texture = Texture::from_texels(&renderer.device, &mut renderer.command_encoder, size, size, &texels);
+        let texture = Texture::new(&renderer.device, &mut renderer.command_encoder, size, size, &texels);
 
         let vs = Self::load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
         let fs = Self::load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
