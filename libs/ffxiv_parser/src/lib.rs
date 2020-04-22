@@ -1,6 +1,9 @@
 // after rust 1.44
 // #![no_std]
 
+#[cfg(target_endian = "big")]
+compile_error!("Not supported on big endian");
+
 extern crate alloc;
 
 mod ex;
