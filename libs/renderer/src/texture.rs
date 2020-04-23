@@ -1,10 +1,22 @@
+pub enum TextureFormat {
+    Rgba8Unorm,
+}
+
+impl TextureFormat {
+    pub(crate) fn wgpu_type(&self) -> wgpu::TextureFormat {
+        match self {
+            TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
+        }
+    }
+}
+
 pub struct Texture {
     pub(crate) texture: wgpu::Texture,
     pub(crate) sampler: wgpu::Sampler,
 }
 
 impl Texture {
-    pub fn new(device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32, texels: &[u8]) -> Self {
+    pub fn new(device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
         let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             size: texture_extent,
@@ -12,7 +24,7 @@ impl Texture {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
+            format: format.wgpu_type(),
             usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
             label: None,
         });

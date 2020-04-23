@@ -1,7 +1,7 @@
 use raw_window_handle::HasRawWindowHandle;
 use zerocopy::{AsBytes, FromBytes};
 
-use renderer::{Material, Mesh, Model, Renderer, Texture, VertexFormat, VertexFormatItem, VertexItemType};
+use renderer::{Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
 
 enum ShaderStage {
     Vertex,
@@ -36,7 +36,14 @@ impl FFXIVRenderer {
 
         let size = 256u32;
         let texels = create_texels(size as usize);
-        let texture = Texture::new(&renderer.device, &mut renderer.command_encoder, size, size, &texels);
+        let texture = Texture::new(
+            &renderer.device,
+            &mut renderer.command_encoder,
+            size,
+            size,
+            &texels,
+            TextureFormat::Rgba8Unorm,
+        );
 
         let vs = Self::load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
         let fs = Self::load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);

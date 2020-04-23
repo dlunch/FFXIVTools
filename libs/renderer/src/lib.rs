@@ -7,7 +7,7 @@ mod vertex_format;
 pub use material::Material;
 pub use mesh::Mesh;
 pub use model::Model;
-pub use texture::Texture;
+pub use texture::{Texture, TextureFormat};
 pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
 
 use raw_window_handle::HasRawWindowHandle;
