@@ -63,19 +63,20 @@ impl Renderer {
         }
     }
 
-    pub fn render(&mut self, model: &Model, camera: &Camera) {
-        let mvp = Self::as_mvp(camera, 1024.0 / 768.0);
+    pub fn render(&mut self, model: &mut Model, camera: &Camera) {
+        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
+        model.set_mvp(&self.device, mvp);
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         std::mem::swap(&mut command_encoder, &mut self.command_encoder);
 
         let frame = self.swap_chain.get_next_texture().unwrap();
-        model.render(&self.device, &mut command_encoder, &frame, mvp);
+        model.render(&mut command_encoder, &frame);
 
         self.queue.submit(&[command_encoder.finish()]);
     }
 
-    fn as_mvp(camera: &Camera, aspect_ratio: f32) -> Matrix4<f32> {
+    fn get_mvp(camera: &Camera, aspect_ratio: f32) -> Matrix4<f32> {
         use std::f32::consts::PI;
 
         // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].

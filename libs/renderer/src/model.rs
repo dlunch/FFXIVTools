@@ -1,57 +1,24 @@
 use nalgebra::Matrix4;
-use zerocopy::AsBytes;
 
 use crate::{Material, Mesh};
 
 pub struct Model {
     mesh: Mesh,
     material: Material,
+
+    pipeline: wgpu::RenderPipeline,
 }
 
 impl Model {
-    pub fn new(_device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
-        Self { mesh, material }
-    }
-
-    pub fn render(&self, device: &wgpu::Device, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput, mvp: Matrix4<f32>) {
-        let uniform_buf = device.create_buffer_with_data(mvp.as_slice().as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
-
-        // Create bind group
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &self.material.bind_group_layout,
-            bindings: &[
-                wgpu::Binding {
-                    binding: 0,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &uniform_buf,
-                        range: 0..64,
-                    },
-                },
-                wgpu::Binding {
-                    binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&self.material.texture.texture.create_default_view()),
-                },
-                wgpu::Binding {
-                    binding: 2,
-                    resource: wgpu::BindingResource::Sampler(&self.material.texture.sampler),
-                },
-            ],
-            label: None,
-        });
-
-        let state_descriptor = wgpu::VertexStateDescriptor {
-            index_format: self.mesh.index_format(),
-            vertex_buffers: &[self.mesh.buffer_descriptor()],
-        };
-
+    pub fn new(device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &self.material.pipeline_layout,
+            layout: &material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &self.material.vs_module,
+                module: &material.vs_module,
                 entry_point: "main",
             },
             fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &self.material.fs_module,
+                module: &material.fs_module,
                 entry_point: "main",
             }),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
@@ -69,12 +36,23 @@ impl Model {
                 write_mask: wgpu::ColorWrite::ALL,
             }],
             depth_stencil_state: None,
-            vertex_state: state_descriptor,
+            vertex_state: wgpu::VertexStateDescriptor {
+                index_format: mesh.index_format(),
+                vertex_buffers: &[mesh.buffer_descriptor()],
+            },
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,
         });
 
+        Self { mesh, material, pipeline }
+    }
+
+    pub(crate) fn set_mvp(&mut self, device: &wgpu::Device, mvp: Matrix4<f32>) {
+        self.material.set_mvp(device, mvp)
+    }
+
+    pub(crate) fn render(&self, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput) {
         let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: &frame.view,
@@ -90,8 +68,8 @@ impl Model {
             }],
             depth_stencil_attachment: None,
         });
-        rpass.set_pipeline(&pipeline);
-        rpass.set_bind_group(0, &bind_group, &[]);
+        rpass.set_pipeline(&self.pipeline);
+        rpass.set_bind_group(0, &self.material.bind_group, &[]);
         rpass.set_index_buffer(&self.mesh.index, 0, 0);
         rpass.set_vertex_buffer(0, &self.mesh.vertex, 0, 0);
         rpass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
