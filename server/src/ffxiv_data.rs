@@ -8,7 +8,6 @@ use futures::{future, future::FutureExt};
 use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
 use sqpack_reader::{Package, SqPackFileHash};
