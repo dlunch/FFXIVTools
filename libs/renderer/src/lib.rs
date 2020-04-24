@@ -1,17 +1,19 @@
+mod camera;
 mod material;
 mod mesh;
 mod model;
 mod texture;
 mod vertex_format;
 
+pub use camera::Camera;
 pub use material::Material;
 pub use mesh::Mesh;
 pub use model::Model;
 pub use texture::{Texture, TextureFormat};
 pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
 
+use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
-
 pub struct Renderer {
     pub device: wgpu::Device,
     pub command_encoder: wgpu::CommandEncoder,
@@ -61,34 +63,31 @@ impl Renderer {
         }
     }
 
-    pub fn render(&mut self, model: &Model) {
+    pub fn render(&mut self, model: &Model, camera: &Camera) {
+        let mvp = Self::as_mvp(camera, 1024.0 / 768.0);
+
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         std::mem::swap(&mut command_encoder, &mut self.command_encoder);
 
         let frame = self.swap_chain.get_next_texture().unwrap();
-        {
-            let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
-                    resolve_target: None,
-                    load_op: wgpu::LoadOp::Clear,
-                    store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color {
-                        r: 0.1,
-                        g: 0.2,
-                        b: 0.3,
-                        a: 1.0,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
-            rpass.set_pipeline(&model.pipeline);
-            rpass.set_bind_group(0, &model.bind_group, &[]);
-            rpass.set_index_buffer(&model.mesh.index, 0, 0);
-            rpass.set_vertex_buffer(0, &model.mesh.vertex, 0, 0);
-            rpass.draw_indexed(0..model.mesh.index_count as u32, 0, 0..1);
-        }
+        model.render(&self.device, &mut command_encoder, &frame, mvp);
 
         self.queue.submit(&[command_encoder.finish()]);
+    }
+
+    fn as_mvp(camera: &Camera, aspect_ratio: f32) -> Matrix4<f32> {
+        use std::f32::consts::PI;
+
+        // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
+        #[rustfmt::skip]
+        let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.5,
+            0.0, 0.0, 0.0, 1.0,
+        );
+
+        let projection = nalgebra::Matrix4::new_perspective(aspect_ratio, 45.0 * PI / 180.0, 1.0, 10.0);
+        correction * projection * camera.view()
     }
 }

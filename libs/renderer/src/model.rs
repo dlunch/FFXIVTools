@@ -1,22 +1,24 @@
+use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
 use crate::{Material, Mesh};
 
 pub struct Model {
-    pub(crate) mesh: Mesh,
-    pub(crate) bind_group: wgpu::BindGroup,
-    pub(crate) pipeline: wgpu::RenderPipeline,
+    mesh: Mesh,
+    material: Material,
 }
 
 impl Model {
-    pub fn new(device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
-        let mx_total = Self::generate_matrix(1024.0 / 768.0);
-        let mx_ref = mx_total.as_slice();
-        let uniform_buf = device.create_buffer_with_data(mx_ref.as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
+    pub fn new(_device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
+        Self { mesh, material }
+    }
+
+    pub fn render(&self, device: &wgpu::Device, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput, mvp: Matrix4<f32>) {
+        let uniform_buf = device.create_buffer_with_data(mvp.as_slice().as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
 
         // Create bind group
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &material.bind_group_layout,
+            layout: &self.material.bind_group_layout,
             bindings: &[
                 wgpu::Binding {
                     binding: 0,
@@ -27,29 +29,29 @@ impl Model {
                 },
                 wgpu::Binding {
                     binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&material.texture.texture.create_default_view()),
+                    resource: wgpu::BindingResource::TextureView(&self.material.texture.texture.create_default_view()),
                 },
                 wgpu::Binding {
                     binding: 2,
-                    resource: wgpu::BindingResource::Sampler(&material.texture.sampler),
+                    resource: wgpu::BindingResource::Sampler(&self.material.texture.sampler),
                 },
             ],
             label: None,
         });
 
         let state_descriptor = wgpu::VertexStateDescriptor {
-            index_format: mesh.index_format(),
-            vertex_buffers: &[mesh.buffer_descriptor()],
+            index_format: self.mesh.index_format(),
+            vertex_buffers: &[self.mesh.buffer_descriptor()],
         };
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &material.pipeline_layout,
+            layout: &self.material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &material.vs_module,
+                module: &self.material.vs_module,
                 entry_point: "main",
             },
             fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &material.fs_module,
+                module: &self.material.fs_module,
                 entry_point: "main",
             }),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
@@ -73,28 +75,25 @@ impl Model {
             alpha_to_coverage_enabled: false,
         });
 
-        Self { mesh, bind_group, pipeline }
-    }
-
-    fn generate_matrix(aspect_ratio: f32) -> nalgebra::Matrix4<f32> {
-        use std::f32::consts::PI;
-
-        // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
-        #[rustfmt::skip]
-        let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.5, 0.5,
-            0.0, 0.0, 0.0, 1.0,
-        );
-
-        let projection = nalgebra::Matrix4::new_perspective(aspect_ratio, 45.0 * PI / 180.0, 1.0, 10.0);
-        let view = nalgebra::Matrix4::look_at_rh(
-            &nalgebra::Point3::new(1.5f32, -5.0, 3.0),
-            &nalgebra::Point3::new(0.0, 0.0, 0.0),
-            &nalgebra::Vector3::z_axis(),
-        );
-
-        correction * projection * view
+        let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                attachment: &frame.view,
+                resolve_target: None,
+                load_op: wgpu::LoadOp::Clear,
+                store_op: wgpu::StoreOp::Store,
+                clear_color: wgpu::Color {
+                    r: 0.1,
+                    g: 0.2,
+                    b: 0.3,
+                    a: 1.0,
+                },
+            }],
+            depth_stencil_attachment: None,
+        });
+        rpass.set_pipeline(&pipeline);
+        rpass.set_bind_group(0, &bind_group, &[]);
+        rpass.set_index_buffer(&self.mesh.index, 0, 0);
+        rpass.set_vertex_buffer(0, &self.mesh.vertex, 0, 0);
+        rpass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
     }
 }

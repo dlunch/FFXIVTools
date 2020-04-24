@@ -1,7 +1,8 @@
+use nalgebra::Point3;
 use raw_window_handle::HasRawWindowHandle;
 use zerocopy::{AsBytes, FromBytes};
 
-use renderer::{Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
+use renderer::{Camera, Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
 
 enum ShaderStage {
     Vertex,
@@ -55,7 +56,8 @@ impl FFXIVRenderer {
     }
 
     pub fn redraw(&mut self) {
-        self.renderer.render(&self.model)
+        let camera = Camera::new(Point3::new(1.5f32, -5.0, 3.0), Point3::new(0.0, 0.0, 0.0));
+        self.renderer.render(&self.model, &camera)
     }
 
     fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
