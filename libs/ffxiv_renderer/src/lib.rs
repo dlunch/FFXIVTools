@@ -1,13 +1,9 @@
 use nalgebra::Point3;
 use raw_window_handle::HasRawWindowHandle;
+use shaderc::ShaderKind;
 use zerocopy::{AsBytes, FromBytes};
 
 use renderer::{Camera, Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
-
-enum ShaderStage {
-    Vertex,
-    Fragment,
-}
 
 pub struct FFXIVRenderer {
     model: Model,
@@ -46,8 +42,8 @@ impl FFXIVRenderer {
             TextureFormat::Rgba8Unorm,
         );
 
-        let vs = Self::load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
-        let fs = Self::load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
+        let vs = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
+        let fs = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
         let material = Material::new(&renderer.device, texture, vs.as_binary(), fs.as_binary());
 
         let model = Model::new(&renderer.device, mesh, material);
@@ -60,14 +56,9 @@ impl FFXIVRenderer {
         self.renderer.render(&mut self.model, &camera)
     }
 
-    fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
-        let ty = match stage {
-            ShaderStage::Vertex => shaderc::ShaderKind::Vertex,
-            ShaderStage::Fragment => shaderc::ShaderKind::Fragment,
-        };
-
+    fn load_glsl(code: &str, stage: ShaderKind) -> shaderc::CompilationArtifact {
         let mut compiler = shaderc::Compiler::new().unwrap();
-        compiler.compile_into_spirv(code, ty, "shader.glsl", "main", None).unwrap()
+        compiler.compile_into_spirv(code, stage, "shader.glsl", "main", None).unwrap()
     }
 }
 
