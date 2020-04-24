@@ -57,7 +57,7 @@ impl FFXIVRenderer {
 
     pub fn redraw(&mut self) {
         let camera = Camera::new(Point3::new(1.5f32, -5.0, 3.0), Point3::new(0.0, 0.0, 0.0));
-        self.renderer.render(&self.model, &camera)
+        self.renderer.render(&mut self.model, &camera)
     }
 
     fn load_glsl(code: &str, stage: ShaderStage) -> shaderc::CompilationArtifact {
