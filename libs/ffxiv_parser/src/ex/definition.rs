@@ -1,6 +1,8 @@
-use crate::Language;
+use core::mem::size_of;
 
-use bytes::Buf;
+use util::SliceByteOrderExt;
+
+use crate::Language;
 
 #[derive(Clone)]
 #[repr(C)]
@@ -76,8 +78,8 @@ pub struct ExhPage {
 
 impl ExhPage {
     pub fn from(raw: &[u8]) -> Self {
-        let start = (&raw[..]).get_u32();
-        let count = (&raw[core::mem::size_of::<u32>()..]).get_u32();
+        let start = (&raw[..]).to_int_be::<u32>();
+        let count = (&raw[size_of::<u32>()..]).to_int_be::<u32>();
 
         Self { start, count }
     }
@@ -121,7 +123,7 @@ pub struct ExdDataHeader {
 
 impl Language {
     pub fn from(raw: &[u8]) -> Self {
-        match (&raw[..]).get_u16_le() {
+        match (&raw[..]).to_int_le::<u16>() {
             0 => Language::None,
             1 => Language::Japanese,
             2 => Language::English,

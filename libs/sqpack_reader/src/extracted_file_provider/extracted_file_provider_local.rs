@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use log::debug;
 
 use super::ExtractedFileProvider;
@@ -42,11 +41,11 @@ impl ExtractedFileProviderLocal {
 
 #[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderLocal {
-    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Bytes> {
+    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         let path = self.find_path(hash)?;
         debug!("Reading {}", path.to_str().unwrap());
 
-        Ok(Bytes::from(tokio::fs::read(path).await?))
+        Ok(tokio::fs::read(path).await?)
     }
 
     async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64> {

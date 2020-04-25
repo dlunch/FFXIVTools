@@ -2,10 +2,10 @@ use core::mem::size_of;
 use std::io;
 use std::path::PathBuf;
 
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use tokio::fs::File;
 
-use util::{cast, ReadExt};
+use util::{cast, ReadExt, SliceByteOrderExt};
 
 use super::definition::{DefaultFrameInfo, FileHeader, FileType, ImageFrameInfo, ModelFrameInfo};
 use crate::error::Result;
@@ -22,13 +22,13 @@ impl SqPackData {
         Ok(Self { file_path })
     }
 
-    pub async fn read(&self, offset: u64) -> Result<Bytes> {
+    pub async fn read(&self, offset: u64) -> Result<Vec<u8>> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_decoded())
     }
 
-    pub async fn read_as_compressed(&self, offset: u64) -> Result<Bytes> {
+    pub async fn read_as_compressed(&self, offset: u64) -> Result<Vec<u8>> {
         let raw = self.read_raw(offset).await?;
 
         Ok(raw.into_compressed())
@@ -62,7 +62,7 @@ impl SqPackData {
             let offset = base_offset + file_header.header_length as u64 + frame_info.block_offset as u64;
             let block = file.read_bytes(offset, frame_info.block_size as usize).await?;
 
-            blocks.push(Bytes::from(block));
+            blocks.push(block.into());
         }
 
         Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Bytes::new(), blocks))
@@ -74,14 +74,14 @@ impl SqPackData {
 
         Ok((0..count * item_size)
             .step_by(item_size)
-            .map(|x| block_size_data.slice(x..).get_u16_le())
+            .map(|x| (&block_size_data[x..]).to_int_le::<u16>())
             .collect::<Vec<_>>())
     }
 
     async fn read_contiguous_blocks(file: &mut File, base_offset: u64, block_sizes: &[u16]) -> io::Result<Bytes> {
         let total_size = block_sizes.iter().map(|&x| x as usize).sum();
 
-        Ok(Bytes::from(file.read_bytes(base_offset, total_size).await?))
+        Ok(file.read_bytes(base_offset, total_size).await?.into())
     }
 
     async fn read_model(file: &mut File, base_offset: u64, file_header: &FileHeader) -> io::Result<SqPackRawFile> {
@@ -90,9 +90,9 @@ impl SqPackData {
             .await?;
         let frame_info = cast::<ModelFrameInfo>(&frame_info_data);
 
-        let mut header = BytesMut::with_capacity(size_of::<u16>() * 2);
-        header.put_u16_le(frame_info.number_of_meshes);
-        header.put_u16_le(frame_info.number_of_materials);
+        let mut header = Vec::with_capacity(size_of::<u16>() * 2);
+        header.extend(frame_info.number_of_meshes.to_le_bytes().iter());
+        header.extend(frame_info.number_of_materials.to_le_bytes().iter());
 
         let total_block_count = frame_info.block_counts.iter().sum::<u16>() as usize;
         let sizes_offset = base_offset + size_of::<FileHeader>() as u64 + size_of::<ModelFrameInfo>() as u64;
@@ -103,7 +103,7 @@ impl SqPackData {
 
         let blocks = Self::iterate_blocks(block_data, block_sizes).collect::<Vec<_>>();
 
-        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header.freeze(), blocks))
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header.into(), blocks))
     }
 
     async fn read_image(file: &mut File, base_offset: u64, file_header: &FileHeader) -> io::Result<SqPackRawFile> {
@@ -143,7 +143,7 @@ impl SqPackData {
             .flat_map(|(block_data, block_sizes)| Self::iterate_blocks(block_data, block_sizes))
             .collect::<Vec<_>>();
 
-        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, Bytes::from(header), blocks))
+        Ok(SqPackRawFile::from_blocks(file_header.uncompressed_size, header.into(), blocks))
     }
 
     fn iterate_blocks(block_data: Bytes, block_sizes: Vec<u16>) -> impl Iterator<Item = Bytes> {

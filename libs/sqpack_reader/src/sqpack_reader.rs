@@ -9,7 +9,6 @@ use std::path::Path;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use bytes::Bytes;
 
 use crate::archive_id::SqPackArchiveId;
 use crate::error::Result;
@@ -37,13 +36,13 @@ impl SqPackReader {
 
 #[async_trait]
 impl Package for SqPackReader {
-    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Bytes> {
+    async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let archive = self.archive(reference.archive_id).await?;
 
         archive.read_file(reference.hash.folder, reference.hash.file).await
     }
 
-    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> Result<Bytes> {
+    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let archive = self.archive(reference.archive_id).await?;
 
         archive.read_as_compressed(reference.hash.folder, reference.hash.file).await

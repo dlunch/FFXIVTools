@@ -1,11 +1,10 @@
 use alloc::{collections::BTreeMap, vec::Vec};
 use core::mem::size_of;
 
-use bytes::{Buf, Bytes};
 use serde::{Serialize, Serializer};
 
 use sqpack_reader::{Package, Result};
-use util::{cast, StrExt};
+use util::{cast, SliceByteOrderExt, StrExt};
 
 #[repr(C)]
 struct LgbHeader {
@@ -94,7 +93,7 @@ impl Serialize for LayerGroupResourceItem<'_> {
 
 impl<'a> LayerGroupResourceItem<'a> {
     pub fn from(raw: &'a [u8]) -> Self {
-        let item_type = (&raw[..]).get_u32_le();
+        let item_type = raw.to_int_le::<u32>();
 
         match item_type {
             8 => LayerGroupResourceItem::EventNpc(cast::<LayerGroupResourceItemEventNpc>(raw)),
@@ -105,22 +104,24 @@ impl<'a> LayerGroupResourceItem<'a> {
 
 // LayerGroupResource
 pub struct Lgb {
-    data: Bytes,
+    data: Vec<u8>,
     name_offset: u32,
     entry_count: u32,
 }
 
 impl Lgb {
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
-        let data: Bytes = package.read_file(path.as_ref()).await?;
+        let data = package.read_file(path.as_ref()).await?;
 
         let _ = cast::<LgbHeader>(&data);
         let resource_header = cast::<LgbResourceHeader>(&data[size_of::<LgbHeader>()..]);
+        let name_offset = resource_header.name_offset;
+        let entry_count = resource_header.entry_count;
 
         Ok(Self {
-            data: data.clone(),
-            name_offset: resource_header.name_offset,
-            entry_count: resource_header.entry_count,
+            data,
+            name_offset,
+            entry_count,
         })
     }
 
@@ -133,14 +134,14 @@ impl Lgb {
         (0..self.entry_count)
             .map(|i| {
                 let offset = base_offset + (i as usize) * size_of::<u32>();
-                let data_offset = (&self.data[offset..]).get_u32_le();
+                let data_offset = (&self.data[offset..]).to_int_le::<u32>();
 
                 Self::parse_entry(&self.data, base_offset + data_offset as usize)
             })
             .collect::<BTreeMap<_, _>>()
     }
 
-    fn parse_entry<'a>(data: &'a Bytes, offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
+    fn parse_entry<'a>(data: &'a Vec<u8>, offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
         let entry = cast::<LgbResourceEntry>(&data[offset..]);
         let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..]).unwrap();
 
@@ -148,7 +149,7 @@ impl Lgb {
         let items = (0..entry.item_count)
             .map(|i| {
                 let offset = base_offset + (i as usize) * size_of::<u32>();
-                let data_offset = (&data[offset..]).get_u32_le();
+                let data_offset = (&data[offset..]).to_int_le::<u32>();
 
                 LayerGroupResourceItem::from(&data[base_offset + data_offset as usize..])
             })
