@@ -3,7 +3,9 @@ use raw_window_handle::HasRawWindowHandle;
 use shaderc::ShaderKind;
 use zerocopy::{AsBytes, FromBytes};
 
+use ffxiv_parser::{Tex, TextureType};
 use renderer::{Camera, Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
+use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 pub struct FFXIVRenderer {
     model: Model,
@@ -31,14 +33,19 @@ impl FFXIVRenderer {
             vertex_format,
         );
 
-        let size = 256u32;
-        let texels = create_texels(size as usize);
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
+
+        let tex = Tex::new(&pack, "chara/human/c0101/obj/body/b0001/texture/c0101b0001_d.tex")
+            .await
+            .unwrap();
+
         let texture = Texture::new(
             &renderer.device,
             &mut renderer.command_encoder,
-            size,
-            size,
-            &texels,
+            tex.width() as u32,
+            tex.height() as u32,
+            decode_texture(tex, 0).as_ref(),
             TextureFormat::Rgba8Unorm,
         );
 
@@ -122,25 +129,18 @@ fn create_vertices() -> (Vec<Vertex>, Vec<u16>) {
     (vertex_data.to_vec(), index_data.to_vec())
 }
 
-fn create_texels(size: usize) -> Vec<u8> {
-    use std::iter;
+fn decode_texture(tex: Tex, mipmap_index: u16) -> Vec<u8> {
+    let raw = tex.data(mipmap_index);
+    let result_size = (tex.width() as usize) * (tex.height() as usize) * 4; // RGBA
+    let mut result = vec![0; result_size];
 
-    (0..size * size)
-        .flat_map(|id| {
-            // get high five for recognizing this ;)
-            let cx = 3.0 * (id % size) as f32 / (size - 1) as f32 - 2.0;
-            let cy = 2.0 * (id / size) as f32 / (size - 1) as f32 - 1.0;
-            let (mut x, mut y, mut count) = (cx, cy, 0);
-            while count < 0xFF && x * x + y * y < 4.0 {
-                let old_x = x;
-                x = x * x - y * y + cx;
-                y = 2.0 * old_x * y + cy;
-                count += 1;
-            }
-            iter::once(0xFF - (count * 5) as u8)
-                .chain(iter::once(0xFF - (count * 15) as u8))
-                .chain(iter::once(0xFF - (count * 50) as u8))
-                .chain(iter::once(1))
-        })
-        .collect()
+    let format = match tex.texture_type() {
+        TextureType::DXT1 => squish::Format::Bc1,
+        TextureType::DXT3 => squish::Format::Bc2,
+        TextureType::DXT5 => squish::Format::Bc3,
+        _ => panic!(),
+    };
+    format.decompress(raw, tex.width() as usize, tex.height() as usize, result.as_mut());
+
+    result
 }
