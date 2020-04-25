@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use ffxiv_parser::{Mdl, BufferItemType, BufferItemUsage};
+    use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
