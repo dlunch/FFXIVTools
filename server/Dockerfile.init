@@ -1,3 +1,0 @@
-FROM scratch
-COPY Cargo.toml /src
-COPY Cargo.toml /usr/local/cargo

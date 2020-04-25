@@ -38,7 +38,7 @@ docker run -p 8080:8080 -d --volume=<data path>:/server/data dlunch/ffxivtools:s
 Execute once
 
 ```
-docker buildx build . --file server/Dockerfile.init --push --tag dlunch/ffxivtools:builder --platform linux/arm/v7,linux/amd64
+docker buildx build . --file server/Dockerfile --target init --push --tag dlunch/ffxivtools:builder --platform linux/arm/v7,linux/amd64
 ```
 
 Build Builder
