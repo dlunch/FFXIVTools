@@ -10,6 +10,7 @@ mod ex;
 mod ffxiv_string;
 mod lgb;
 mod lvb;
+mod tex;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
@@ -29,3 +30,4 @@ pub enum Language {
 pub use ex::{Ex, ExList, ExRowType};
 pub use lgb::Lgb;
 pub use lvb::Lvb;
+pub use tex::{Tex, TextureType};
