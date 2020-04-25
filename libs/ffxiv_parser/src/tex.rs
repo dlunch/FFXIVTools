@@ -1,3 +1,6 @@
+use core::convert::TryInto;
+use core::mem::size_of;
+
 use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 
@@ -23,9 +26,9 @@ struct TexHeader {
     height: u16,
     depth: u16,
     mipmap_count: u16,
-    _unk4: u16,
-    _unk5: u16,
-    _unk6: u16,
+    _unk4: u32,
+    _unk5: u32,
+    _unk6: u32,
 }
 
 pub struct Tex {
@@ -61,5 +64,27 @@ impl Tex {
         let header = cast::<TexHeader>(&self.data);
 
         header.texture_type
+    }
+
+    pub fn data(&self, mipmap_index: u16) -> &[u8] {
+        let header = cast::<TexHeader>(&self.data);
+
+        let mipmap_begin = self.read_mipmap_offset(mipmap_index);
+        let mipmap_end = if mipmap_index == header.mipmap_count - 1 {
+            self.data.len()
+        } else {
+            self.read_mipmap_offset(mipmap_index + 1)
+        };
+
+        return &self.data[mipmap_begin..mipmap_end];
+    }
+
+    fn read_mipmap_offset(&self, mipmap_index: u16) -> usize {
+        let mipmap_index = mipmap_index as usize;
+        let mipmap_offsets_begin = size_of::<TexHeader>();
+        let mipmap_data = &self.data[mipmap_offsets_begin..];
+        let mipmap_offset_data = &mipmap_data[mipmap_index * size_of::<u32>()..(mipmap_index + 1) * size_of::<u32>()];
+
+        u32::from_le_bytes(mipmap_offset_data.try_into().unwrap()) as usize
     }
 }
