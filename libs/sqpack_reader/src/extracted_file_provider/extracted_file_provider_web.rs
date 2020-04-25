@@ -22,7 +22,8 @@ impl ExtractedFileProviderWeb {
 
         debug!("Fetching {}", uri);
 
-        Ok(reqwest::get(&uri).await?.bytes().await?)
+        let result = reqwest::get(&uri).await?.error_for_status()?;
+        Ok(result.bytes().await?)
     }
 }
 
