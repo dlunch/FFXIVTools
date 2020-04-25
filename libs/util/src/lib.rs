@@ -14,7 +14,11 @@ cfg_if::cfg_if! {
 }
 
 pub fn cast<T>(data: &[u8]) -> &T {
-    unsafe { &*(data.as_ptr() as *const T) }
+    unsafe { core::mem::transmute(data.as_ptr()) }
+}
+
+pub fn cast_array<T>(data: &[u8]) -> &[T] {
+    unsafe { core::mem::transmute(data) }
 }
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {
