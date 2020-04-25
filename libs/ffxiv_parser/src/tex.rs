@@ -76,7 +76,7 @@ impl Tex {
             self.read_mipmap_offset(mipmap_index + 1)
         };
 
-        return &self.data[mipmap_begin..mipmap_end];
+        &self.data[mipmap_begin..mipmap_end]
     }
 
     fn read_mipmap_offset(&self, mipmap_index: u16) -> usize {
