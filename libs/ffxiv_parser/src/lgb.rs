@@ -141,7 +141,7 @@ impl Lgb {
             .collect::<BTreeMap<_, _>>()
     }
 
-    fn parse_entry<'a>(data: &'a Vec<u8>, offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
+    fn parse_entry<'a>(data: &'a [u8], offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
         let entry = cast::<LgbResourceEntry>(&data[offset..]);
         let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..]).unwrap();
 
