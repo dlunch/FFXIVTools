@@ -66,6 +66,9 @@ impl SqPackRawFile {
     pub fn into_decoded(self) -> Bytes {
         let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + self.header.len());
         result.extend(self.header);
+        if result.len() == 4 {
+            result.resize(result.len() + 0x40, 0); // mdl files has 0x44 bytes of header
+        }
 
         for block in self.blocks {
             Self::decode_block_into(&block, &mut result);
