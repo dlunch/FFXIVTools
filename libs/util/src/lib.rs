@@ -1,6 +1,9 @@
 extern crate alloc;
 
+mod slice_ext;
 mod str_ext;
+
+pub use slice_ext::SliceByteOrderExt;
 pub use str_ext::StrExt;
 
 cfg_if::cfg_if! {

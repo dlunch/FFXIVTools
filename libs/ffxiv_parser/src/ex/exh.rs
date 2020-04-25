@@ -1,7 +1,6 @@
 use alloc::{format, vec::Vec};
 use core::mem::size_of;
 
-use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 use util::cast;
 
@@ -18,7 +17,7 @@ pub struct ExHeader {
 
 impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
-        let data: Bytes = package.read_file(&format!("exd/{}.exh", name)).await?;
+        let data = package.read_file(&format!("exd/{}.exh", name)).await?;
 
         let header = cast::<ExhHeader>(&data);
 

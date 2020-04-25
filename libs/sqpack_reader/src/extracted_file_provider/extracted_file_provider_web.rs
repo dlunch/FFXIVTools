@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use bytes::Bytes;
 use log::debug;
 
 use super::ExtractedFileProvider;
@@ -17,19 +16,19 @@ impl ExtractedFileProviderWeb {
         }
     }
 
-    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Bytes> {
+    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
         let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path);
 
         debug!("Fetching {}", uri);
 
         let result = reqwest::get(&uri).await?.error_for_status()?;
-        Ok(result.bytes().await?)
+        Ok(Vec::from(&result.bytes().await?[..]))
     }
 }
 
 #[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderWeb {
-    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Bytes> {
+    async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         self.fetch(hash).await.map_err(|x| {
             debug!("Error downloading file, {}", x);
 

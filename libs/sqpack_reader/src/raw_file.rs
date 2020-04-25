@@ -4,7 +4,7 @@ use core::mem::size_of;
 use compression::prelude::DecodeExt;
 use compression::prelude::Deflater;
 
-use bytes::{Bytes, BytesMut};
+use bytes::Bytes;
 
 use util::{cast, round_up};
 
@@ -30,7 +30,8 @@ pub struct SqPackRawFile {
 }
 
 impl SqPackRawFile {
-    pub fn from_compressed_file(data: Bytes) -> Self {
+    pub fn from_compressed_file(data: Vec<u8>) -> Self {
+        let data = Bytes::from(data);
         let file_header = cast::<CompressedFileHeader>(&data);
 
         let header = data.slice(size_of::<CompressedFileHeader>()..size_of::<CompressedFileHeader>() + file_header.header_size as usize);
@@ -63,8 +64,8 @@ impl SqPackRawFile {
         }
     }
 
-    pub fn into_decoded(self) -> Bytes {
-        let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + self.header.len());
+    pub fn into_decoded(self) -> Vec<u8> {
+        let mut result = Vec::with_capacity(self.uncompressed_size as usize + self.header.len());
         result.extend(self.header);
         if result.len() == 4 {
             result.resize(result.len() + 0x40, 0); // mdl files has 0x44 bytes of header
@@ -74,18 +75,17 @@ impl SqPackRawFile {
             Self::decode_block_into(&block, &mut result);
         }
 
-        result.freeze()
+        result
     }
 
     #[cfg(feature = "std")]
-    pub fn into_compressed(self) -> Bytes {
-        use bytes::BufMut;
+    pub fn into_compressed(self) -> Vec<u8> {
         use core::iter;
 
-        let mut result = BytesMut::with_capacity(self.uncompressed_size as usize + size_of::<CompressedFileHeader>());
-        result.put_u32_le(self.uncompressed_size);
-        result.put_u32_le(self.header.len() as u32);
-        result.put_u32_le(self.blocks.len() as u32);
+        let mut result = Vec::with_capacity(self.uncompressed_size as usize + size_of::<CompressedFileHeader>());
+        result.extend(self.uncompressed_size.to_le_bytes().iter());
+        result.extend((self.header.len() as u32).to_le_bytes().iter());
+        result.extend((self.blocks.len() as u32).to_le_bytes().iter());
 
         for block in self.blocks {
             let block_size = Self::get_block_size(&block);
@@ -95,7 +95,7 @@ impl SqPackRawFile {
             result.extend(iter::repeat(0).take(rounded_size - block_size));
         }
 
-        result.freeze()
+        result
     }
 
     fn get_block_size(block: &[u8]) -> usize {
@@ -108,7 +108,7 @@ impl SqPackRawFile {
         }
     }
 
-    fn decode_block_into(block: &[u8], result: &mut BytesMut) {
+    fn decode_block_into(block: &[u8], result: &mut Vec<u8>) {
         let header = cast::<BlockHeader>(&block);
 
         if header.compressed_length >= 32000 {

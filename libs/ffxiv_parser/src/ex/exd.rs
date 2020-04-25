@@ -1,8 +1,6 @@
 use alloc::{collections::BTreeMap, format};
 use core::mem::size_of;
 
-use bytes::Bytes;
-
 use sqpack_reader::{Package, Result};
 use util::cast;
 
@@ -10,14 +8,14 @@ use super::definition::{ExdHeader, ExdRow};
 use crate::Language;
 
 pub struct ExData {
-    data: Bytes,
+    data: Vec<u8>,
     offsets: BTreeMap<u32, u32>,
 }
 
 impl ExData {
     pub async fn new(package: &dyn Package, name: &str, page_start: u32, language: Language) -> Result<Self> {
         let path = format!("exd/{}_{}{}.exd", name, page_start, Self::language_to_suffix(language));
-        let data: Bytes = package.read_file(&path).await?;
+        let data = package.read_file(&path).await?;
 
         let header = cast::<ExdHeader>(&data);
 

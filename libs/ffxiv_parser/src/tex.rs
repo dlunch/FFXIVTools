@@ -1,10 +1,8 @@
-use core::convert::TryInto;
 use core::mem::size_of;
 
-use bytes::Bytes;
 use sqpack_reader::{Package, Result};
 
-use util::cast;
+use util::{cast, SliceByteOrderExt};
 
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -32,7 +30,7 @@ struct TexHeader {
 }
 
 pub struct Tex {
-    data: Bytes,
+    data: Vec<u8>,
 }
 
 impl Tex {
@@ -85,6 +83,6 @@ impl Tex {
         let mipmap_data = &self.data[mipmap_offsets_begin..];
         let mipmap_offset_data = &mipmap_data[mipmap_index * size_of::<u32>()..(mipmap_index + 1) * size_of::<u32>()];
 
-        u32::from_le_bytes(mipmap_offset_data.try_into().unwrap()) as usize
+        mipmap_offset_data.to_int_le::<u32>() as usize
     }
 }

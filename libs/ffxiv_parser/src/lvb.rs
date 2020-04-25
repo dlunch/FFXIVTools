@@ -1,10 +1,8 @@
 use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 use core::mem::size_of;
 
-use bytes::{Buf, Bytes};
-
 use sqpack_reader::{Package, Result};
-use util::{cast, StrExt};
+use util::{cast, SliceByteOrderExt, StrExt};
 
 #[repr(C)]
 struct LvbHeader {
@@ -35,7 +33,7 @@ pub struct Lvb {
 
 impl Lvb {
     pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
-        let data: Bytes = package.read_file(&format!("bg/{}.lvb", path)).await?;
+        let data = package.read_file(&format!("bg/{}.lvb", path)).await?;
 
         let _ = cast::<LvbHeader>(&data);
         let entries = cast::<LvbEntries>(&data[size_of::<LvbHeader>()..]);
@@ -44,9 +42,9 @@ impl Lvb {
         let lgb_paths = (0..entries.entry4_count as usize)
             .map(|x| {
                 let offset = entry4_base + x * size_of::<u32>();
-                let string_offset = entry4_base + (&data[offset..]).get_u32_le() as usize;
+                let string_offset = (&data[offset..]).to_int_le::<u32>() as usize;
 
-                str::from_null_terminated_utf8(&data[string_offset..]).unwrap().to_owned()
+                str::from_null_terminated_utf8(&data[entry4_base + string_offset..]).unwrap().to_owned()
             })
             .collect::<Vec<_>>();
 
