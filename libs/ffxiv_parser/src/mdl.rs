@@ -75,6 +75,6 @@ impl Mdl {
         let base_offset = 0x44;
 
         let elements = cast_array::<BufferItem>(&self.data[base_offset..]);
-        elements.into_iter().take_while(|x| x.buffer != 255)
+        elements.iter().take_while(|x| x.buffer != 255)
     }
 }
