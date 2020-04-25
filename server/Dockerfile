@@ -1,3 +1,7 @@
+FROM scratch as init
+COPY Cargo.toml /src
+COPY Cargo.toml /usr/local/cargo
+
 FROM dlunch/ffxivtools:builder as previous
 FROM rust:stretch as builder
 
