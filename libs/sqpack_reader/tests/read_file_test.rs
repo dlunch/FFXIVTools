@@ -31,7 +31,7 @@ mod tests {
 
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await?;
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 27_284);
+            assert_eq!(data.len(), 27_348);
         }
 
         {
@@ -71,7 +71,7 @@ mod tests {
         {
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await?;
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 27_284);
+            assert_eq!(data.len(), 27_348);
         }
 
         {
