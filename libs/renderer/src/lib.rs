@@ -68,7 +68,7 @@ impl Renderer {
         model.set_mvp(&self.device, mvp);
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        std::mem::swap(&mut command_encoder, &mut self.command_encoder);
+        core::mem::swap(&mut command_encoder, &mut self.command_encoder);
 
         let frame = self.swap_chain.get_next_texture().unwrap();
         model.render(&mut command_encoder, &frame);
@@ -77,7 +77,7 @@ impl Renderer {
     }
 
     fn get_mvp(camera: &Camera, aspect_ratio: f32) -> Matrix4<f32> {
-        use std::f32::consts::PI;
+        use core::f32::consts::PI;
 
         // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
         #[rustfmt::skip]

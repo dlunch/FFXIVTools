@@ -1,4 +1,4 @@
-use std::convert::TryInto;
+use core::convert::TryInto;
 
 pub trait SliceByteOrderExt {
     fn to_int_be<T>(&self) -> T
@@ -19,7 +19,7 @@ impl SliceByteOrderExt for &[u8] {
     where
         T: Integer,
     {
-        let sliced = &self[..std::mem::size_of::<T>()];
+        let sliced = &self[..core::mem::size_of::<T>()];
 
         T::from_be_bytes(sliced)
     }
@@ -28,7 +28,7 @@ impl SliceByteOrderExt for &[u8] {
     where
         T: Integer,
     {
-        let sliced = &self[..std::mem::size_of::<T>()];
+        let sliced = &self[..core::mem::size_of::<T>()];
 
         T::from_le_bytes(sliced)
     }
@@ -37,7 +37,7 @@ impl SliceByteOrderExt for &[u8] {
     where
         T: Float,
     {
-        let sliced = &self[..std::mem::size_of::<T>()];
+        let sliced = &self[..core::mem::size_of::<T>()];
 
         T::from_be_bytes(sliced)
     }
