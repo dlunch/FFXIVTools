@@ -156,20 +156,6 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'model_viewer'",
-      "cargo": {
-        "args": ["build", "--bin=model_viewer", "--package=model_viewer"],
-        "filter": {
-          "name": "model_viewer",
-          "kind": "bin"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Debug executable 'server'",
       "cargo": {
         "args": ["build", "--bin=server", "--package=server"],
