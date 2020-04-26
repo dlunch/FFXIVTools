@@ -1,9 +1,8 @@
 use nalgebra::Point3;
 use raw_window_handle::HasRawWindowHandle;
 use shaderc::ShaderKind;
-use zerocopy::{AsBytes, FromBytes};
 
-use ffxiv_parser::{Tex, TextureType};
+use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Tex, TextureType};
 use renderer::{Camera, Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
@@ -16,25 +15,30 @@ impl FFXIVRenderer {
     pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
         let mut renderer = Renderer::new(window, width, height).await;
 
-        // Create the vertex and index buffers
-        let vertex_size = std::mem::size_of::<Vertex>();
-        let (vertex_data, index_data) = create_vertices();
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
+
+        let mdl = Mdl::new(&pack, "chara/equipment/e6016/model/c0201e6016_top.mdl").await.unwrap();
+        let mesh = mdl.meshes(0);
+        let buffer_items = mdl.buffer_items(0).collect::<Vec<_>>();
+        let mesh_index = 0;
+
+        let position = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::Position).unwrap();
+        let tex_coord = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::TexCoord).unwrap();
+
         let vertex_format = VertexFormat::new(vec![
-            VertexFormatItem::new(VertexItemType::Float4, 0),
-            VertexFormatItem::new(VertexItemType::Float2, 16),
+            VertexFormatItem::new(convert_type(position.item_type), position.offset as usize),
+            VertexFormatItem::new(convert_type(tex_coord.item_type), tex_coord.offset as usize),
         ]);
 
         let mesh = Mesh::new(
             &renderer.device,
-            vertex_data.as_bytes(),
-            vertex_size,
-            index_data.as_bytes(),
-            index_data.len(),
+            mesh[mesh_index].buffers[0],
+            mesh[mesh_index].mesh_info.strides[0] as usize,
+            mesh[mesh_index].indices,
+            mesh[0].mesh_info.index_count as usize,
             vertex_format,
         );
-
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
 
         let tex = Tex::new(&pack, "chara/human/c0101/obj/body/b0001/texture/c0101b0001_d.tex")
             .await
@@ -59,7 +63,7 @@ impl FFXIVRenderer {
     }
 
     pub fn redraw(&mut self) {
-        let camera = Camera::new(Point3::new(1.5f32, -5.0, 3.0), Point3::new(0.0, 0.0, 0.0));
+        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         self.renderer.render(&mut self.model, &camera)
     }
 
@@ -67,66 +71,6 @@ impl FFXIVRenderer {
         let mut compiler = shaderc::Compiler::new().unwrap();
         compiler.compile_into_spirv(code, stage, "shader.glsl", "main", None).unwrap()
     }
-}
-
-#[repr(C)]
-#[derive(Clone, Copy, AsBytes, FromBytes)]
-struct Vertex {
-    _pos: [f32; 4],
-    _tex_coord: [f32; 2],
-}
-
-fn vertex(pos: [i8; 3], tc: [i8; 2]) -> Vertex {
-    Vertex {
-        _pos: [pos[0] as f32, pos[1] as f32, pos[2] as f32, 1.0],
-        _tex_coord: [tc[0] as f32, tc[1] as f32],
-    }
-}
-
-fn create_vertices() -> (Vec<Vertex>, Vec<u16>) {
-    let vertex_data = [
-        // top (0, 0, 1)
-        vertex([-1, -1, 1], [0, 0]),
-        vertex([1, -1, 1], [1, 0]),
-        vertex([1, 1, 1], [1, 1]),
-        vertex([-1, 1, 1], [0, 1]),
-        // bottom (0, 0, -1)
-        vertex([-1, 1, -1], [1, 0]),
-        vertex([1, 1, -1], [0, 0]),
-        vertex([1, -1, -1], [0, 1]),
-        vertex([-1, -1, -1], [1, 1]),
-        // right (1, 0, 0)
-        vertex([1, -1, -1], [0, 0]),
-        vertex([1, 1, -1], [1, 0]),
-        vertex([1, 1, 1], [1, 1]),
-        vertex([1, -1, 1], [0, 1]),
-        // left (-1, 0, 0)
-        vertex([-1, -1, 1], [1, 0]),
-        vertex([-1, 1, 1], [0, 0]),
-        vertex([-1, 1, -1], [0, 1]),
-        vertex([-1, -1, -1], [1, 1]),
-        // front (0, 1, 0)
-        vertex([1, 1, -1], [1, 0]),
-        vertex([-1, 1, -1], [0, 0]),
-        vertex([-1, 1, 1], [0, 1]),
-        vertex([1, 1, 1], [1, 1]),
-        // back (0, -1, 0)
-        vertex([1, -1, 1], [0, 0]),
-        vertex([-1, -1, 1], [1, 0]),
-        vertex([-1, -1, -1], [1, 1]),
-        vertex([1, -1, -1], [0, 1]),
-    ];
-
-    let index_data: &[u16] = &[
-        0, 1, 2, 2, 3, 0, // top
-        4, 5, 6, 6, 7, 4, // bottom
-        8, 9, 10, 10, 11, 8, // right
-        12, 13, 14, 14, 15, 12, // left
-        16, 17, 18, 18, 19, 16, // front
-        20, 21, 22, 22, 23, 20, // back
-    ];
-
-    (vertex_data.to_vec(), index_data.to_vec())
 }
 
 fn decode_texture(tex: Tex, mipmap_index: u16) -> Vec<u8> {
@@ -143,4 +87,15 @@ fn decode_texture(tex: Tex, mipmap_index: u16) -> Vec<u8> {
     format.decompress(raw, tex.width() as usize, tex.height() as usize, result.as_mut());
 
     result
+}
+
+fn convert_type(item_type: BufferItemType) -> VertexItemType {
+    match item_type {
+        BufferItemType::Float2 => VertexItemType::Float2,
+        BufferItemType::Float3 => VertexItemType::Float3,
+        BufferItemType::Float4 => VertexItemType::Float4,
+        BufferItemType::Half2 => VertexItemType::Half2,
+        BufferItemType::Half4 => VertexItemType::Half4,
+        _ => panic!(),
+    }
 }

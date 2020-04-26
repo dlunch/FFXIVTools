@@ -52,25 +52,6 @@ pub enum BufferItemType {
     Half4 = 14,
 }
 
-impl BufferItemType {
-    pub fn component_count(self) -> usize {
-        match self {
-            BufferItemType::Float1 => 1,
-            BufferItemType::Float2 => 2,
-            BufferItemType::Float3 => 3,
-            BufferItemType::Float4 => 4,
-            BufferItemType::UByte4 => 4,
-            BufferItemType::Short2 => 2,
-            BufferItemType::Short4 => 4,
-            BufferItemType::UByte4n => 4,
-            BufferItemType::Short2n => 2,
-            BufferItemType::Short4n => 4,
-            BufferItemType::Half2 => 2,
-            BufferItemType::Half4 => 4,
-        }
-    }
-}
-
 #[repr(u8)]
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum BufferItemUsage {
@@ -97,7 +78,13 @@ pub struct BufferItem {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct BufferItemChunk {
-    pub buffer_items: [BufferItem; 17],
+    buffer_items: [BufferItem; 17],
+}
+
+impl BufferItemChunk {
+    pub fn items(&self) -> impl Iterator<Item = &BufferItem> {
+        self.buffer_items.iter().take_while(|x| x.buffer != 255)
+    }
 }
 
 #[repr(C)]
@@ -156,11 +143,17 @@ impl Mdl {
 
                 let buffers = (0..mesh_info.buffer_count)
                     .map(|buffer_index| {
-                        &self.data[model_header.buffer_data_offset as usize + mesh_info.buffer_offsets[buffer_index as usize] as usize..]
+                        let buffer_begin = model_header.buffer_data_offset as usize + mesh_info.buffer_offsets[buffer_index as usize] as usize;
+                        let buffer_end = buffer_begin + (mesh_info.vertex_count as usize) * (mesh_info.strides[buffer_index as usize] as usize);
+
+                        &self.data[buffer_begin..buffer_end]
                     })
                     .collect::<Vec<_>>();
 
-                let indices = &self.data[model_header.index_data_offset as usize + (mesh_info.index_offset as usize) * size_of::<u16>()..];
+                let index_begin = model_header.index_data_offset as usize + (mesh_info.index_offset as usize) * size_of::<u16>();
+                let index_end = index_begin + (mesh_info.index_count as usize) * size_of::<u16>();
+
+                let indices = &self.data[index_begin..index_end];
                 Mesh { mesh_info, buffers, indices }
             })
             .collect::<Vec<_>>()

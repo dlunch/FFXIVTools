@@ -1,13 +1,19 @@
 pub enum VertexItemType {
-    Float4,
     Float2,
+    Float3,
+    Float4,
+    Half2,
+    Half4,
 }
 
 impl VertexItemType {
     pub(crate) fn wgpu_type(&self) -> wgpu::VertexFormat {
         match self {
-            VertexItemType::Float4 => wgpu::VertexFormat::Float4,
             VertexItemType::Float2 => wgpu::VertexFormat::Float2,
+            VertexItemType::Float3 => wgpu::VertexFormat::Float3,
+            VertexItemType::Float4 => wgpu::VertexFormat::Float4,
+            VertexItemType::Half2 => wgpu::VertexFormat::Half2,
+            VertexItemType::Half4 => wgpu::VertexFormat::Half4,
         }
     }
 }
