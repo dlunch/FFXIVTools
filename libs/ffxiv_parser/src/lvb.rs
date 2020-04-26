@@ -20,8 +20,8 @@ struct LvbEntries {
     _unk2: u32,
     pub entry2_offset: u32,
     pub entry3_offset: u32,
-    pub entry4_offset: u32,
-    pub entry4_count: u32,
+    pub lgb_entry_offset: u32,
+    pub lgb_entry_count: u32,
     _unk3: u32,
     pub entry5_offset: u32,
 }
@@ -38,13 +38,15 @@ impl Lvb {
         let _ = cast::<LvbHeader>(&data);
         let entries = cast::<LvbEntries>(&data[size_of::<LvbHeader>()..]);
 
-        let entry4_base = size_of::<LvbHeader>() + entries.entry4_offset as usize;
-        let lgb_paths = (0..entries.entry4_count as usize)
+        let lgb_entry_base = size_of::<LvbHeader>() + entries.lgb_entry_offset as usize;
+        let lgb_paths = (0..entries.lgb_entry_count as usize)
             .map(|x| {
-                let offset = entry4_base + x * size_of::<u32>();
+                let offset = lgb_entry_base + x * size_of::<u32>();
                 let string_offset = (&data[offset..]).to_int_le::<u32>() as usize;
 
-                str::from_null_terminated_utf8(&data[entry4_base + string_offset..]).unwrap().to_owned()
+                str::from_null_terminated_utf8(&data[lgb_entry_base + string_offset..])
+                    .unwrap()
+                    .to_owned()
             })
             .collect::<Vec<_>>();
 
