@@ -136,16 +136,16 @@ impl Lgb {
                 let offset = base_offset + (i as usize) * size_of::<u32>();
                 let data_offset = (&self.data[offset..]).to_int_le::<u32>();
 
-                Self::parse_entry(&self.data, base_offset + data_offset as usize)
+                Self::parse_entry(&self.data[base_offset + data_offset as usize..])
             })
             .collect::<BTreeMap<_, _>>()
     }
 
-    fn parse_entry<'a>(data: &'a [u8], offset: usize) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
-        let entry = cast::<LgbResourceEntry>(&data[offset..]);
-        let name = str::from_null_terminated_utf8(&data[offset + entry.name_offset as usize..]).unwrap();
+    fn parse_entry<'a>(data: &'a [u8]) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
+        let entry = cast::<LgbResourceEntry>(&data);
+        let name = str::from_null_terminated_utf8(&data[entry.name_offset as usize..]).unwrap();
 
-        let base_offset = offset + entry.items_offset as usize;
+        let base_offset = entry.items_offset as usize;
         let items = (0..entry.item_count)
             .map(|i| {
                 let offset = base_offset + (i as usize) * size_of::<u32>();

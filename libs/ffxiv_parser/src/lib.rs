@@ -29,7 +29,7 @@ pub enum Language {
 }
 
 pub use ex::{Ex, ExList, ExRowType};
-pub use lgb::Lgb;
+pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
 pub use tex::{Tex, TextureType};
