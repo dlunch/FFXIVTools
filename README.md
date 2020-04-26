@@ -2,10 +2,12 @@
 
 Reimplementation of <https://ffxiv.dlunch.net> in rust.
 
-- Latest `master` branch preview: <https://ffxiv-dev-new.dlunch.net>
-- Latest stable: <https://ffxiv-new.dlunch.net>
+- Latest `master` branch preview: <https://ffxiv-dev-new.dlunch.net> (Placeholder)
+- Latest stable: <https://ffxiv-new.dlunch.net> (Placeholder)
 
 # Status
+
+Nothing is working on web.
 
 Basic rendering works on PC.
 
