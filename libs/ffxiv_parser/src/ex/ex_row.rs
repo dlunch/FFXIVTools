@@ -1,10 +1,11 @@
 use alloc::vec::Vec;
 
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
-use util::SliceByteOrderExt;
 
 use super::definition::{ExFieldType, ExhColumnDefinition};
 use crate::ffxiv_string::FFXIVString;
+
+use util::SliceByteOrderExt;
 
 pub enum ExRowItem<'a> {
     String(FFXIVString<'a>),
