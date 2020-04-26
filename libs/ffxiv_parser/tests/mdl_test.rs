@@ -13,7 +13,7 @@ mod tests {
         let pack = SqPackReaderExtractedFile::new(provider)?;
 
         let mdl = Mdl::new(&pack, "bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await?;
-        let buffer_item = mdl.buffer_items(0).next().unwrap().buffer_items[0];
+        let buffer_item = mdl.buffer_items(0).next().unwrap().items().next().unwrap();
         assert!(buffer_item.item_type == BufferItemType::Half4);
         assert!(buffer_item.usage == BufferItemUsage::Position);
 

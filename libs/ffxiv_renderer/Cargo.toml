@@ -11,7 +11,6 @@ doctest = false
 
 [dependencies]
 raw-window-handle = { version = "^0.3", default-features = false }
-zerocopy = { version = "^0.3", default-features = false }
 shaderc = { version = "^0.6", default-features = false }
 nalgebra = { version = "^0.21", default-features = false }
 squish = { version = "^1", default-features = false }
