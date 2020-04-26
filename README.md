@@ -7,7 +7,9 @@ Reimplementation of <https://ffxiv.dlunch.net> in rust.
 
 # Status
 
-Nothing is working.
+Basic rendering works on PC.
+
+![](https://github.com/dlunch/FFXIVTools/raw/master/screenshots/200426.png)
 
 # Build instructions
 
