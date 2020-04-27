@@ -39,6 +39,10 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+      - name: Install required packages
+        if: matrix.os == 'windows-latest'
+        run: choco install ninja
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
@@ -49,13 +53,11 @@ jobs:
           args: --all
 
       - uses: actions-rs/cargo@v1
-        if: matrix.os == 'ubuntu-latest'
         with:
           command: fmt
           args: --all -- --check
 
       - uses: actions-rs/cargo@v1
-        if: matrix.os == 'ubuntu-latest'
         with:
           command: clippy
           args: -- -D warnings
