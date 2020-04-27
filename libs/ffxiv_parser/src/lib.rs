@@ -11,6 +11,7 @@ mod ffxiv_string;
 mod lgb;
 mod lvb;
 mod mdl;
+mod mtrl;
 mod tex;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -32,4 +33,5 @@ pub use ex::{Ex, ExList, ExRowType};
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
+pub use mtrl::Mtrl;
 pub use tex::{Tex, TextureType};
