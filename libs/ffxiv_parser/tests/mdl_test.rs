@@ -37,6 +37,9 @@ mod tests {
             assert_eq!(meshes[0].buffers.len(), 2);
         }
 
+        let materials = mdl.material_files();
+        assert_eq!(materials[0], "bg/ex1/01_roc_r2/common/material/r200_b0_bari1a.mtrl");
+
         Ok(())
     }
 }
