@@ -198,7 +198,7 @@ impl Mdl {
         let model_headers = &cast_array::<ModelHeader>(&self.data[cursor..])[..Self::QUALITY_COUNT];
         cursor += size_of::<ModelHeader>() * Self::QUALITY_COUNT;
 
-        let mesh_info_count = model_headers.into_iter().map(|x| x.mesh_count as usize).sum::<usize>();
+        let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&self.data[cursor..])[..mesh_info_count];
         cursor += mesh_infos.len() * size_of::<MeshInfo>();
 
