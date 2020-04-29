@@ -27,18 +27,26 @@ impl FFXIVRenderer {
         let position = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::Position).unwrap();
         let tex_coord = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::TexCoord).unwrap();
 
-        let vertex_format = VertexFormat::new(vec![
-            VertexFormatItem::new(convert_type(position.item_type), position.offset as usize),
-            VertexFormatItem::new(convert_type(tex_coord.item_type), tex_coord.offset as usize),
-        ]);
+        let vertex_formats = vec![
+            VertexFormat::new(vec![VertexFormatItem::new(0, convert_type(position.item_type), position.offset as usize)]),
+            VertexFormat::new(vec![VertexFormatItem::new(
+                1,
+                convert_type(tex_coord.item_type),
+                tex_coord.offset as usize,
+            )]),
+        ];
+
+        let strides = (0..mesh[mesh_index].mesh_info.buffer_count as usize)
+            .map(|i| mesh[mesh_index].mesh_info.strides[i] as usize)
+            .collect::<Vec<_>>();
 
         let mesh = Mesh::new(
             &renderer.device,
-            mesh[mesh_index].buffers[0],
-            mesh[mesh_index].mesh_info.strides[0] as usize,
+            mesh[mesh_index].buffers.as_ref(),
+            &strides,
             mesh[mesh_index].indices,
             mesh[0].mesh_info.index_count as usize,
-            vertex_format,
+            vertex_formats,
         );
 
         let tex = Tex::new(&pack, "chara/human/c0101/obj/body/b0001/texture/c0101b0001_d.tex")
