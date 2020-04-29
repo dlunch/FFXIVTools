@@ -2,6 +2,7 @@ mod camera;
 mod material;
 mod mesh;
 mod model;
+mod shader;
 mod texture;
 mod vertex_format;
 
@@ -9,11 +10,13 @@ pub use camera::Camera;
 pub use material::Material;
 pub use mesh::Mesh;
 pub use model::Model;
+pub use shader::Shader;
 pub use texture::{Texture, TextureFormat};
 pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
 
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
+
 pub struct Renderer {
     pub device: wgpu::Device,
     pub command_encoder: wgpu::CommandEncoder,

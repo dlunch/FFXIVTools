@@ -3,7 +3,7 @@ use raw_window_handle::HasRawWindowHandle;
 use shaderc::ShaderKind;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Tex, TextureType};
-use renderer::{Camera, Material, Mesh, Model, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
+use renderer::{Camera, Material, Mesh, Model, Renderer, Shader, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 pub struct FFXIVRenderer {
@@ -62,9 +62,11 @@ impl FFXIVRenderer {
             TextureFormat::Rgba8Unorm,
         );
 
-        let vs = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
-        let fs = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
-        let material = Material::new(&renderer.device, texture, vs.as_binary(), fs.as_binary());
+        let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
+        let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
+        let vs = Shader::new(&renderer.device, vs_bytes.as_binary(), "main");
+        let fs = Shader::new(&renderer.device, fs_bytes.as_binary(), "main");
+        let material = Material::new(&renderer.device, texture, vs, fs);
 
         let model = Model::new(&renderer.device, mesh, material);
 

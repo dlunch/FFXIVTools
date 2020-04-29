@@ -14,12 +14,12 @@ impl Model {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &material.vs_module,
-                entry_point: "main",
+                module: &material.vertex_shader.module,
+                entry_point: material.vertex_shader.entry,
             },
             fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &material.fs_module,
-                entry_point: "main",
+                module: &material.fragment_shader.module,
+                entry_point: material.fragment_shader.entry,
             }),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,

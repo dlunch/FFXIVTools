@@ -1,11 +1,12 @@
 use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
+use crate::Shader;
 use crate::Texture;
 
 pub struct Material {
-    pub(crate) vs_module: wgpu::ShaderModule,
-    pub(crate) fs_module: wgpu::ShaderModule,
+    pub(crate) vertex_shader: Shader,
+    pub(crate) fragment_shader: Shader,
     pub(crate) pipeline_layout: wgpu::PipelineLayout,
     pub(crate) bind_group: wgpu::BindGroup,
 
@@ -16,7 +17,7 @@ pub struct Material {
 }
 
 impl Material {
-    pub fn new(device: &wgpu::Device, texture: Texture, vs_bytes: &[u32], fs_bytes: &[u32]) -> Self {
+    pub fn new(device: &wgpu::Device, texture: Texture, vertex_shader: Shader, fragment_shader: Shader) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             bindings: &[
                 wgpu::BindGroupLayoutEntry {
@@ -44,9 +45,6 @@ impl Material {
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&bind_group_layout],
         });
-
-        let vs_module = device.create_shader_module(vs_bytes);
-        let fs_module = device.create_shader_module(fs_bytes);
 
         let uniform_buf = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
@@ -76,8 +74,8 @@ impl Material {
         });
 
         Self {
-            vs_module,
-            fs_module,
+            vertex_shader,
+            fragment_shader,
             pipeline_layout,
             bind_group,
             texture,
