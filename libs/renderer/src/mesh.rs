@@ -1,4 +1,4 @@
-use super::VertexFormat;
+use crate::VertexFormat;
 
 pub struct Mesh {
     pub(crate) vertex_buffers: Vec<wgpu::Buffer>,
