@@ -19,13 +19,18 @@ impl VertexItemType {
 }
 
 pub struct VertexFormatItem {
+    shader_location: usize,
     item_type: VertexItemType,
     offset: usize,
 }
 
 impl VertexFormatItem {
-    pub fn new(item_type: VertexItemType, offset: usize) -> Self {
-        Self { item_type, offset }
+    pub fn new(shader_location: usize, item_type: VertexItemType, offset: usize) -> Self {
+        Self {
+            shader_location,
+            item_type,
+            offset,
+        }
     }
 }
 
@@ -41,11 +46,10 @@ impl VertexFormat {
     pub(crate) fn into_wgpu_attributes(self) -> Vec<wgpu::VertexAttributeDescriptor> {
         self.items
             .into_iter()
-            .enumerate()
-            .map(|(i, x)| wgpu::VertexAttributeDescriptor {
+            .map(|x| wgpu::VertexAttributeDescriptor {
                 format: x.item_type.wgpu_type(),
                 offset: x.offset as u64,
-                shader_location: i as u32,
+                shader_location: x.shader_location as u32,
             })
             .collect::<Vec<_>>()
     }

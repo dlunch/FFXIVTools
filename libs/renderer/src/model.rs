@@ -38,7 +38,7 @@ impl Model {
             depth_stencil_state: None,
             vertex_state: wgpu::VertexStateDescriptor {
                 index_format: mesh.index_format(),
-                vertex_buffers: &[mesh.buffer_descriptor()],
+                vertex_buffers: &mesh.vertex_descriptors(),
             },
             sample_count: 1,
             sample_mask: !0,
@@ -71,7 +71,9 @@ impl Model {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.material.bind_group, &[]);
         rpass.set_index_buffer(&self.mesh.index, 0, 0);
-        rpass.set_vertex_buffer(0, &self.mesh.vertex, 0, 0);
+        for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
+            rpass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
+        }
         rpass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
     }
 }
