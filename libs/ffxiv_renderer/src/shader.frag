@@ -11,5 +11,5 @@ void main() {
     float mag = length(v_TexCoord-vec2(0.5));
     o_Target = mix(tex, vec4(0.0), mag*mag);
     */
-    o_Target = vec4(1, 1, 1, 1);
+    o_Target = vec4(v_TexCoord, 1, 1);
 }
