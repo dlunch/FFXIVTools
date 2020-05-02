@@ -1,9 +1,13 @@
+use maplit::hashmap;
 use nalgebra::Point3;
 use raw_window_handle::HasRawWindowHandle;
 use shaderc::ShaderKind;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Tex, TextureType};
-use renderer::{Camera, Material, Mesh, Model, Renderer, Shader, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType};
+use renderer::{
+    Camera, Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem,
+    VertexItemType,
+};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 pub struct FFXIVRenderer {
@@ -64,8 +68,21 @@ impl FFXIVRenderer {
 
         let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
         let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
-        let vs = Shader::new(&renderer.device, vs_bytes.as_binary(), "main");
-        let fs = Shader::new(&renderer.device, fs_bytes.as_binary(), "main");
+        let vs = Shader::new(
+            &renderer.device,
+            vs_bytes.as_binary(),
+            "main",
+            hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
+        );
+        let fs = Shader::new(
+            &renderer.device,
+            fs_bytes.as_binary(),
+            "main",
+            hashmap! {
+                "t_Color" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
+                "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler)
+            },
+        );
         let material = Material::new(&renderer.device, texture, vs, fs);
 
         let model = Model::new(&renderer.device, mesh, material);
