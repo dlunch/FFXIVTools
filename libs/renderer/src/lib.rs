@@ -67,14 +67,12 @@ impl Renderer {
     }
 
     pub fn render(&mut self, model: &mut Model, camera: &Camera) {
-        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
-        model.set_mvp(&self.device, mvp);
-
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         core::mem::swap(&mut command_encoder, &mut self.command_encoder);
 
         let frame = self.swap_chain.get_next_texture().unwrap();
-        model.render(&mut command_encoder, &frame);
+        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
+        model.render(&self.device, &mut command_encoder, &frame, mvp);
 
         self.queue.submit(&[command_encoder.finish()]);
     }

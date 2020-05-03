@@ -21,8 +21,8 @@ impl ShaderBindingType {
 }
 
 pub struct ShaderBinding {
-    binding: u32,
-    binding_type: ShaderBindingType,
+    pub(crate) binding: u32,
+    pub(crate) binding_type: ShaderBindingType,
 }
 
 impl ShaderBinding {
@@ -42,7 +42,7 @@ impl ShaderBinding {
 pub struct Shader {
     pub(crate) module: wgpu::ShaderModule,
     pub(crate) entry: &'static str,
-    bindings: HashMap<&'static str, ShaderBinding>,
+    pub(crate) bindings: HashMap<&'static str, ShaderBinding>,
 }
 
 impl Shader {
