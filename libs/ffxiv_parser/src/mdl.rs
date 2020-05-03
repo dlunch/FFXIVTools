@@ -118,6 +118,11 @@ pub struct Mesh<'a> {
 
 pub struct Mdl {
     data: Vec<u8>,
+    string_block_offset: usize,
+    mdl_header_offset: usize,
+    model_header_offset: usize,
+    mesh_info_offset: usize,
+    attribute_info_offset: usize,
 }
 
 impl Mdl {
@@ -126,11 +131,39 @@ impl Mdl {
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
         let data = package.read_file(path.as_ref()).await?;
 
-        Ok(Self { data })
+        let mesh_count = (&data[..]).to_int_le::<u16>() as usize;
+        let mut cursor = 0x44 + size_of::<BufferItemChunk>() * mesh_count;
+
+        let string_block_size = (&data[cursor + 4..]).to_int_le::<u32>() as usize;
+        let string_block_offset = cursor + 8;
+        cursor += string_block_size + 8;
+
+        let mdl_header_offset = cursor;
+        let mdl_header = cast::<MdlHeader>(&data[cursor..]);
+        cursor += size_of::<MdlHeader>() + mdl_header.unk_count3 as usize * 0x20;
+
+        let model_header_offset = cursor;
+        let model_headers = &cast_array::<ModelHeader>(&data[cursor..])[..Self::QUALITY_COUNT];
+        cursor += size_of::<ModelHeader>() * Self::QUALITY_COUNT;
+
+        let mesh_info_offset = cursor;
+        let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
+        let mesh_infos = &cast_array::<MeshInfo>(&data[cursor..])[..mesh_info_count];
+        cursor += mesh_infos.len() * size_of::<MeshInfo>();
+        let attribute_info_offset = cursor;
+
+        Ok(Self {
+            data,
+            string_block_offset,
+            mdl_header_offset,
+            model_header_offset,
+            mesh_info_offset,
+            attribute_info_offset,
+        })
     }
 
     pub fn buffer_items(&self, quality: usize) -> impl Iterator<Item = &BufferItemChunk> {
-        let (_, _, model_headers, _, _) = self.get_headers();
+        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::QUALITY_COUNT];
         let model_header = &model_headers[quality];
 
         const BUFFER_ITEM_OFFSET: usize = 0x44;
@@ -142,7 +175,9 @@ impl Mdl {
     }
 
     pub fn meshes(&self, quality: usize) -> Vec<Mesh> {
-        let (_, _, model_headers, mesh_infos, _) = self.get_headers();
+        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::QUALITY_COUNT];
+        let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
+        let mesh_infos = &cast_array::<MeshInfo>(&self.data[self.mesh_info_offset..])[..mesh_info_count];
 
         let model_header = &model_headers[quality];
         (0..model_header.mesh_count)
@@ -168,7 +203,8 @@ impl Mdl {
     }
 
     pub fn material_files(&self) -> Vec<&str> {
-        let (mdl_header, string_block_offset, _, _, mut cursor) = self.get_headers();
+        let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
+        let mut cursor = self.attribute_info_offset;
 
         cursor += (mdl_header.attribute_count as usize) * size_of::<u32>();
         cursor += (mdl_header.unk_count4 as usize) * 20;
@@ -179,29 +215,8 @@ impl Mdl {
             .map(|x| {
                 let string_offset = (&self.data[cursor + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>() as usize;
 
-                str::from_null_terminated_utf8(&self.data[string_block_offset + string_offset..]).unwrap()
+                str::from_null_terminated_utf8(&self.data[self.string_block_offset + string_offset..]).unwrap()
             })
             .collect::<Vec<_>>()
-    }
-
-    fn get_headers(&self) -> (&MdlHeader, usize, &[ModelHeader], &[MeshInfo], usize) {
-        let mesh_count = (&self.data[..]).to_int_le::<u16>() as usize;
-        let mut cursor = 0x44 + size_of::<BufferItemChunk>() * mesh_count;
-
-        let string_block_size = (&self.data[cursor + 4..]).to_int_le::<u32>() as usize;
-        let string_block_offset = cursor + 8;
-        cursor += string_block_size + 8;
-
-        let header = cast::<MdlHeader>(&self.data[cursor..]);
-        cursor += size_of::<MdlHeader>() + header.unk_count3 as usize * 0x20;
-
-        let model_headers = &cast_array::<ModelHeader>(&self.data[cursor..])[..Self::QUALITY_COUNT];
-        cursor += size_of::<ModelHeader>() * Self::QUALITY_COUNT;
-
-        let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
-        let mesh_infos = &cast_array::<MeshInfo>(&self.data[cursor..])[..mesh_info_count];
-        cursor += mesh_infos.len() * size_of::<MeshInfo>();
-
-        (header, string_block_offset, model_headers, mesh_infos, cursor)
     }
 }
