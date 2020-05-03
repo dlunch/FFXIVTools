@@ -12,7 +12,6 @@ impl TextureFormat {
 
 pub struct Texture {
     pub(crate) texture: wgpu::Texture,
-    pub(crate) sampler: wgpu::Sampler,
 }
 
 impl Texture {
@@ -46,18 +45,6 @@ impl Texture {
             texture_extent,
         );
 
-        let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::Repeat,
-            address_mode_v: wgpu::AddressMode::Repeat,
-            address_mode_w: wgpu::AddressMode::Repeat,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            lod_min_clamp: -100.0,
-            lod_max_clamp: 100.0,
-            compare: wgpu::CompareFunction::Undefined,
-        });
-
-        Self { texture, sampler }
+        Self { texture }
     }
 }

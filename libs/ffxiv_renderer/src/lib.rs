@@ -66,6 +66,10 @@ impl FFXIVRenderer {
             TextureFormat::Rgba8Unorm,
         );
 
+        let textures = hashmap! {
+            "t_Color" => texture,
+        };
+
         let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
         let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
         let vs = Shader::new(
@@ -83,7 +87,7 @@ impl FFXIVRenderer {
                 "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler)
             },
         );
-        let material = Material::new(&renderer.device, texture, vs, fs);
+        let material = Material::new(&renderer.device, textures, vs, fs);
 
         let model = Model::new(&renderer.device, mesh, material);
 
