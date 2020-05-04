@@ -46,7 +46,14 @@ impl Model {
         Self { mesh, material, pipeline }
     }
 
-    pub(crate) fn render(&self, device: &wgpu::Device, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput, mvp_buf: Buffer) {
+    pub(crate) fn render(
+        &mut self,
+        device: &wgpu::Device,
+        mut command_encoder: &mut wgpu::CommandEncoder,
+        frame: &wgpu::SwapChainOutput,
+        mvp_buf: Buffer,
+    ) {
+        self.material.prepare(&mut command_encoder);
         let bind_group = self.material.bind_group(&device, mvp_buf);
         {
             let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {

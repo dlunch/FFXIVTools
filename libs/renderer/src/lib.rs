@@ -61,11 +61,6 @@ impl Renderer {
         Self { device, swap_chain, queue }
     }
 
-    // TODO hide command_encoder detail
-    pub fn create_command_encoder(&self) -> wgpu::CommandEncoder {
-        self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None })
-    }
-
     pub async fn render(&mut self, model: &mut Model, camera: &Camera) {
         let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
         let mut mvp_buf = Buffer::new(&self.device, 64);
