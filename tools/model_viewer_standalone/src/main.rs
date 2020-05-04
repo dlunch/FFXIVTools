@@ -1,3 +1,4 @@
+use nalgebra::Point3;
 use tokio::runtime::Runtime;
 use winit::{
     event,
@@ -5,7 +6,8 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
-use ffxiv_renderer::FFXIVRenderer;
+use ffxiv_model::Character;
+use renderer::{Camera, Renderer};
 
 fn main() {
     let mut rt = Runtime::new().unwrap();
@@ -16,8 +18,10 @@ fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     let size = window.inner_size();
-    let mut renderer = rt.block_on(async { FFXIVRenderer::new(&window, size.width, size.height).await });
+    let mut renderer = rt.block_on(async { Renderer::new(&window, size.width, size.height).await });
+    let mut character = rt.block_on(async { Character::new(&renderer).await });
 
+    let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
 
@@ -39,9 +43,7 @@ fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                rt.block_on(async {
-                    renderer.redraw().await;
-                });
+                rt.block_on(async { renderer.render(&mut character.model, &camera).await });
             }
             _ => {}
         }

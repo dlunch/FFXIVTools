@@ -1,0 +1,19 @@
+[package]
+name = "model_viewer_standalone"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "model_viewer_standalone"
+path = "src/main.rs"
+
+[features]
+
+[dependencies]
+winit = { version = "^0.22", default-features = false }
+tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
+nalgebra = { version = "^0.21", default-features = false }
+
+ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
+renderer = { version = "^0.1", default-features = false, path = "../../libs/renderer" }

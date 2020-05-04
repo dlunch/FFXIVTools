@@ -1,24 +1,18 @@
 use maplit::hashmap;
-use nalgebra::Point3;
-use raw_window_handle::HasRawWindowHandle;
 use shaderc::ShaderKind;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Tex, TextureType};
 use renderer::{
-    Camera, Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem,
-    VertexItemType,
+    Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
 };
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
-pub struct FFXIVRenderer {
-    model: Model,
-    renderer: Renderer,
+pub struct Character {
+    pub model: Model,
 }
 
-impl FFXIVRenderer {
-    pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
-        let renderer = Renderer::new(window, width, height).await;
-
+impl Character {
+    pub async fn new(renderer: &Renderer) -> Self {
         // WIP
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderExtractedFile::new(provider).unwrap();
@@ -90,12 +84,7 @@ impl FFXIVRenderer {
 
         let model = Model::new(&renderer.device, mesh, material);
 
-        Self { model, renderer }
-    }
-
-    pub async fn redraw(&mut self) {
-        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        self.renderer.render(&mut self.model, &camera).await
+        Self { model }
     }
 
     fn load_glsl(code: &str, stage: ShaderKind) -> shaderc::CompilationArtifact {
