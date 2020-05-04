@@ -5,7 +5,7 @@ pub enum TextureFormat {
 impl TextureFormat {
     pub(crate) fn wgpu_type(&self) -> wgpu::TextureFormat {
         match self {
-            TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8UnormSrgb,
+            TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
         }
     }
 }

@@ -51,7 +51,7 @@ impl Renderer {
 
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8UnormSrgb,
+            format: wgpu::TextureFormat::Bgra8Unorm,
             width,
             height,
             present_mode: wgpu::PresentMode::Mailbox,
