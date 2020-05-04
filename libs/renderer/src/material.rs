@@ -33,6 +33,12 @@ impl Material {
         }
     }
 
+    pub(crate) fn prepare(&mut self, mut command_encoder: &mut wgpu::CommandEncoder) {
+        for (_, texture) in &mut self.textures {
+            texture.prepare(&mut command_encoder);
+        }
+    }
+
     pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: Buffer) -> wgpu::BindGroup {
         let texture_views = self
             .textures

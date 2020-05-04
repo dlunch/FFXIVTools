@@ -57,18 +57,13 @@ impl FFXIVRenderer {
             .await
             .unwrap();
 
-        // TODO hide command_encoder detail
-        let mut command_encoder = renderer.create_command_encoder();
         let texture = Texture::new(
             &renderer.device,
-            &mut command_encoder,
             tex.width() as u32,
             tex.height() as u32,
             decode_texture(tex, 0).as_ref(),
             TextureFormat::Rgba8Unorm,
         );
-
-        renderer.queue.submit(&[command_encoder.finish()]);
 
         let textures = hashmap! {
             "t_Color" => texture,
