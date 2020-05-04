@@ -1,6 +1,4 @@
-use nalgebra::Matrix4;
-
-use crate::{Material, Mesh};
+use crate::{Buffer, Material, Mesh};
 
 pub struct Model {
     mesh: Mesh,
@@ -48,8 +46,8 @@ impl Model {
         Self { mesh, material, pipeline }
     }
 
-    pub(crate) fn render(&self, device: &wgpu::Device, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput, mvp: Matrix4<f32>) {
-        let bind_group = self.material.bind_group(&device, mvp);
+    pub(crate) fn render(&self, device: &wgpu::Device, command_encoder: &mut wgpu::CommandEncoder, frame: &wgpu::SwapChainOutput, mvp_buf: Buffer) {
+        let bind_group = self.material.bind_group(&device, mvp_buf);
         {
             let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {

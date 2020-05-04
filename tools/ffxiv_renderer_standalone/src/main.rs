@@ -1,13 +1,14 @@
+use tokio::runtime::Runtime;
+use winit::{
+    event,
+    event::WindowEvent,
+    event_loop::{ControlFlow, EventLoop},
+};
+
 use ffxiv_renderer::FFXIVRenderer;
 
-#[tokio::main]
-async fn main() {
-    use winit::{
-        event,
-        event::WindowEvent,
-        event_loop::{ControlFlow, EventLoop},
-    };
-
+fn main() {
+    let mut rt = Runtime::new().unwrap();
     let event_loop = EventLoop::new();
 
     let mut builder = winit::window::WindowBuilder::new();
@@ -15,7 +16,7 @@ async fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     let size = window.inner_size();
-    let mut renderer = FFXIVRenderer::new(&window, size.width, size.height).await;
+    let mut renderer = rt.block_on(async { FFXIVRenderer::new(&window, size.width, size.height).await });
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
@@ -38,7 +39,9 @@ async fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                renderer.redraw();
+                rt.block_on(async {
+                    renderer.redraw().await;
+                });
             }
             _ => {}
         }
