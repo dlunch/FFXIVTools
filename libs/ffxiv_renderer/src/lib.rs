@@ -17,7 +17,7 @@ pub struct FFXIVRenderer {
 
 impl FFXIVRenderer {
     pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
-        let mut renderer = Renderer::new(window, width, height).await;
+        let renderer = Renderer::new(window, width, height).await;
 
         // WIP
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
@@ -57,14 +57,18 @@ impl FFXIVRenderer {
             .await
             .unwrap();
 
+        // TODO hide command_encoder detail
+        let mut command_encoder = renderer.create_command_encoder();
         let texture = Texture::new(
             &renderer.device,
-            &mut renderer.command_encoder,
+            &mut command_encoder,
             tex.width() as u32,
             tex.height() as u32,
             decode_texture(tex, 0).as_ref(),
             TextureFormat::Rgba8Unorm,
         );
+
+        renderer.queue.submit(&[command_encoder.finish()]);
 
         let textures = hashmap! {
             "t_Color" => texture,
@@ -94,9 +98,9 @@ impl FFXIVRenderer {
         Self { model, renderer }
     }
 
-    pub fn redraw(&mut self) {
+    pub async fn redraw(&mut self) {
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        self.renderer.render(&mut self.model, &camera)
+        self.renderer.render(&mut self.model, &camera).await
     }
 
     fn load_glsl(code: &str, stage: ShaderKind) -> shaderc::CompilationArtifact {

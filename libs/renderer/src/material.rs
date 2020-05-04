@@ -1,11 +1,6 @@
 use std::collections::HashMap;
 
-use nalgebra::Matrix4;
-use zerocopy::AsBytes;
-
-use crate::Shader;
-use crate::ShaderBindingType;
-use crate::Texture;
+use crate::{Buffer, Shader, ShaderBindingType, Texture};
 
 pub struct Material {
     pub(crate) vertex_shader: Shader,
@@ -38,9 +33,7 @@ impl Material {
         }
     }
 
-    pub fn bind_group(&self, device: &wgpu::Device, mvp: Matrix4<f32>) -> wgpu::BindGroup {
-        let mvp_buf = device.create_buffer_with_data(mvp.as_slice().as_bytes(), wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST);
-
+    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: Buffer) -> wgpu::BindGroup {
         let texture_views = self
             .textures
             .iter()
@@ -72,10 +65,7 @@ impl Material {
                             panic!() // TODO
                         }
 
-                        wgpu::BindingResource::Buffer {
-                            buffer: &mvp_buf,
-                            range: 0..64,
-                        }
+                        mvp_buf.binding_resource()
                     }
                     ShaderBindingType::Texture2D => wgpu::BindingResource::TextureView(&texture_views.get(binding_name).unwrap()),
                     ShaderBindingType::Sampler => wgpu::BindingResource::Sampler(&sampler),

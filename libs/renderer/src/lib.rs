@@ -1,3 +1,4 @@
+mod buffer;
 mod camera;
 mod material;
 mod mesh;
@@ -6,6 +7,7 @@ mod shader;
 mod texture;
 mod vertex_format;
 
+pub use buffer::Buffer;
 pub use camera::Camera;
 pub use material::Material;
 pub use mesh::Mesh;
@@ -16,12 +18,12 @@ pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
 
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
+use zerocopy::AsBytes;
 
 pub struct Renderer {
     pub device: wgpu::Device,
-    pub command_encoder: wgpu::CommandEncoder,
     swap_chain: wgpu::SwapChain,
-    queue: wgpu::Queue,
+    pub queue: wgpu::Queue,
 }
 
 impl Renderer {
@@ -56,23 +58,23 @@ impl Renderer {
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        let command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
-        Self {
-            device,
-            swap_chain,
-            queue,
-            command_encoder,
-        }
+        Self { device, swap_chain, queue }
     }
 
-    pub fn render(&mut self, model: &mut Model, camera: &Camera) {
+    // TODO hide command_encoder detail
+    pub fn create_command_encoder(&self) -> wgpu::CommandEncoder {
+        self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None })
+    }
+
+    pub async fn render(&mut self, model: &mut Model, camera: &Camera) {
+        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
+        let mut mvp_buf = Buffer::new(&self.device, 64);
+        mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
+
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        core::mem::swap(&mut command_encoder, &mut self.command_encoder);
 
         let frame = self.swap_chain.get_next_texture().unwrap();
-        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
-        model.render(&self.device, &mut command_encoder, &frame, mvp);
+        model.render(&self.device, &mut command_encoder, &frame, mvp_buf);
 
         self.queue.submit(&[command_encoder.finish()]);
     }
