@@ -22,12 +22,9 @@ impl Buffer {
 
         let mut mapping: wgpu::BufferWriteMapping;
         loop {
-            match futures::poll!(&mut future) {
-                Poll::Ready(x) => {
-                    mapping = x?;
-                    break;
-                }
-                _ => {}
+            if let Poll::Ready(x) = futures::poll!(&mut future) {
+                mapping = x?;
+                break;
             }
             device.poll(wgpu::Maintain::Poll);
         }
