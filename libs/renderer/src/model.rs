@@ -28,7 +28,7 @@ impl Model {
             }),
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             color_states: &[wgpu::ColorStateDescriptor {
-                format: wgpu::TextureFormat::Bgra8UnormSrgb,
+                format: wgpu::TextureFormat::Bgra8Unorm,
                 color_blend: wgpu::BlendDescriptor::REPLACE,
                 alpha_blend: wgpu::BlendDescriptor::REPLACE,
                 write_mask: wgpu::ColorWrite::ALL,
