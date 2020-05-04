@@ -34,7 +34,7 @@ impl Material {
     }
 
     pub(crate) fn prepare(&mut self, mut command_encoder: &mut wgpu::CommandEncoder) {
-        for (_, texture) in &mut self.textures {
+        for texture in self.textures.values_mut() {
             texture.prepare(&mut command_encoder);
         }
     }
