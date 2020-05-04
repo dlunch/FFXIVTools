@@ -2,11 +2,11 @@
 members = [
     "libs/sqpack_reader",
     "libs/ffxiv_parser",
-    "libs/ffxiv_renderer",
+    "libs/ffxiv_model",
     "libs/renderer",
     "libs/util",
     "tools/sqpack_extractor",
-    "tools/ffxiv_renderer_standalone",
+    "tools/model_viewer_standalone",
     "server",
     "web/model_viewer",
     "web/translation_compare"
