@@ -156,6 +156,25 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug integration test 'mtrl_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=mtrl_test",
+          "--package=ffxiv_parser"
+        ],
+        "filter": {
+          "name": "mtrl_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug executable 'server'",
       "cargo": {
         "args": ["build", "--bin=server", "--package=server"],
