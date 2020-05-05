@@ -18,7 +18,7 @@ struct MtrlHeader {
 
 #[repr(u32)]
 #[derive(Eq, PartialEq)]
-pub enum MtrlParameterId {
+pub enum MtrlParameterType {
     Normal = 0x0C5EC1F1,
     Mask = 0x8A4E82B6,
     Diffuse = 0x115306BE,
@@ -28,7 +28,7 @@ pub enum MtrlParameterId {
 
 #[repr(C)]
 pub struct MtrlParameter {
-    pub id: MtrlParameterId,
+    pub parameter_type: MtrlParameterType,
     _unk1: u16,
     _unk2: u16,
     pub texture_index: u32,
