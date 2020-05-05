@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use maplit::hashmap;
-use shaderc::ShaderKind;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Mtrl, MtrlParameterType, Tex, TextureType};
 use renderer::{
@@ -71,17 +70,18 @@ impl Character {
             }
         }
 
-        let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
-        let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
+        let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
+        let fs_bytes = include_bytes!("../shaders/shader.frag.spv");
+
         let vs = Shader::new(
             &renderer.device,
-            vs_bytes.as_binary(),
+            &vs_bytes[..],
             "main",
             hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
         );
         let fs = Shader::new(
             &renderer.device,
-            fs_bytes.as_binary(),
+            &fs_bytes[..],
             "main",
             hashmap! {
                 "t_Color" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
@@ -93,11 +93,6 @@ impl Character {
         let model = Model::new(&renderer.device, mesh, material);
 
         Self { model }
-    }
-
-    fn load_glsl(code: &str, stage: ShaderKind) -> shaderc::CompilationArtifact {
-        let mut compiler = shaderc::Compiler::new().unwrap();
-        compiler.compile_into_spirv(code, stage, "shader.glsl", "main", None).unwrap()
     }
 }
 
