@@ -13,8 +13,8 @@ fn main() -> io::Result<()> {
             let compilation = compile_shader(&path, ext)?;
             save_shader(Path::new(&compiled_filename), compilation)?;
 
-            print!("cargo:rerun-if-changed={}", path.to_str().unwrap());
-            print!("cargo:rerun-if-changed={}", compiled_filename);
+            println!("cargo:rerun-if-changed={}", path.to_str().unwrap());
+            println!("cargo:rerun-if-changed={}", compiled_filename);
         }
     }
 
