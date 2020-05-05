@@ -33,5 +33,5 @@ pub use ex::{Ex, ExList, ExRowType};
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
-pub use mtrl::{Mtrl, MtrlParameterId};
+pub use mtrl::{Mtrl, MtrlParameterType};
 pub use tex::{Tex, TextureType};

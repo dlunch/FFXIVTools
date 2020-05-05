@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use ffxiv_parser::{Mtrl, MtrlParameterId};
+    use ffxiv_parser::{Mtrl, MtrlParameterType};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
@@ -26,7 +26,7 @@ mod tests {
 
             assert_eq!(mtrl.shader_name(), "character.shpk");
 
-            assert!(mtrl.parameters()[0].id == MtrlParameterId::Normal)
+            assert!(mtrl.parameters()[0].parameter_type == MtrlParameterType::Normal)
         }
 
         {

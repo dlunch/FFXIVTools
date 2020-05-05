@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use maplit::hashmap;
 use shaderc::ShaderKind;
 
-use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Tex, TextureType};
+use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Mtrl, MtrlParameterType, Tex, TextureType};
 use renderer::{
     Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
 };
@@ -47,21 +49,27 @@ impl Character {
             vertex_formats,
         );
 
-        let tex = Tex::new(&pack, "chara/human/c0101/obj/body/b0001/texture/c0101b0001_d.tex")
-            .await
-            .unwrap();
+        let mut textures = HashMap::new();
 
-        let texture = Texture::new(
-            &renderer.device,
-            tex.width() as u32,
-            tex.height() as u32,
-            decode_texture(tex, 0).as_ref(),
-            TextureFormat::Rgba8Unorm,
-        );
+        let material_file = convert_material_filename(&mdl.material_files()[mesh_index]);
+        let mtrl = Mtrl::new(&pack, material_file).await.unwrap();
+        let texture_files = mtrl.texture_files();
+        for parameter in mtrl.parameters() {
+            if parameter.parameter_type == MtrlParameterType::Normal {
+                let texture_file = &texture_files[parameter.texture_index as usize];
+                let tex = Tex::new(&pack, texture_file).await.unwrap();
 
-        let textures = hashmap! {
-            "t_Color" => texture,
-        };
+                let texture = Texture::new(
+                    &renderer.device,
+                    tex.width() as u32,
+                    tex.height() as u32,
+                    decode_texture(tex, 0).as_ref(),
+                    TextureFormat::Rgba8Unorm,
+                );
+
+                textures.insert("t_Color", texture);
+            }
+        }
 
         let vs_bytes = Self::load_glsl(include_str!("shader.vert"), ShaderKind::Vertex);
         let fs_bytes = Self::load_glsl(include_str!("shader.frag"), ShaderKind::Fragment);
@@ -117,5 +125,16 @@ fn convert_type(item_type: BufferItemType) -> VertexItemType {
         BufferItemType::Half2 => VertexItemType::Half2,
         BufferItemType::Half4 => VertexItemType::Half4,
         _ => panic!(),
+    }
+}
+
+fn convert_material_filename(material_file: &str) -> String {
+    if material_file.chars().nth(9).unwrap() == 'b' {
+        "".to_owned() // TODO body material
+    } else {
+        let variant_id = 1; // TODO
+        let equipment_id = 6016;
+
+        format!("chara/equipment/e{:04}/material/v{:04}{}", equipment_id, variant_id, material_file)
     }
 }
