@@ -16,6 +16,7 @@ impl Material {
         let vs_bindings = vertex_shader.wgpu_bindings(wgpu::ShaderStage::VERTEX);
         let fs_bindings = fragment_shader.wgpu_bindings(wgpu::ShaderStage::FRAGMENT);
 
+        // TODO split bind groups by stage..
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             bindings: &vs_bindings.into_iter().chain(fs_bindings.into_iter()).collect::<Vec<_>>(),
             label: None,
