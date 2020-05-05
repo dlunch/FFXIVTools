@@ -23,7 +23,7 @@ use zerocopy::AsBytes;
 pub struct Renderer {
     pub device: wgpu::Device,
     swap_chain: wgpu::SwapChain,
-    pub queue: wgpu::Queue,
+    queue: wgpu::Queue,
 }
 
 impl Renderer {
