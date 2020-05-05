@@ -11,10 +11,12 @@ doctest = false
 
 [dependencies]
 raw-window-handle = { version = "^0.3", default-features = false }
-shaderc = { version = "^0.6", default-features = false }
 squish = { version = "^1", default-features = false }
 maplit = { version = "^1.0", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 renderer = { version = "^0.1", default-features = false, path = "../renderer" }
+
+[build-dependencies]
+shaderc = { version = "^0.6", default-features = false }
