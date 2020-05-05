@@ -19,11 +19,11 @@ struct MtrlHeader {
 #[repr(u32)]
 #[derive(Eq, PartialEq)]
 pub enum MtrlParameterType {
-    Normal = 0x0C5EC1F1,
-    Mask = 0x8A4E82B6,
-    Diffuse = 0x115306BE,
-    Specular = 0x2B99E025,
-    Catchlight = 0xFEA0F3D2,
+    Normal = 0x0C5E_C1F1,
+    Mask = 0x8A4E_82B6,
+    Diffuse = 0x1153_06BE,
+    Specular = 0x2B99_E025,
+    Catchlight = 0xFEA0_F3D2,
 }
 
 #[repr(C)]
