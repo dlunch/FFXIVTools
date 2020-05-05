@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use ffxiv_parser::Mtrl;
+    use ffxiv_parser::{Mtrl, MtrlParameterId};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
@@ -25,6 +25,8 @@ mod tests {
             assert_eq!(color_table[1], 0x3cu8);
 
             assert_eq!(mtrl.shader_name(), "character.shpk");
+
+            assert!(mtrl.parameters()[0].id == MtrlParameterId::Normal)
         }
 
         {
