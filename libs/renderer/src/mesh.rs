@@ -36,11 +36,9 @@ impl Mesh {
     }
 
     pub fn vertex_descriptors(&self) -> Vec<wgpu::VertexBufferDescriptor> {
-        self.strides
-            .iter()
-            .enumerate()
-            .map(|(i, x)| wgpu::VertexBufferDescriptor {
-                stride: *x as wgpu::BufferAddress,
+        (0..self.attributes.len())
+            .map(|i| wgpu::VertexBufferDescriptor {
+                stride: self.strides[i] as wgpu::BufferAddress,
                 step_mode: wgpu::InputStepMode::Vertex,
                 attributes: self.attributes[i].as_ref(),
             })
