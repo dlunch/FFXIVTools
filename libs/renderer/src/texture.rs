@@ -1,17 +1,26 @@
 pub enum TextureFormat {
     Rgba8Unorm,
+    Rgba16Float,
 }
 
 impl TextureFormat {
     pub(crate) fn wgpu_type(&self) -> wgpu::TextureFormat {
         match self {
             TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
+            TextureFormat::Rgba16Float => wgpu::TextureFormat::Rgba16Float,
+        }
+    }
+    pub(crate) fn bytes_per_row(&self) -> u32 {
+        match self {
+            TextureFormat::Rgba8Unorm => 4,
+            TextureFormat::Rgba16Float => 8,
         }
     }
 }
 
 pub struct Texture {
     pub(crate) texture: wgpu::Texture,
+    format: TextureFormat,
     extent: wgpu::Extent3d,
     buffer: Option<wgpu::Buffer>,
 }
@@ -32,7 +41,12 @@ impl Texture {
 
         let buffer = Some(device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC));
 
-        Self { texture, extent, buffer }
+        Self {
+            texture,
+            format,
+            extent,
+            buffer,
+        }
     }
 
     pub(crate) fn prepare(&mut self, command_encoder: &mut wgpu::CommandEncoder) {
@@ -41,7 +55,7 @@ impl Texture {
                 wgpu::BufferCopyView {
                     buffer,
                     offset: 0,
-                    bytes_per_row: 4 * self.extent.width,
+                    bytes_per_row: self.format.bytes_per_row() * self.extent.width,
                     rows_per_image: 0,
                 },
                 wgpu::TextureCopyView {
