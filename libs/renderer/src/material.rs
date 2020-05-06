@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{Buffer, Shader, ShaderBindingType, Texture};
+use crate::{Shader, ShaderBindingType, Texture, UniformBuffer};
 
 pub struct Material {
     pub(crate) vertex_shader: Shader,
@@ -40,7 +40,7 @@ impl Material {
         }
     }
 
-    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: Buffer) -> wgpu::BindGroup {
+    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: UniformBuffer) -> wgpu::BindGroup {
         let texture_views = self
             .textures
             .iter()

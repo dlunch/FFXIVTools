@@ -1,4 +1,4 @@
-use crate::{Buffer, Material, Mesh};
+use crate::{Material, Mesh, UniformBuffer};
 
 pub struct Model {
     mesh: Mesh,
@@ -51,7 +51,7 @@ impl Model {
         device: &wgpu::Device,
         mut command_encoder: &mut wgpu::CommandEncoder,
         frame: &wgpu::SwapChainOutput,
-        mvp_buf: Buffer,
+        mvp_buf: UniformBuffer,
     ) {
         self.material.prepare(&mut command_encoder);
         let bind_group = self.material.bind_group(&device, mvp_buf);
