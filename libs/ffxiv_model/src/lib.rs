@@ -66,9 +66,13 @@ impl Character {
                     TextureFormat::Rgba8Unorm,
                 );
 
-                textures.insert("t_Color", texture);
+                textures.insert("t_Normal", texture);
             }
         }
+
+        let color_table_data = mtrl.color_table();
+        let color_table_tex = Texture::new(&renderer.device, 4, 16, color_table_data, TextureFormat::Rgba16Float);
+        textures.insert("ColorTable", color_table_tex);
 
         let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
         let fs_bytes = include_bytes!("../shaders/shader.frag.spv");
@@ -84,8 +88,9 @@ impl Character {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "t_Color" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
-                "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler)
+                "t_Normal" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
+                "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler),
+                "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
             },
         );
         let material = Material::new(&renderer.device, textures, vs, fs);
