@@ -1,19 +1,19 @@
-mod buffer;
 mod camera;
 mod material;
 mod mesh;
 mod model;
 mod shader;
 mod texture;
+mod uniform_buffer;
 mod vertex_format;
 
-pub use buffer::Buffer;
 pub use camera::Camera;
 pub use material::Material;
 pub use mesh::Mesh;
 pub use model::Model;
 pub use shader::{Shader, ShaderBinding, ShaderBindingType};
 pub use texture::{Texture, TextureFormat};
+pub use uniform_buffer::UniformBuffer;
 pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
 
 use nalgebra::Matrix4;
@@ -63,7 +63,7 @@ impl Renderer {
 
     pub async fn render(&mut self, model: &mut Model, camera: &Camera) {
         let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
-        let mut mvp_buf = Buffer::new(&self.device, 64);
+        let mut mvp_buf = UniformBuffer::new(&self.device, 64);
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });

@@ -1,16 +1,16 @@
 use core::task::Poll;
 
-pub struct Buffer {
+pub struct UniformBuffer {
     buffer: wgpu::Buffer,
     size: usize,
 }
 
-impl Buffer {
+impl UniformBuffer {
     pub fn new(device: &wgpu::Device, size: usize) -> Self {
         let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: size as wgpu::BufferAddress,
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST | wgpu::BufferUsage::MAP_WRITE, // TODO temp
+            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::MAP_WRITE,
         });
 
         Self { buffer, size }
