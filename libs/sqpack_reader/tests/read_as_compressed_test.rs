@@ -1,20 +1,17 @@
 #[cfg(feature = "test_local")]
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
-    use sqpack_reader::{ExtractedFileProviderLocal, Package, Result, SqPackReader, SqPackReaderExtractedFile};
-
     #[tokio::test]
     #[cfg(unix)]
     async fn read_as_compressed_test() -> Result<()> {
+        use std::path::Path;
+
+        use sqpack_reader::{ExtractedFileProviderLocal, Package, Result, SqPackReader, SqPackReaderExtractedFile};
+
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
         {
-            #[cfg(windows)]
-            let pack = SqPackReader::new(Path::new("D:\\Games\\FINAL FANTASY XIV - KOREA\\game\\sqpack"))?;
-            #[cfg(unix)]
             let pack = SqPackReader::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack"))?;
             let pack_file = SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_510")))?;
 
