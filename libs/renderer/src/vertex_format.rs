@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub enum VertexItemType {
     Float2,
     Float3,
@@ -19,15 +21,15 @@ impl VertexItemType {
 }
 
 pub struct VertexFormatItem {
-    shader_location: usize,
+    shader_name: &'static str,
     item_type: VertexItemType,
     offset: usize,
 }
 
 impl VertexFormatItem {
-    pub fn new(shader_location: usize, item_type: VertexItemType, offset: usize) -> Self {
+    pub fn new(shader_name: &'static str, item_type: VertexItemType, offset: usize) -> Self {
         Self {
-            shader_location,
+            shader_name,
             item_type,
             offset,
         }
@@ -43,13 +45,13 @@ impl VertexFormat {
         Self { items }
     }
 
-    pub(crate) fn into_wgpu_attributes(self) -> Vec<wgpu::VertexAttributeDescriptor> {
+    pub(crate) fn wgpu_attributes(&self, shader_inputs: &HashMap<&'static str, u32>) -> Vec<wgpu::VertexAttributeDescriptor> {
         self.items
-            .into_iter()
+            .iter()
             .map(|x| wgpu::VertexAttributeDescriptor {
                 format: x.item_type.wgpu_type(),
                 offset: x.offset as u64,
-                shader_location: x.shader_location as u32,
+                shader_location: *shader_inputs.get(x.shader_name).unwrap(),
             })
             .collect::<Vec<_>>()
     }

@@ -2,11 +2,10 @@ use crate::VertexFormat;
 
 pub struct Mesh {
     pub(crate) vertex_buffers: Vec<wgpu::Buffer>,
-    strides: Vec<usize>,
+    pub(crate) strides: Vec<usize>,
     pub(crate) index: wgpu::Buffer,
     pub(crate) index_count: usize,
-
-    attributes: Vec<Vec<wgpu::VertexAttributeDescriptor>>,
+    pub(crate) vertex_formats: Vec<VertexFormat>,
 }
 
 impl Mesh {
@@ -24,29 +23,12 @@ impl Mesh {
             .collect::<Vec<_>>();
         let index = device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
 
-        let attributes = vertex_formats.into_iter().map(|x| x.into_wgpu_attributes()).collect::<Vec<_>>();
-
         Self {
             vertex_buffers,
             strides: Vec::from(strides),
             index,
             index_count,
-            attributes,
+            vertex_formats,
         }
-    }
-
-    pub fn vertex_descriptors(&self) -> Vec<wgpu::VertexBufferDescriptor> {
-        (0..self.attributes.len())
-            .map(|i| wgpu::VertexBufferDescriptor {
-                stride: self.strides[i] as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: self.attributes[i].as_ref(),
-            })
-            .collect::<Vec<_>>()
-    }
-
-    #[inline]
-    pub fn index_format(&self) -> wgpu::IndexFormat {
-        wgpu::IndexFormat::Uint16
     }
 }
