@@ -9,6 +9,21 @@ pub struct Model {
 
 impl Model {
     pub fn new(device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
+        let attributes = mesh
+            .vertex_formats
+            .iter()
+            .map(|x| x.wgpu_attributes(&material.vertex_shader.inputs))
+            .collect::<Vec<_>>();
+
+        let mut vertex_buffers = Vec::with_capacity(attributes.len());
+        for i in 0..attributes.len() {
+            vertex_buffers.push(wgpu::VertexBufferDescriptor {
+                stride: mesh.strides[i] as wgpu::BufferAddress,
+                step_mode: wgpu::InputStepMode::Vertex,
+                attributes: &attributes[i],
+            })
+        }
+
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
@@ -35,8 +50,8 @@ impl Model {
             }],
             depth_stencil_state: None,
             vertex_state: wgpu::VertexStateDescriptor {
-                index_format: mesh.index_format(),
-                vertex_buffers: &mesh.vertex_descriptors(),
+                index_format: wgpu::IndexFormat::Uint16,
+                vertex_buffers: &vertex_buffers,
             },
             sample_count: 1,
             sample_mask: !0,

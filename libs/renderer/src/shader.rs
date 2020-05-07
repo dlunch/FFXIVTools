@@ -44,14 +44,26 @@ pub struct Shader {
     pub(crate) module: wgpu::ShaderModule,
     pub(crate) entry: &'static str,
     pub(crate) bindings: HashMap<&'static str, ShaderBinding>,
+    pub(crate) inputs: HashMap<&'static str, u32>,
 }
 
 impl Shader {
-    pub fn new(device: &wgpu::Device, bytes: &[u8], entry: &'static str, bindings: HashMap<&'static str, ShaderBinding>) -> Self {
+    pub fn new(
+        device: &wgpu::Device,
+        bytes: &[u8],
+        entry: &'static str,
+        bindings: HashMap<&'static str, ShaderBinding>,
+        inputs: HashMap<&'static str, u32>,
+    ) -> Self {
         let spv = wgpu::read_spirv(Cursor::new(bytes)).unwrap();
         let module = device.create_shader_module(&spv);
 
-        Self { module, entry, bindings }
+        Self {
+            module,
+            entry,
+            bindings,
+            inputs,
+        }
     }
 
     pub fn wgpu_bindings(&self, stage: wgpu::ShaderStage) -> Vec<wgpu::BindGroupLayoutEntry> {

@@ -27,9 +27,13 @@ impl Character {
         let tex_coord = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::TexCoord).unwrap();
 
         let vertex_formats = vec![
-            VertexFormat::new(vec![VertexFormatItem::new(0, convert_type(position.item_type), position.offset as usize)]),
             VertexFormat::new(vec![VertexFormatItem::new(
-                1,
+                "Position",
+                convert_type(position.item_type),
+                position.offset as usize,
+            )]),
+            VertexFormat::new(vec![VertexFormatItem::new(
+                "TexCoord",
                 convert_type(tex_coord.item_type),
                 tex_coord.offset as usize,
             )]),
@@ -82,6 +86,7 @@ impl Character {
             &vs_bytes[..],
             "main",
             hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
+            hashmap! { "Position" => 0, "TexCoord" => 1},
         );
         let fs = Shader::new(
             &renderer.device,
@@ -92,6 +97,7 @@ impl Character {
                 "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler),
                 "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
             },
+            HashMap::new(),
         );
         let material = Material::new(&renderer.device, textures, vs, fs);
 
