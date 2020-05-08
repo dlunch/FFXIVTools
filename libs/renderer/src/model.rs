@@ -1,4 +1,4 @@
-use crate::{Material, Mesh, UniformBuffer};
+use crate::{Material, Mesh, Renderable, UniformBuffer};
 
 pub struct Model {
     mesh: Mesh,
@@ -60,8 +60,10 @@ impl Model {
 
         Self { mesh, material, pipeline }
     }
+}
 
-    pub(crate) fn render(
+impl Renderable for Model {
+    fn render(
         &mut self,
         device: &wgpu::Device,
         mut command_encoder: &mut wgpu::CommandEncoder,

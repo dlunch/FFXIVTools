@@ -2,6 +2,7 @@ mod camera;
 mod material;
 mod mesh;
 mod model;
+mod renderable;
 mod shader;
 mod texture;
 mod uniform_buffer;
@@ -11,6 +12,7 @@ pub use camera::Camera;
 pub use material::Material;
 pub use mesh::Mesh;
 pub use model::Model;
+pub use renderable::Renderable;
 pub use shader::{Shader, ShaderBinding, ShaderBindingType};
 pub use texture::{Texture, TextureFormat};
 pub use uniform_buffer::UniformBuffer;
@@ -61,7 +63,7 @@ impl Renderer {
         Self { device, swap_chain, queue }
     }
 
-    pub async fn render(&mut self, model: &mut Model, camera: &Camera) {
+    pub async fn render(&mut self, renderable: &mut dyn Renderable, camera: &Camera) {
         let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
         let mut mvp_buf = UniformBuffer::new(&self.device, 64);
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
@@ -69,7 +71,7 @@ impl Renderer {
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         let frame = self.swap_chain.get_next_texture().unwrap();
-        model.render(&self.device, &mut command_encoder, &frame, mvp_buf);
+        renderable.render(&self.device, &mut command_encoder, &frame, mvp_buf);
 
         self.queue.submit(&[command_encoder.finish()]);
     }
