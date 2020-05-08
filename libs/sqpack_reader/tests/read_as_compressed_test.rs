@@ -3,10 +3,10 @@
 mod tests {
     #[tokio::test]
     #[cfg(unix)]
-    async fn read_as_compressed_test() -> Result<()> {
+    async fn read_as_compressed_test() -> sqpack_reader::Result<()> {
         use std::path::Path;
 
-        use sqpack_reader::{ExtractedFileProviderLocal, Package, Result, SqPackReader, SqPackReaderExtractedFile};
+        use sqpack_reader::{ExtractedFileProviderLocal, Package, SqPackReader, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
