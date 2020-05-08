@@ -16,11 +16,11 @@ impl Model {
             .collect::<Vec<_>>();
 
         let mut vertex_buffers = Vec::with_capacity(attributes.len());
-        for i in 0..attributes.len() {
+        for (i, attribute) in attributes.iter().enumerate() {
             vertex_buffers.push(wgpu::VertexBufferDescriptor {
                 stride: mesh.strides[i] as wgpu::BufferAddress,
                 step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &attributes[i],
+                attributes: &attribute,
             })
         }
 
