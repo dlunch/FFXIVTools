@@ -15,14 +15,15 @@ impl Model {
             .map(|x| x.wgpu_attributes(&material.vertex_shader.inputs))
             .collect::<Vec<_>>();
 
-        let mut vertex_buffers = Vec::with_capacity(attributes.len());
-        for (i, attribute) in attributes.iter().enumerate() {
-            vertex_buffers.push(wgpu::VertexBufferDescriptor {
-                stride: mesh.strides[i] as wgpu::BufferAddress,
+        let vertex_buffers = attributes
+            .iter()
+            .zip(mesh.strides.iter())
+            .map(|(attributes, stride)| wgpu::VertexBufferDescriptor {
+                stride: *stride as wgpu::BufferAddress,
                 step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &attribute,
+                attributes,
             })
-        }
+            .collect::<Vec<_>>();
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &material.pipeline_layout,
