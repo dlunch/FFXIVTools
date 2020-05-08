@@ -23,21 +23,16 @@ impl Character {
         let buffer_items = mdl.buffer_items(0).collect::<Vec<_>>();
         let mesh_index = 0;
 
-        let position = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::Position).unwrap();
-        let tex_coord = buffer_items[mesh_index].items().find(|x| x.usage == BufferItemUsage::TexCoord).unwrap();
-
-        let vertex_formats = vec![
-            VertexFormat::new(vec![VertexFormatItem::new(
-                "Position",
-                convert_type(position.item_type),
-                position.offset as usize,
-            )]),
-            VertexFormat::new(vec![VertexFormatItem::new(
-                "TexCoord",
-                convert_type(tex_coord.item_type),
-                tex_coord.offset as usize,
-            )]),
-        ];
+        let vertex_formats = (0..mesh[mesh_index].mesh_info.buffer_count as usize)
+            .map(|buffer_index| {
+                let buffer_items = buffer_items[mesh_index].items().filter(move |x| x.buffer as usize == buffer_index);
+                VertexFormat::new(
+                    buffer_items
+                        .map(|x| VertexFormatItem::new(convert_usage(x.usage), convert_type(x.item_type), x.offset as usize))
+                        .collect::<Vec<_>>(),
+                )
+            })
+            .collect::<Vec<_>>();
 
         let strides = (0..mesh[mesh_index].mesh_info.buffer_count as usize)
             .map(|i| mesh[mesh_index].mesh_info.strides[i] as usize)
@@ -86,7 +81,15 @@ impl Character {
             &vs_bytes[..],
             "main",
             hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
-            hashmap! { "Position" => 0, "TexCoord" => 1},
+            hashmap! {
+                "Position" => 0,
+                "BoneWeight" => 1,
+                "BoneIndex" => 2,
+                "Normal" => 3,
+                "TexCoord" => 4,
+                "Bitangent" => 5,
+                "Color" => 6,
+            },
         );
         let fs = Shader::new(
             &renderer.device,
@@ -125,6 +128,8 @@ fn decode_texture(tex: Tex, mipmap_index: u16) -> Vec<u8> {
 
 fn convert_type(item_type: BufferItemType) -> VertexItemType {
     match item_type {
+        BufferItemType::UByte4 => VertexItemType::UByte4,
+        BufferItemType::UByte4n => VertexItemType::UByte4,
         BufferItemType::Float2 => VertexItemType::Float2,
         BufferItemType::Float3 => VertexItemType::Float3,
         BufferItemType::Float4 => VertexItemType::Float4,
@@ -142,5 +147,18 @@ fn convert_material_filename(material_file: &str) -> String {
         let equipment_id = 6016;
 
         format!("chara/equipment/e{:04}/material/v{:04}{}", equipment_id, variant_id, material_file)
+    }
+}
+
+fn convert_usage(usage: BufferItemUsage) -> &'static str {
+    match usage {
+        BufferItemUsage::Position => "Position",
+        BufferItemUsage::BoneWeight => "BoneWeight",
+        BufferItemUsage::BoneIndex => "BoneIndex",
+        BufferItemUsage::Normal => "Normal",
+        BufferItemUsage::TexCoord => "TexCoord",
+        BufferItemUsage::Tangent => "Tangent",
+        BufferItemUsage::Bitangent => "Bitangent",
+        BufferItemUsage::Color => "Color",
     }
 }

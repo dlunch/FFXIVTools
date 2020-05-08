@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 pub enum VertexItemType {
+    UByte4,
     Float2,
     Float3,
     Float4,
@@ -11,6 +12,7 @@ pub enum VertexItemType {
 impl VertexItemType {
     pub(crate) fn wgpu_type(&self) -> wgpu::VertexFormat {
         match self {
+            VertexItemType::UByte4 => wgpu::VertexFormat::Uchar4,
             VertexItemType::Float2 => wgpu::VertexFormat::Float2,
             VertexItemType::Float3 => wgpu::VertexFormat::Float3,
             VertexItemType::Float4 => wgpu::VertexFormat::Float4,
