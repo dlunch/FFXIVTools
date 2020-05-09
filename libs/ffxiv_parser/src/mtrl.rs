@@ -17,7 +17,7 @@ struct MtrlHeader {
 }
 
 #[repr(u32)]
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 pub enum MtrlParameterType {
     Normal = 0x0C5E_C1F1,
     Mask = 0x8A4E_82B6,
