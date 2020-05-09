@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use futures::{future, FutureExt};
 use maplit::hashmap;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Mtrl, MtrlParameterType, Tex, TextureType};
 use renderer::{
     Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
 };
-use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
+use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
 pub struct Character {
     pub model: Model,
@@ -47,27 +48,29 @@ impl Character {
             vertex_formats,
         );
 
-        let mut textures = HashMap::new();
-
         let material_file = convert_material_filename(&mdl.material_files()[mesh_index]);
         let mtrl = Mtrl::new(&pack, material_file).await.unwrap();
+
         let texture_files = mtrl.texture_files();
-        for parameter in mtrl.parameters() {
-            if parameter.parameter_type == MtrlParameterType::Normal {
-                let texture_file = &texture_files[parameter.texture_index as usize];
-                let tex = Tex::new(&pack, texture_file).await.unwrap();
-
-                let texture = Texture::new(
-                    &renderer.device,
-                    tex.width() as u32,
-                    tex.height() as u32,
-                    decode_texture(tex, 0).as_ref(),
-                    TextureFormat::Rgba8Unorm,
-                );
-
-                textures.insert("t_Normal", texture);
-            }
-        }
+        let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
+            Tex::new(&pack, &texture_files[parameter.texture_index as usize]).map(move |tex| {
+                let tex = tex?;
+                Ok((
+                    convert_texture_name(parameter.parameter_type),
+                    Texture::new(
+                        &renderer.device,
+                        tex.width() as u32,
+                        tex.height() as u32,
+                        decode_texture(tex, 0).as_ref(),
+                        TextureFormat::Rgba8Unorm,
+                    ),
+                ))
+            })
+        }))
+        .await
+        .into_iter()
+        .collect::<Result<HashMap<_, _>>>()
+        .unwrap();
 
         let color_table_data = mtrl.color_table();
         let color_table_tex = Texture::new(&renderer.device, 4, 16, color_table_data, TextureFormat::Rgba16Float);
@@ -96,9 +99,10 @@ impl Character {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "t_Normal" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
+                "Normal" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
                 "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler),
                 "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+                "Mask" => ShaderBinding::new(4, ShaderBindingType::Texture2D),
             },
             HashMap::new(),
         );
@@ -160,5 +164,15 @@ fn convert_usage(usage: BufferItemUsage) -> &'static str {
         BufferItemUsage::Tangent => "Tangent",
         BufferItemUsage::Bitangent => "Bitangent",
         BufferItemUsage::Color => "Color",
+    }
+}
+
+fn convert_texture_name(parameter_type: MtrlParameterType) -> &'static str {
+    match parameter_type {
+        MtrlParameterType::Normal => "Normal",
+        MtrlParameterType::Mask => "Mask",
+        MtrlParameterType::Diffuse => "Diffuse",
+        MtrlParameterType::Specular => "Specular",
+        MtrlParameterType::Catchlight => "Catchlight",
     }
 }
