@@ -11,7 +11,7 @@ layout(set = 0, binding = 5) uniform texture2D Specular;
 void main() {
     vec4 normal = texture(sampler2D(Normal, s_Color), v_TexCoord);
     if(normal.b <= 0.5)
-		discard;
+        discard;
 
     float key = (normal.a * 15.0 + 0.5) / 16.0;
     vec4 tex = texture(sampler2D(ColorTable, s_Color), vec2(0.125, key));
