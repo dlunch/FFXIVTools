@@ -16,4 +16,5 @@ tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-fea
 nalgebra = { version = "^0.21", default-features = false }
 
 ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
+sqpack_reader = { version = "^0.1", default-features = false, path = "../../libs/sqpack_reader" }
 renderer = { version = "^0.1", default-features = false, path = "../../libs/renderer" }
