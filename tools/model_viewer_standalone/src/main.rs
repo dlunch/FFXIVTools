@@ -11,6 +11,10 @@ use renderer::{Camera, Renderer};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 fn main() {
+    let _ = pretty_env_logger::formatted_timed_builder()
+        .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+        .try_init();
+
     let mut rt = Runtime::new().unwrap();
     let event_loop = EventLoop::new();
 
