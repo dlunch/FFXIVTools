@@ -9,6 +9,63 @@ use renderer::{
 };
 use sqpack_reader::{Package, Result};
 
+struct ModelReadContext {
+    pub mdl: Mdl,
+    pub mtrls: Vec<(Mtrl, Vec<Tex>)>,
+}
+
+impl ModelReadContext {
+    pub async fn read_equipment(pack: &dyn Package, model_id: u16, body_id: u16, model_part: &'static str) -> Result<Self> {
+        let mdl_filename = format!(
+            "chara/equipment/e{model_id:04}/model/c{body_id:04}e{model_id:04}_{model_part}.mdl",
+            model_id = model_id,
+            body_id = body_id,
+            model_part = model_part
+        );
+        let mdl = Mdl::new(pack, &mdl_filename).await?;
+
+        let mtrls = future::join_all(mdl.material_files().iter().map(|material_file| {
+            let material_file = Self::convert_equipment_material_filename(&material_file);
+            Mtrl::new(pack, material_file).then(|mtrl| async {
+                let mtrl = mtrl?;
+                let texture_files = mtrl.texture_files();
+
+                let texs = future::join_all(texture_files.iter().map(|texture_file| Tex::new(pack, texture_file)))
+                    .await
+                    .into_iter()
+                    .collect::<Result<Vec<_>>>()?;
+
+                Ok((mtrl, texs))
+            })
+        }))
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?;
+
+        Ok(Self { mdl, mtrls })
+    }
+
+    fn convert_equipment_material_filename(material_file: &str) -> String {
+        if material_file.chars().nth(9).unwrap() == 'b' {
+            let body_id = 201;
+            let body_type = 1;
+            let variant_id = 1;
+            format!(
+                "chara/human/c{body_id:04}/obj/body/b{body_type:04}/material/v{variant_id:04}/mt_c{body_id:04}b{body_type:04}{path}",
+                body_id = body_id,
+                body_type = body_type,
+                variant_id = variant_id,
+                path = &material_file[14..]
+            )
+        } else {
+            let variant_id = 1; // TODO
+            let equipment_id = 6016;
+
+            format!("chara/equipment/e{:04}/material/v{:04}{}", equipment_id, variant_id, material_file)
+        }
+    }
+}
+
 pub struct Character {
     pub model: Model,
 }
@@ -16,7 +73,9 @@ pub struct Character {
 impl Character {
     pub async fn new(pack: &dyn Package, renderer: &Renderer) -> Result<Self> {
         // WIP
-        let mdl = Mdl::new(pack, "chara/equipment/e6016/model/c0201e6016_top.mdl").await?;
+        let read_context = ModelReadContext::read_equipment(pack, 6016, 201, "top").await?;
+        let mdl = read_context.mdl;
+
         let mesh = mdl.meshes(0);
         let buffer_items = mdl.buffer_items(0).collect::<Vec<_>>();
         let mesh_index = 0;
@@ -45,14 +104,14 @@ impl Character {
             vertex_formats,
         );
 
-        let material_file = convert_material_filename(&mdl.material_files()[mesh_index]);
-        let mtrl = Mtrl::new(pack, material_file).await?;
+        let (mtrl, texs) = &read_context.mtrls[0];
 
-        let texture_files = mtrl.texture_files();
-        let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
-            Tex::new(pack, &texture_files[parameter.texture_index as usize]).map(move |tex| {
-                let tex = tex?;
-                Ok((
+        let mut textures = mtrl
+            .parameters()
+            .iter()
+            .map(|parameter| {
+                let tex = &texs[parameter.texture_index as usize];
+                (
                     convert_texture_name(parameter.parameter_type),
                     Texture::new(
                         &renderer.device,
@@ -61,12 +120,9 @@ impl Character {
                         decode_texture(tex, 0).as_ref(),
                         TextureFormat::Rgba8Unorm,
                     ),
-                ))
+                )
             })
-        }))
-        .await
-        .into_iter()
-        .collect::<Result<HashMap<_, _>>>()?;
+            .collect::<HashMap<_, _>>();
 
         let color_table_data = mtrl.color_table();
         let color_table_tex = Texture::new(&renderer.device, 4, 16, color_table_data, TextureFormat::Rgba16Float);
@@ -110,7 +166,7 @@ impl Character {
     }
 }
 
-fn decode_texture(tex: Tex, mipmap_index: u16) -> Vec<u8> {
+fn decode_texture(tex: &Tex, mipmap_index: u16) -> Vec<u8> {
     let raw = tex.data(mipmap_index);
     let result_size = (tex.width() as usize) * (tex.height() as usize) * 4; // RGBA
     let mut result = vec![0; result_size];
@@ -136,17 +192,6 @@ fn convert_type(item_type: BufferItemType) -> VertexItemType {
         BufferItemType::Half2 => VertexItemType::Half2,
         BufferItemType::Half4 => VertexItemType::Half4,
         _ => panic!(),
-    }
-}
-
-fn convert_material_filename(material_file: &str) -> String {
-    if material_file.chars().nth(9).unwrap() == 'b' {
-        "".to_owned() // TODO body material
-    } else {
-        let variant_id = 1; // TODO
-        let equipment_id = 6016;
-
-        format!("chara/equipment/e{:04}/material/v{:04}{}", equipment_id, variant_id, material_file)
     }
 }
 
