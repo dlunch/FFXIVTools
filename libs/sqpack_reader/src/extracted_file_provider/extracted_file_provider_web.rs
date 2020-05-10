@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use futures::stream::StreamExt;
 use log::debug;
 
 use super::ExtractedFileProvider;
@@ -7,12 +8,24 @@ use crate::reference::SqPackFileHash;
 
 pub struct ExtractedFileProviderWeb {
     base_uri: String,
+    progress_callback: Option<Box<dyn Fn(usize, usize) -> () + Sync + Send + 'static>>,
 }
 
 impl ExtractedFileProviderWeb {
     pub fn new(base_uri: &str) -> Self {
         Self {
             base_uri: base_uri.to_owned(),
+            progress_callback: None,
+        }
+    }
+
+    pub fn with_progress<F>(base_uri: &str, progress_callback: F) -> Self
+    where
+        F: Fn(usize, usize) -> () + Sync + Send + 'static,
+    {
+        Self {
+            base_uri: base_uri.to_owned(),
+            progress_callback: Some(Box::new(progress_callback)),
         }
     }
 
@@ -21,8 +34,18 @@ impl ExtractedFileProviderWeb {
 
         debug!("Fetching {}", uri);
 
-        let result = reqwest::get(&uri).await?.error_for_status()?;
-        Ok(Vec::from(&result.bytes().await?[..]))
+        let response = reqwest::get(&uri).await?.error_for_status()?;
+        let total_length = response.content_length().unwrap() as usize;
+        let mut result = Vec::with_capacity(total_length);
+        let mut stream = response.bytes_stream();
+        while let Some(item) = stream.next().await {
+            if let Some(progress_callback) = &self.progress_callback {
+                progress_callback(result.len(), total_length)
+            }
+            result.extend_from_slice(&item?[..]);
+        }
+
+        Ok(result)
     }
 }
 

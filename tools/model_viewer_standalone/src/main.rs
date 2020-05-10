@@ -1,3 +1,4 @@
+use log::debug;
 use nalgebra::Point3;
 use tokio::runtime::Runtime;
 use winit::{
@@ -13,6 +14,7 @@ use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+        .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
         .try_init();
 
     let mut rt = Runtime::new().unwrap();
@@ -24,7 +26,9 @@ fn main() {
 
     let size = window.inner_size();
     let (mut renderer, mut character) = rt.block_on(async {
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
+            debug!("{}/{}", current, total)
+        });
         let pack = SqPackReaderExtractedFile::new(provider).unwrap();
 
         let renderer = Renderer::new(&window, size.width, size.height).await;

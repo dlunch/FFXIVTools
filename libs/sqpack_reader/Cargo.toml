@@ -9,7 +9,7 @@ doctest = false
 
 [features]
 default = []
-std = ["crc32fast/std", "tokio", "reqwest/default-tls", "util/std"]
+std = ["crc32fast/std", "tokio", "reqwest", "util/std"]
 test_local = ["std"]
 
 [dependencies]
@@ -23,7 +23,7 @@ bytes = { version = "^0.5.4", default-features = false }
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 tokio = { version = "^0.2.11", features = ["fs", "sync"], default-features = false, optional = true }
-reqwest = { version = "^0.10", default-features = false, optional = true }
+reqwest = { version = "^0.10", features = ["default-tls", "stream"], default-features = false, optional = true }
 
 [dev-dependencies]
 tokio = { version = "^0.2.11", features = ["macros", "rt-threaded"], default-features = false }
