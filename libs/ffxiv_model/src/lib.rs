@@ -7,19 +7,16 @@ use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Mtrl, MtrlParameterType
 use renderer::{
     Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
 };
-use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
+use sqpack_reader::{Package, Result};
 
 pub struct Character {
     pub model: Model,
 }
 
 impl Character {
-    pub async fn new(renderer: &Renderer) -> Self {
+    pub async fn new(pack: &dyn Package, renderer: &Renderer) -> Result<Self> {
         // WIP
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
-
-        let mdl = Mdl::new(&pack, "chara/equipment/e6016/model/c0201e6016_top.mdl").await.unwrap();
+        let mdl = Mdl::new(pack, "chara/equipment/e6016/model/c0201e6016_top.mdl").await?;
         let mesh = mdl.meshes(0);
         let buffer_items = mdl.buffer_items(0).collect::<Vec<_>>();
         let mesh_index = 0;
@@ -49,11 +46,11 @@ impl Character {
         );
 
         let material_file = convert_material_filename(&mdl.material_files()[mesh_index]);
-        let mtrl = Mtrl::new(&pack, material_file).await.unwrap();
+        let mtrl = Mtrl::new(pack, material_file).await?;
 
         let texture_files = mtrl.texture_files();
         let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
-            Tex::new(&pack, &texture_files[parameter.texture_index as usize]).map(move |tex| {
+            Tex::new(pack, &texture_files[parameter.texture_index as usize]).map(move |tex| {
                 let tex = tex?;
                 Ok((
                     convert_texture_name(parameter.parameter_type),
@@ -69,8 +66,7 @@ impl Character {
         }))
         .await
         .into_iter()
-        .collect::<Result<HashMap<_, _>>>()
-        .unwrap();
+        .collect::<Result<HashMap<_, _>>>()?;
 
         let color_table_data = mtrl.color_table();
         let color_table_tex = Texture::new(&renderer.device, 4, 16, color_table_data, TextureFormat::Rgba16Float);
@@ -110,7 +106,7 @@ impl Character {
 
         let model = Model::new(&renderer.device, mesh, material);
 
-        Self { model }
+        Ok(Self { model })
     }
 }
 
