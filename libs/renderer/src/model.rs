@@ -5,6 +5,7 @@ pub struct Model {
     material: Material,
 
     pipeline: wgpu::RenderPipeline,
+    bind_group: Option<wgpu::BindGroup>,
 }
 
 impl Model {
@@ -59,44 +60,30 @@ impl Model {
             alpha_to_coverage_enabled: false,
         });
 
-        Self { mesh, material, pipeline }
+        Self {
+            mesh,
+            material,
+            pipeline,
+            bind_group: None,
+        }
     }
 }
 
 impl Renderable for Model {
-    fn render(
-        &mut self,
-        device: &wgpu::Device,
-        mut command_encoder: &mut wgpu::CommandEncoder,
-        frame: &wgpu::SwapChainOutput,
-        mvp_buf: UniformBuffer,
-    ) {
+    fn prepare(&mut self, mut command_encoder: &mut wgpu::CommandEncoder) {
         self.material.prepare(&mut command_encoder);
-        let bind_group = self.material.bind_group(&device, mvp_buf);
-        {
-            let mut rpass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
-                    resolve_target: None,
-                    load_op: wgpu::LoadOp::Clear,
-                    store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color {
-                        r: 0.1,
-                        g: 0.2,
-                        b: 0.3,
-                        a: 1.0,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
+    }
 
-            rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &bind_group, &[]);
-            rpass.set_index_buffer(&self.mesh.index, 0, 0);
-            for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
-                rpass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
-            }
-            rpass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
+    fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>, mvp_buf: UniformBuffer) {
+        // TODO store bind_group in material
+        self.bind_group = Some(self.material.bind_group(&device, mvp_buf));
+
+        render_pass.set_pipeline(&self.pipeline);
+        render_pass.set_bind_group(0, &self.bind_group.as_ref().unwrap(), &[]);
+        render_pass.set_index_buffer(&self.mesh.index, 0, 0);
+        for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
+            render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
         }
+        render_pass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
     }
 }

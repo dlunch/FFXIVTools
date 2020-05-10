@@ -69,9 +69,27 @@ impl Renderer {
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
         let frame = self.swap_chain.get_next_texture().unwrap();
-        renderable.render(&self.device, &mut command_encoder, &frame, mvp_buf);
+
+        renderable.prepare(&mut command_encoder);
+        {
+            let mut render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                    attachment: &frame.view,
+                    resolve_target: None,
+                    load_op: wgpu::LoadOp::Clear,
+                    store_op: wgpu::StoreOp::Store,
+                    clear_color: wgpu::Color {
+                        r: 0.1,
+                        g: 0.2,
+                        b: 0.3,
+                        a: 1.0,
+                    },
+                }],
+                depth_stencil_attachment: None,
+            });
+            renderable.render(&self.device, &mut render_pass, mvp_buf);
+        }
 
         self.queue.submit(&[command_encoder.finish()]);
     }
