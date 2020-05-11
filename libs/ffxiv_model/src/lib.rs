@@ -96,7 +96,7 @@ impl Character {
             .collect::<Vec<_>>();
 
         let mesh = Mesh::new(
-            &renderer.device,
+            &renderer,
             mesh[mesh_index].buffers.as_ref(),
             &strides,
             mesh[mesh_index].indices,
@@ -114,7 +114,7 @@ impl Character {
                 (
                     convert_texture_name(parameter.parameter_type),
                     Texture::new(
-                        &renderer.device,
+                        &renderer,
                         tex.width() as u32,
                         tex.height() as u32,
                         decode_texture(tex, 0).as_ref(),
@@ -125,14 +125,14 @@ impl Character {
             .collect::<HashMap<_, _>>();
 
         let color_table_data = mtrl.color_table();
-        let color_table_tex = Texture::new(&renderer.device, 4, 16, color_table_data, TextureFormat::Rgba16Float);
+        let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float);
         textures.insert("ColorTable", color_table_tex);
 
         let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
         let fs_bytes = include_bytes!("../shaders/shader.frag.spv");
 
         let vs = Shader::new(
-            &renderer.device,
+            &renderer,
             &vs_bytes[..],
             "main",
             hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
@@ -147,7 +147,7 @@ impl Character {
             },
         );
         let fs = Shader::new(
-            &renderer.device,
+            &renderer,
             &fs_bytes[..],
             "main",
             hashmap! {
@@ -158,9 +158,9 @@ impl Character {
             },
             HashMap::new(),
         );
-        let material = Material::new(&renderer.device, textures, vs, fs);
+        let material = Material::new(&renderer, textures, vs, fs);
 
-        let model = Model::new(&renderer.device, mesh, material);
+        let model = Model::new(&renderer, mesh, material);
 
         Ok(Self { model })
     }

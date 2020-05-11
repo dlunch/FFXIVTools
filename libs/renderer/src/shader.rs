@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 
+use crate::Renderer;
+
 pub enum ShaderBindingType {
     UniformBuffer,
     Texture2D,
@@ -49,14 +51,14 @@ pub struct Shader {
 
 impl Shader {
     pub fn new(
-        device: &wgpu::Device,
+        renderer: &Renderer,
         bytes: &[u8],
         entry: &'static str,
         bindings: HashMap<&'static str, ShaderBinding>,
         inputs: HashMap<&'static str, u32>,
     ) -> Self {
         let spv = wgpu::read_spirv(Cursor::new(bytes)).unwrap();
-        let module = device.create_shader_module(&spv);
+        let module = renderer.device.create_shader_module(&spv);
 
         Self {
             module,
