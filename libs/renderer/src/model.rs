@@ -70,10 +70,6 @@ impl Model {
 }
 
 impl Renderable for Model {
-    fn prepare(&mut self, mut command_encoder: &mut wgpu::CommandEncoder) {
-        self.material.prepare(&mut command_encoder);
-    }
-
     fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>, mvp_buf: UniformBuffer) {
         // TODO store bind_group in material
         self.bind_group = Some(self.material.bind_group(&device, mvp_buf));

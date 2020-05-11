@@ -31,8 +31,8 @@ fn main() {
         });
         let pack = SqPackReaderExtractedFile::new(provider).unwrap();
 
-        let renderer = Renderer::new(&window, size.width, size.height).await;
-        let character = Character::new(&pack, &renderer).await.unwrap();
+        let mut renderer = Renderer::new(&window, size.width, size.height).await;
+        let character = Character::new(&pack, &mut renderer).await.unwrap();
 
         (renderer, character)
     });

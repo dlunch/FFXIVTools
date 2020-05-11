@@ -71,7 +71,7 @@ pub struct Character {
 }
 
 impl Character {
-    pub async fn new(pack: &dyn Package, renderer: &Renderer) -> Result<Self> {
+    pub async fn new(pack: &dyn Package, mut renderer: &mut Renderer) -> Result<Self> {
         // WIP
         let read_context = ModelReadContext::read_equipment(pack, 6016, 201, "top").await?;
         let mdl = read_context.mdl;
@@ -114,7 +114,7 @@ impl Character {
                 (
                     convert_texture_name(parameter.parameter_type),
                     Texture::new(
-                        &renderer,
+                        &mut renderer,
                         tex.width() as u32,
                         tex.height() as u32,
                         decode_texture(tex, 0).as_ref(),
@@ -125,7 +125,7 @@ impl Character {
             .collect::<HashMap<_, _>>();
 
         let color_table_data = mtrl.color_table();
-        let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float);
+        let color_table_tex = Texture::new(&mut renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float);
         textures.insert("ColorTable", color_table_tex);
 
         let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
