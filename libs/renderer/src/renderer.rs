@@ -117,7 +117,7 @@ impl Renderer {
 
         // nalgebra's perspective uses [-1, 1] NDC z range, so convert it to [0, 1].
         #[rustfmt::skip]
-        let correction: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
+        let correction = nalgebra::Matrix4::<f32>::new(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.5, 0.5,
