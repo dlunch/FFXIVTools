@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
 use zerocopy::AsBytes;
@@ -8,6 +10,8 @@ pub struct Renderer {
     pub(crate) device: wgpu::Device,
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
+
+    texture_upload_queue: Vec<(wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d)>,
 }
 
 impl Renderer {
@@ -42,7 +46,12 @@ impl Renderer {
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        Self { device, swap_chain, queue }
+        Self {
+            device,
+            swap_chain,
+            queue,
+            texture_upload_queue: Vec::new(),
+        }
     }
 
     pub async fn render(&mut self, renderable: &mut dyn Renderable, camera: &Camera) {
@@ -51,9 +60,9 @@ impl Renderer {
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        let frame = self.swap_chain.get_next_texture().unwrap();
+        self.dequeue_texture_uploads(&mut command_encoder);
 
-        renderable.prepare(&mut command_encoder);
+        let frame = self.swap_chain.get_next_texture().unwrap();
         {
             let mut render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
@@ -74,6 +83,33 @@ impl Renderer {
         }
 
         self.queue.submit(&[command_encoder.finish()]);
+    }
+
+    pub(crate) fn enqueue_texture_upload(&mut self, buffer: wgpu::Buffer, texture: Arc<wgpu::Texture>, bytes_per_row: usize, extent: wgpu::Extent3d) {
+        self.texture_upload_queue.push((buffer, texture, bytes_per_row, extent));
+    }
+
+    fn dequeue_texture_uploads(&mut self, command_encoder: &mut wgpu::CommandEncoder) {
+        let mut queue = Vec::new();
+        std::mem::swap(&mut self.texture_upload_queue, &mut queue);
+
+        for (buffer, texture, bytes_per_row, extent) in queue {
+            command_encoder.copy_buffer_to_texture(
+                wgpu::BufferCopyView {
+                    buffer: &buffer,
+                    offset: 0,
+                    bytes_per_row: bytes_per_row as u32,
+                    rows_per_image: 0,
+                },
+                wgpu::TextureCopyView {
+                    texture: &texture,
+                    mip_level: 0,
+                    array_layer: 0,
+                    origin: wgpu::Origin3d::ZERO,
+                },
+                extent,
+            );
+        }
     }
 
     fn get_mvp(camera: &Camera, aspect_ratio: f32) -> Matrix4<f32> {
