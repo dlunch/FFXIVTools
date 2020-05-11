@@ -1,11 +1,11 @@
-use crate::{Camera, Renderable, UniformBuffer};
-
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
 use zerocopy::AsBytes;
 
+use crate::{Camera, Renderable, UniformBuffer};
+
 pub struct Renderer {
-    pub device: wgpu::Device,
+    pub(crate) device: wgpu::Device,
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 }
@@ -47,7 +47,7 @@ impl Renderer {
 
     pub async fn render(&mut self, renderable: &mut dyn Renderable, camera: &Camera) {
         let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
-        let mut mvp_buf = UniformBuffer::new(&self.device, 64);
+        let mut mvp_buf = UniformBuffer::new(&self, 64);
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });

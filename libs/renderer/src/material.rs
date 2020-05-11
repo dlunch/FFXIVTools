@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{Shader, ShaderBindingType, Texture, UniformBuffer};
+use crate::{Renderer, Shader, ShaderBindingType, Texture, UniformBuffer};
 
 pub struct Material {
     pub(crate) vertex_shader: Shader,
@@ -12,16 +12,16 @@ pub struct Material {
 }
 
 impl Material {
-    pub fn new(device: &wgpu::Device, textures: HashMap<&'static str, Texture>, vertex_shader: Shader, fragment_shader: Shader) -> Self {
+    pub fn new(renderer: &Renderer, textures: HashMap<&'static str, Texture>, vertex_shader: Shader, fragment_shader: Shader) -> Self {
         let vs_bindings = vertex_shader.wgpu_bindings(wgpu::ShaderStage::VERTEX);
         let fs_bindings = fragment_shader.wgpu_bindings(wgpu::ShaderStage::FRAGMENT);
 
         // TODO split bind groups by stage..
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let bind_group_layout = renderer.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             bindings: &vs_bindings.into_iter().chain(fs_bindings.into_iter()).collect::<Vec<_>>(),
             label: None,
         });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let pipeline_layout = renderer.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&bind_group_layout],
         });
 

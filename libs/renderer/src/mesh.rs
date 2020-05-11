@@ -1,4 +1,4 @@
-use crate::VertexFormat;
+use crate::{Renderer, VertexFormat};
 
 pub struct Mesh {
     pub(crate) vertex_buffers: Vec<wgpu::Buffer>,
@@ -10,7 +10,7 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(
-        device: &wgpu::Device,
+        renderer: &Renderer,
         vertex_buffers: &[&[u8]],
         strides: &[usize],
         index: &[u8],
@@ -19,9 +19,9 @@ impl Mesh {
     ) -> Self {
         let vertex_buffers = vertex_buffers
             .iter()
-            .map(|x| device.create_buffer_with_data(x, wgpu::BufferUsage::VERTEX))
+            .map(|x| renderer.device.create_buffer_with_data(x, wgpu::BufferUsage::VERTEX))
             .collect::<Vec<_>>();
-        let index = device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
+        let index = renderer.device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
 
         Self {
             vertex_buffers,

@@ -1,4 +1,4 @@
-use crate::{Material, Mesh, Renderable, UniformBuffer};
+use crate::{Material, Mesh, Renderable, Renderer, UniformBuffer};
 
 pub struct Model {
     mesh: Mesh,
@@ -9,7 +9,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new(device: &wgpu::Device, mesh: Mesh, material: Material) -> Self {
+    pub fn new(renderer: &Renderer, mesh: Mesh, material: Material) -> Self {
         let attributes = mesh
             .vertex_formats
             .iter()
@@ -26,7 +26,7 @@ impl Model {
             })
             .collect::<Vec<_>>();
 
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let pipeline = renderer.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &material.pipeline_layout,
             vertex_stage: wgpu::ProgrammableStageDescriptor {
                 module: &material.vertex_shader.module,

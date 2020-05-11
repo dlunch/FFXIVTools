@@ -1,3 +1,5 @@
+use crate::Renderer;
+
 pub enum TextureFormat {
     Rgba8Unorm,
     Rgba16Float,
@@ -26,9 +28,9 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(device: &wgpu::Device, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
+    pub fn new(renderer: &Renderer, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
         let extent = wgpu::Extent3d { width, height, depth: 1 };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
+        let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
             size: extent,
             array_layer_count: 1,
             mip_level_count: 1,
@@ -39,7 +41,7 @@ impl Texture {
             label: None,
         });
 
-        let buffer = Some(device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC));
+        let buffer = Some(renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC));
 
         Self {
             texture,
