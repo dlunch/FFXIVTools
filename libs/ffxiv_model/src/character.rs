@@ -151,8 +151,8 @@ impl Character {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "Normal" => ShaderBinding::new(1, ShaderBindingType::Texture2D),
-                "s_Color" => ShaderBinding::new(2, ShaderBindingType::Sampler),
+                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
                 "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
                 "Mask" => ShaderBinding::new(4, ShaderBindingType::Texture2D),
             },
