@@ -27,7 +27,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(renderer: &mut Renderer, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
+    pub async fn new(renderer: &Renderer, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
         let extent = wgpu::Extent3d { width, height, depth: 1 };
         let texture = Arc::new(renderer.device.create_texture(&wgpu::TextureDescriptor {
             size: extent,
@@ -41,7 +41,9 @@ impl Texture {
         }));
 
         let buffer = renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC);
-        renderer.enqueue_texture_upload(buffer, texture.clone(), format.bytes_per_row() * extent.width as usize, extent);
+        renderer
+            .enqueue_texture_upload(buffer, texture.clone(), format.bytes_per_row() * extent.width as usize, extent)
+            .await;
 
         Self { texture }
     }
