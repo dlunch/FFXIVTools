@@ -7,12 +7,14 @@ use zerocopy::AsBytes;
 
 use crate::{Camera, Renderable, UniformBuffer};
 
+type TextureUploadItem = (wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d);
+
 pub struct Renderer {
     pub(crate) device: wgpu::Device,
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
-    texture_upload_queue: Mutex<Vec<(wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d)>>,
+    texture_upload_queue: Mutex<Vec<TextureUploadItem>>,
 }
 
 impl Renderer {
