@@ -5,7 +5,8 @@ use maplit::hashmap;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, Mdl, Mtrl, MtrlParameterType, Tex, TextureType};
 use renderer::{
-    Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
+    CompressedTextureFormat, Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat,
+    VertexFormatItem, VertexItemType,
 };
 use sqpack_reader::{Package, Result};
 
@@ -105,22 +106,21 @@ impl Character {
         );
 
         let (mtrl, texs) = &read_context.mtrls[0];
-
-        let parameters = mtrl.parameters();
-        let mut textures = HashMap::with_capacity(parameters.len());
-        for parameter in parameters {
+        let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
+            let tex_name = convert_texture_name(parameter.parameter_type);
             let tex = &texs[parameter.texture_index as usize];
-            let texture = Texture::new(
+            Texture::new_compressed(
                 &renderer,
                 tex.width() as u32,
                 tex.height() as u32,
-                decode_texture(tex, 0).as_ref(),
-                TextureFormat::Rgba8Unorm,
+                tex.data(0),
+                convert_texture_format(tex.texture_type()),
             )
-            .await;
-
-            textures.insert(convert_texture_name(parameter.parameter_type), texture);
-        }
+            .map(move |x| (tex_name, x))
+        }))
+        .await
+        .into_iter()
+        .collect::<HashMap<_, _>>();
 
         let color_table_data = mtrl.color_table();
         let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
@@ -164,20 +164,13 @@ impl Character {
     }
 }
 
-fn decode_texture(tex: &Tex, mipmap_index: u16) -> Vec<u8> {
-    let raw = tex.data(mipmap_index);
-    let result_size = (tex.width() as usize) * (tex.height() as usize) * 4; // RGBA
-    let mut result = vec![0; result_size];
-
-    let format = match tex.texture_type() {
-        TextureType::DXT1 => squish::Format::Bc1,
-        TextureType::DXT3 => squish::Format::Bc2,
-        TextureType::DXT5 => squish::Format::Bc3,
+fn convert_texture_format(texture_type: TextureType) -> CompressedTextureFormat {
+    match texture_type {
+        TextureType::DXT1 => CompressedTextureFormat::BC1,
+        TextureType::DXT3 => CompressedTextureFormat::BC2,
+        TextureType::DXT5 => CompressedTextureFormat::BC3,
         _ => panic!(),
-    };
-    format.decompress(raw, tex.width() as usize, tex.height() as usize, result.as_mut());
-
-    result
+    }
 }
 
 fn convert_type(item_type: BufferItemType) -> VertexItemType {

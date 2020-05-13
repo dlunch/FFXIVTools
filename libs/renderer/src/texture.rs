@@ -22,6 +22,22 @@ impl TextureFormat {
     }
 }
 
+pub enum CompressedTextureFormat {
+    BC1,
+    BC2,
+    BC3,
+}
+
+impl CompressedTextureFormat {
+    pub(crate) fn decoded_format(&self) -> TextureFormat {
+        match self {
+            CompressedTextureFormat::BC1 => TextureFormat::Rgba8Unorm,
+            CompressedTextureFormat::BC2 => TextureFormat::Rgba8Unorm,
+            CompressedTextureFormat::BC3 => TextureFormat::Rgba8Unorm,
+        }
+    }
+}
+
 pub struct Texture {
     pub(crate) texture: Arc<wgpu::Texture>,
 }
@@ -46,5 +62,25 @@ impl Texture {
             .await;
 
         Self { texture }
+    }
+
+    pub async fn new_compressed(renderer: &Renderer, width: u32, height: u32, data: &[u8], format: CompressedTextureFormat) -> Self {
+        let uncompressed = Self::decode_texture(data, width, height, &format);
+
+        Self::new(renderer, width, height, &uncompressed, format.decoded_format()).await
+    }
+
+    fn decode_texture(data: &[u8], width: u32, height: u32, format: &CompressedTextureFormat) -> Vec<u8> {
+        let result_size = (width as usize) * (height as usize) * 4; // RGBA
+        let mut result = vec![0; result_size];
+
+        let format = match format {
+            CompressedTextureFormat::BC1 => squish::Format::Bc1,
+            CompressedTextureFormat::BC2 => squish::Format::Bc2,
+            CompressedTextureFormat::BC3 => squish::Format::Bc3,
+        };
+        format.decompress(data, width as usize, height as usize, result.as_mut());
+
+        result
     }
 }
