@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
+use tokio::sync::Mutex;
 use zerocopy::AsBytes;
 
 use crate::{Camera, Renderable, UniformBuffer};
@@ -11,7 +12,7 @@ pub struct Renderer {
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
-    texture_upload_queue: Vec<(wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d)>,
+    texture_upload_queue: Mutex<Vec<(wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d)>>,
 }
 
 impl Renderer {
@@ -50,7 +51,7 @@ impl Renderer {
             device,
             swap_chain,
             queue,
-            texture_upload_queue: Vec::new(),
+            texture_upload_queue: Mutex::new(Vec::new()),
         }
     }
 
@@ -85,15 +86,22 @@ impl Renderer {
         self.queue.submit(&[command_encoder.finish()]);
     }
 
-    pub(crate) fn enqueue_texture_upload(&mut self, buffer: wgpu::Buffer, texture: Arc<wgpu::Texture>, bytes_per_row: usize, extent: wgpu::Extent3d) {
-        self.texture_upload_queue.push((buffer, texture, bytes_per_row, extent));
+    pub(crate) async fn enqueue_texture_upload(
+        &self,
+        buffer: wgpu::Buffer,
+        texture: Arc<wgpu::Texture>,
+        bytes_per_row: usize,
+        extent: wgpu::Extent3d,
+    ) {
+        let mut texture_upload_queue = self.texture_upload_queue.lock().await;
+        texture_upload_queue.push((buffer, texture, bytes_per_row, extent));
     }
 
     fn dequeue_texture_uploads(&mut self, command_encoder: &mut wgpu::CommandEncoder) {
-        let mut queue = Vec::new();
+        let mut queue = Mutex::new(Vec::new());
         std::mem::swap(&mut self.texture_upload_queue, &mut queue);
 
-        for (buffer, texture, bytes_per_row, extent) in queue {
+        for (buffer, texture, bytes_per_row, extent) in queue.into_inner() {
             command_encoder.copy_buffer_to_texture(
                 wgpu::BufferCopyView {
                     buffer: &buffer,

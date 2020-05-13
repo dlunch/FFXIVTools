@@ -71,7 +71,7 @@ pub struct Character {
 }
 
 impl Character {
-    pub async fn new(pack: &dyn Package, mut renderer: &mut Renderer) -> Result<Self> {
+    pub async fn new(pack: &dyn Package, renderer: &Renderer) -> Result<Self> {
         // WIP
         let read_context = ModelReadContext::read_equipment(pack, 6016, 201, "top").await?;
         let mdl = read_context.mdl;
@@ -106,26 +106,24 @@ impl Character {
 
         let (mtrl, texs) = &read_context.mtrls[0];
 
-        let mut textures = mtrl
-            .parameters()
-            .iter()
-            .map(|parameter| {
-                let tex = &texs[parameter.texture_index as usize];
-                (
-                    convert_texture_name(parameter.parameter_type),
-                    Texture::new(
-                        &mut renderer,
-                        tex.width() as u32,
-                        tex.height() as u32,
-                        decode_texture(tex, 0).as_ref(),
-                        TextureFormat::Rgba8Unorm,
-                    ),
-                )
-            })
-            .collect::<HashMap<_, _>>();
+        let parameters = mtrl.parameters();
+        let mut textures = HashMap::with_capacity(parameters.len());
+        for parameter in parameters {
+            let tex = &texs[parameter.texture_index as usize];
+            let texture = Texture::new(
+                &renderer,
+                tex.width() as u32,
+                tex.height() as u32,
+                decode_texture(tex, 0).as_ref(),
+                TextureFormat::Rgba8Unorm,
+            )
+            .await;
+
+            textures.insert(convert_texture_name(parameter.parameter_type), texture);
+        }
 
         let color_table_data = mtrl.color_table();
-        let color_table_tex = Texture::new(&mut renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float);
+        let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
         textures.insert("ColorTable", color_table_tex);
 
         let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
