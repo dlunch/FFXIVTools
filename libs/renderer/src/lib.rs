@@ -16,6 +16,6 @@ pub use model::Model;
 pub use renderable::Renderable;
 pub use renderer::Renderer;
 pub use shader::{Shader, ShaderBinding, ShaderBindingType};
-pub use texture::{Texture, TextureFormat};
+pub use texture::{CompressedTextureFormat, Texture, TextureFormat};
 pub use uniform_buffer::UniformBuffer;
 pub use vertex_format::{VertexFormat, VertexFormatItem, VertexItemType};
