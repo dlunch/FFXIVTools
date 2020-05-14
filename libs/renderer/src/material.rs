@@ -34,7 +34,7 @@ impl Material {
         }
     }
 
-    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: UniformBuffer) -> wgpu::BindGroup {
+    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: &UniformBuffer) -> wgpu::BindGroup {
         let texture_views = self
             .textures
             .iter()

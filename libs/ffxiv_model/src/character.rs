@@ -5,15 +5,15 @@ use maplit::hashmap;
 
 use ffxiv_parser::{BufferItemType, BufferItemUsage, MtrlParameterType, TextureType};
 use renderer::{
-    CompressedTextureFormat, Material, Mesh, Model, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat,
-    VertexFormatItem, VertexItemType,
+    CompressedTextureFormat, Material, Mesh, Model, RenderContext, Renderable, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture,
+    TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
 };
 use sqpack_reader::{Package, Result};
 
 use crate::model_read_context::ModelReadContext;
 
 pub struct Character {
-    pub model: Model,
+    model: Model,
 }
 
 impl Character {
@@ -106,6 +106,12 @@ impl Character {
         let model = Model::new(&renderer, mesh, material);
 
         Ok(Self { model })
+    }
+}
+
+impl Renderable for Character {
+    fn render<'a>(&'a mut self, mut render_context: &mut RenderContext<'a>) {
+        self.model.render(&mut render_context);
     }
 }
 

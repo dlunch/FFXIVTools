@@ -5,7 +5,7 @@ use raw_window_handle::HasRawWindowHandle;
 use tokio::sync::Mutex;
 use zerocopy::AsBytes;
 
-use crate::{Camera, Renderable, UniformBuffer};
+use crate::{Camera, RenderContext, Scene, UniformBuffer};
 
 type TextureUploadItem = (wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d);
 
@@ -57,8 +57,8 @@ impl Renderer {
         }
     }
 
-    pub async fn render(&mut self, renderable: &mut dyn Renderable, camera: &Camera) {
-        let mvp = Self::get_mvp(camera, 1024.0 / 768.0);
+    pub async fn render(&mut self, scene: &mut Scene) {
+        let mvp = Self::get_mvp(&scene.camera, 1024.0 / 768.0);
         let mut mvp_buf = UniformBuffer::new(&self, 64);
         mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
@@ -67,7 +67,7 @@ impl Renderer {
 
         let frame = self.swap_chain.get_next_texture().unwrap();
         {
-            let mut render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,
@@ -82,7 +82,11 @@ impl Renderer {
                 }],
                 depth_stencil_attachment: None,
             });
-            renderable.render(&self.device, &mut render_pass, mvp_buf);
+            let mut render_context = RenderContext::new(&self.device, render_pass, mvp_buf);
+
+            for model in &mut scene.models {
+                model.render(&mut render_context);
+            }
         }
 
         self.queue.submit(&[command_encoder.finish()]);
