@@ -1,4 +1,4 @@
-use crate::{Material, Mesh, Renderable, Renderer, UniformBuffer};
+use crate::{Material, Mesh, RenderContext, Renderable, Renderer};
 
 pub struct Model {
     mesh: Mesh,
@@ -70,16 +70,16 @@ impl Model {
 }
 
 impl Renderable for Model {
-    fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>, mvp_buf: UniformBuffer) {
+    fn render<'a>(&'a mut self, render_context: &mut RenderContext<'a>) {
         // TODO store bind_group in material
-        self.bind_group = Some(self.material.bind_group(&device, mvp_buf));
+        self.bind_group = Some(self.material.bind_group(&render_context.device, &render_context.mvp_buf));
 
-        render_pass.set_pipeline(&self.pipeline);
-        render_pass.set_bind_group(0, &self.bind_group.as_ref().unwrap(), &[]);
-        render_pass.set_index_buffer(&self.mesh.index, 0, 0);
+        render_context.render_pass.set_pipeline(&self.pipeline);
+        render_context.render_pass.set_bind_group(0, &self.bind_group.as_ref().unwrap(), &[]);
+        render_context.render_pass.set_index_buffer(&self.mesh.index, 0, 0);
         for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
-            render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
+            render_context.render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
         }
-        render_pass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
+        render_context.render_pass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
     }
 }

@@ -8,7 +8,7 @@ use winit::{
 };
 
 use ffxiv_model::Character;
-use renderer::{Camera, Renderer};
+use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 fn main() {
@@ -25,7 +25,7 @@ fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     let size = window.inner_size();
-    let (mut renderer, mut character) = rt.block_on(async {
+    let (mut renderer, character) = rt.block_on(async {
         let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
             debug!("{}/{}", current, total)
         });
@@ -38,6 +38,9 @@ fn main() {
     });
 
     let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
+    let mut scene = Scene::new(camera);
+    scene.add_model(Box::new(character));
+
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
 
@@ -59,7 +62,7 @@ fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                rt.block_on(async { renderer.render(&mut character.model, &camera).await });
+                rt.block_on(async { renderer.render(&mut scene).await });
             }
             _ => {}
         }
