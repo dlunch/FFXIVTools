@@ -62,7 +62,7 @@ impl Character {
             .collect::<HashMap<_, _>>();
 
             let color_table_data = mtrl.color_table();
-            if color_table_data.len() != 0 {
+            if !color_table_data.is_empty() {
                 let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
                 textures.insert("ColorTable", color_table_tex);
             }
