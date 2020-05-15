@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use futures::{future, FutureExt};
 use maplit::hashmap;
 
-use ffxiv_parser::{BufferItemType, BufferItemUsage, MtrlParameterType, TextureType};
 use renderer::{
-    CompressedTextureFormat, Material, Mesh, Model, RenderContext, Renderable, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture,
-    TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
+    Material, Mesh, Model, RenderContext, Renderable, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat,
+    VertexFormatItem,
 };
 use sqpack_reader::{Package, Result};
 
 use crate::model_read_context::ModelReadContext;
+use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
 
 pub struct Character {
     models: Vec<Model>,
@@ -27,13 +27,13 @@ impl Character {
         let buffer_items = mdl.buffer_items(quality);
 
         let mut models = Vec::new();
-        for (mesh, buffer_item) in meshes.zip(buffer_items) {
+        for (mesh_index, (mesh, buffer_item)) in meshes.zip(buffer_items).enumerate() {
             let vertex_formats = (0..mesh.mesh_info.buffer_count as usize)
                 .map(|buffer_index| {
                     let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
                     VertexFormat::new(
                         buffer_items
-                            .map(|x| VertexFormatItem::new(convert_usage(x.usage), convert_type(x.item_type), x.offset as usize))
+                            .map(|x| VertexFormatItem::new(convert_buffer_usage(x.usage), convert_buffer_type(x.item_type), x.offset as usize))
                             .collect::<Vec<_>>(),
                     )
                 })
@@ -55,15 +55,7 @@ impl Character {
             let (mtrl, texs) = &read_context.mtrls[mesh_index];
             let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
                 let tex_name = convert_texture_name(parameter.parameter_type);
-                let tex = &texs[parameter.texture_index as usize];
-                Texture::new_compressed(
-                    &renderer,
-                    tex.width() as u32,
-                    tex.height() as u32,
-                    tex.data(0),
-                    convert_texture_format(tex.texture_type()),
-                )
-                .map(move |x| (tex_name, x))
+                load_texture(&renderer, &texs[parameter.texture_index as usize]).map(move |x| (tex_name, x))
             }))
             .await
             .into_iter()
@@ -118,50 +110,5 @@ impl Renderable for Character {
         for model in &mut self.models {
             model.render(&mut render_context);
         }
-    }
-}
-
-fn convert_texture_format(texture_type: TextureType) -> CompressedTextureFormat {
-    match texture_type {
-        TextureType::DXT1 => CompressedTextureFormat::BC1,
-        TextureType::DXT3 => CompressedTextureFormat::BC2,
-        TextureType::DXT5 => CompressedTextureFormat::BC3,
-        _ => panic!(),
-    }
-}
-
-fn convert_type(item_type: BufferItemType) -> VertexItemType {
-    match item_type {
-        BufferItemType::UByte4 => VertexItemType::UByte4,
-        BufferItemType::UByte4n => VertexItemType::UByte4,
-        BufferItemType::Float2 => VertexItemType::Float2,
-        BufferItemType::Float3 => VertexItemType::Float3,
-        BufferItemType::Float4 => VertexItemType::Float4,
-        BufferItemType::Half2 => VertexItemType::Half2,
-        BufferItemType::Half4 => VertexItemType::Half4,
-        _ => panic!(),
-    }
-}
-
-fn convert_usage(usage: BufferItemUsage) -> &'static str {
-    match usage {
-        BufferItemUsage::Position => "Position",
-        BufferItemUsage::BoneWeight => "BoneWeight",
-        BufferItemUsage::BoneIndex => "BoneIndex",
-        BufferItemUsage::Normal => "Normal",
-        BufferItemUsage::TexCoord => "TexCoord",
-        BufferItemUsage::Tangent => "Tangent",
-        BufferItemUsage::Bitangent => "Bitangent",
-        BufferItemUsage::Color => "Color",
-    }
-}
-
-fn convert_texture_name(parameter_type: MtrlParameterType) -> &'static str {
-    match parameter_type {
-        MtrlParameterType::Normal => "Normal",
-        MtrlParameterType::Mask => "Mask",
-        MtrlParameterType::Diffuse => "Diffuse",
-        MtrlParameterType::Specular => "Specular",
-        MtrlParameterType::Catchlight => "Catchlight",
     }
 }
