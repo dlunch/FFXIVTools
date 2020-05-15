@@ -162,7 +162,7 @@ impl Renderer {
             label: None,
         });
 
-        let buffer = device.create_buffer_with_data(&vec![0, 0, 0, 0], wgpu::BufferUsage::COPY_SRC);
+        let buffer = device.create_buffer_with_data(&[0, 0, 0, 0], wgpu::BufferUsage::COPY_SRC);
         let mut command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         command_encoder.copy_buffer_to_texture(
             wgpu::BufferCopyView {
