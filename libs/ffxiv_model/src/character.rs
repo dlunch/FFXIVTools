@@ -52,7 +52,7 @@ impl Character {
                 vertex_formats,
             );
 
-            let (mtrl, texs) = &read_context.mtrls[0];
+            let (mtrl, texs) = &read_context.mtrls[mesh_index];
             let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
                 let tex_name = convert_texture_name(parameter.parameter_type);
                 let tex = &texs[parameter.texture_index as usize];
