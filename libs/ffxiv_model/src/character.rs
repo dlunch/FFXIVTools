@@ -24,13 +24,13 @@ impl Character {
 
         let quality = 0;
         let meshes = mdl.meshes(quality);
-        let buffer_items = mdl.buffer_items(quality).collect::<Vec<_>>();
+        let buffer_items = mdl.buffer_items(quality);
 
         let mut models = Vec::new();
-        for (mesh_index, mesh) in meshes.into_iter().enumerate() {
+        for (mesh, buffer_item) in meshes.zip(buffer_items) {
             let vertex_formats = (0..mesh.mesh_info.buffer_count as usize)
                 .map(|buffer_index| {
-                    let buffer_items = buffer_items[mesh_index].items().filter(move |x| x.buffer as usize == buffer_index);
+                    let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
                     VertexFormat::new(
                         buffer_items
                             .map(|x| VertexFormatItem::new(convert_usage(x.usage), convert_type(x.item_type), x.offset as usize))
