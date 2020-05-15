@@ -185,6 +185,24 @@
       },
       "args": [],
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'model_viewer_standalone'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=model_viewer_standalone",
+          "--package=model_viewer_standalone"
+        ],
+        "filter": {
+          "name": "model_viewer_standalone",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
