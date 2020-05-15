@@ -34,15 +34,16 @@ impl Material {
         }
     }
 
-    pub fn bind_group(&self, device: &wgpu::Device, mvp_buf: &UniformBuffer) -> wgpu::BindGroup {
+    pub fn bind_group(&self, renderer: &Renderer, mvp_buf: &UniformBuffer) -> wgpu::BindGroup {
         let texture_views = self
             .textures
             .iter()
             .map(|(name, texture)| (name, texture.texture.create_default_view()))
             .collect::<HashMap<_, _>>();
+        let empty_texture_view = renderer.empty_texture.create_default_view();
 
         // TODO wip
-        let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = renderer.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
             address_mode_v: wgpu::AddressMode::Repeat,
             address_mode_w: wgpu::AddressMode::Repeat,
@@ -68,7 +69,9 @@ impl Material {
 
                         mvp_buf.binding_resource()
                     }
-                    ShaderBindingType::Texture2D => wgpu::BindingResource::TextureView(&texture_views.get(binding_name).unwrap()),
+                    ShaderBindingType::Texture2D => {
+                        wgpu::BindingResource::TextureView(&texture_views.get(binding_name).unwrap_or(&empty_texture_view))
+                    }
                     ShaderBindingType::Sampler => wgpu::BindingResource::Sampler(&sampler),
                 };
 
@@ -79,7 +82,7 @@ impl Material {
             })
             .collect::<Vec<_>>();
 
-        device.create_bind_group(&wgpu::BindGroupDescriptor {
+        renderer.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.bind_group_layout,
             bindings: &bindings,
             label: None,
