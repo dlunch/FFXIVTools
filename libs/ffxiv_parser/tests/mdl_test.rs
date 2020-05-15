@@ -18,20 +18,20 @@ mod tests {
         assert!(buffer_item.usage == BufferItemUsage::Position);
 
         {
-            let meshes = mdl.meshes(0);
+            let meshes = mdl.meshes(0).collect::<Vec<_>>();
             assert_eq!(meshes.len(), 1);
             assert_eq!(meshes[0].mesh_info.vertex_count, 2790);
             assert_eq!(meshes[0].buffers.len(), 2);
         }
         {
-            let meshes = mdl.meshes(1);
+            let meshes = mdl.meshes(1).collect::<Vec<_>>();
             assert_eq!(meshes.len(), 1);
             assert_eq!(meshes[0].mesh_info.vertex_count, 1621);
             assert_eq!(meshes[0].buffers.len(), 2);
         }
 
         {
-            let meshes = mdl.meshes(2);
+            let meshes = mdl.meshes(2).collect::<Vec<_>>();
             assert_eq!(meshes.len(), 1);
             assert_eq!(meshes[0].mesh_info.vertex_count, 298);
             assert_eq!(meshes[0].buffers.len(), 2);

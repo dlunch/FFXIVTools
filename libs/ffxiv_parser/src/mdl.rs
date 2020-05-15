@@ -174,32 +174,30 @@ impl Mdl {
             .take(model_header.mesh_count as usize)
     }
 
-    pub fn meshes(&self, quality: usize) -> Vec<Mesh> {
+    pub fn meshes<'a>(&'a self, quality: usize) -> impl Iterator<Item = Mesh> + 'a {
         let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::QUALITY_COUNT];
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&self.data[self.mesh_info_offset..])[..mesh_info_count];
 
         let model_header = &model_headers[quality];
-        (0..model_header.mesh_count)
-            .map(|mesh_index| {
-                let mesh_info = &mesh_infos[model_header.mesh_offset as usize + mesh_index as usize];
+        (0..model_header.mesh_count).map(move |mesh_index| {
+            let mesh_info = &mesh_infos[model_header.mesh_offset as usize + mesh_index as usize];
 
-                let buffers = (0..mesh_info.buffer_count)
-                    .map(|buffer_index| {
-                        let buffer_begin = model_header.buffer_data_offset as usize + mesh_info.buffer_offsets[buffer_index as usize] as usize;
-                        let buffer_end = buffer_begin + (mesh_info.vertex_count as usize) * (mesh_info.strides[buffer_index as usize] as usize);
+            let buffers = (0..mesh_info.buffer_count)
+                .map(|buffer_index| {
+                    let buffer_begin = model_header.buffer_data_offset as usize + mesh_info.buffer_offsets[buffer_index as usize] as usize;
+                    let buffer_end = buffer_begin + (mesh_info.vertex_count as usize) * (mesh_info.strides[buffer_index as usize] as usize);
 
-                        &self.data[buffer_begin..buffer_end]
-                    })
-                    .collect::<Vec<_>>();
+                    &self.data[buffer_begin..buffer_end]
+                })
+                .collect::<Vec<_>>();
 
-                let index_begin = model_header.index_data_offset as usize + (mesh_info.index_offset as usize) * size_of::<u16>();
-                let index_end = index_begin + (mesh_info.index_count as usize) * size_of::<u16>();
+            let index_begin = model_header.index_data_offset as usize + (mesh_info.index_offset as usize) * size_of::<u16>();
+            let index_end = index_begin + (mesh_info.index_count as usize) * size_of::<u16>();
 
-                let indices = &self.data[index_begin..index_end];
-                Mesh { mesh_info, buffers, indices }
-            })
-            .collect::<Vec<_>>()
+            let indices = &self.data[index_begin..index_end];
+            Mesh { mesh_info, buffers, indices }
+        })
     }
 
     pub fn material_files(&self) -> Vec<&str> {
