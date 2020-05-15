@@ -70,8 +70,10 @@ impl Character {
             .collect::<HashMap<_, _>>();
 
             let color_table_data = mtrl.color_table();
-            let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
-            textures.insert("ColorTable", color_table_tex);
+            if color_table_data.len() != 0 {
+                let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
+                textures.insert("ColorTable", color_table_tex);
+            }
 
             let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
             let fs_bytes = include_bytes!("../shaders/shader.frag.spv");
