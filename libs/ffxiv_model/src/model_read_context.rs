@@ -18,13 +18,11 @@ impl ModelReadContext {
         );
         let mdl = Mdl::new(pack, &mdl_filename).await?;
 
-        let mtrls = future::join_all(mdl.material_files().iter().map(|material_file| {
+        let mtrls = future::join_all(mdl.material_files().map(|material_file| {
             let material_file = Self::convert_equipment_material_filename(&material_file);
             Mtrl::new(pack, material_file).then(|mtrl| async {
                 let mtrl = mtrl?;
-                let texture_files = mtrl.texture_files();
-
-                let texs = future::join_all(texture_files.iter().map(|texture_file| Tex::new(pack, texture_file)))
+                let texs = future::join_all(mtrl.texture_files().map(|texture_file| Tex::new(pack, texture_file)))
                     .await
                     .into_iter()
                     .collect::<Result<Vec<_>>>()?;

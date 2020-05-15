@@ -200,7 +200,7 @@ impl Mdl {
         })
     }
 
-    pub fn material_files(&self) -> Vec<&str> {
+    pub fn material_files<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
         let mut cursor = self.attribute_info_offset;
 
@@ -209,12 +209,10 @@ impl Mdl {
         cursor += (mdl_header.part_count as usize) * size_of::<MeshPart>();
         cursor += (mdl_header.unk_count5 as usize) * 12;
 
-        (0..mdl_header.material_count)
-            .map(|x| {
-                let string_offset = (&self.data[cursor + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>() as usize;
+        (0..mdl_header.material_count).map(move |x| {
+            let string_offset = (&self.data[cursor + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>() as usize;
 
-                str::from_null_terminated_utf8(&self.data[self.string_block_offset + string_offset..]).unwrap()
-            })
-            .collect::<Vec<_>>()
+            str::from_null_terminated_utf8(&self.data[self.string_block_offset + string_offset..]).unwrap()
+        })
     }
 }
