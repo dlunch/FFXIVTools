@@ -1,15 +1,15 @@
-use crate::UniformBuffer;
+use crate::{Renderer, UniformBuffer};
 
 pub struct RenderContext<'a> {
-    pub(crate) device: &'a wgpu::Device,
+    pub(crate) renderer: &'a Renderer,
     pub(crate) render_pass: wgpu::RenderPass<'a>,
     pub(crate) mvp_buf: UniformBuffer,
 }
 
 impl<'a> RenderContext<'a> {
-    pub fn new(device: &'a wgpu::Device, render_pass: wgpu::RenderPass<'a>, mvp_buf: UniformBuffer) -> Self {
+    pub fn new(renderer: &'a Renderer, render_pass: wgpu::RenderPass<'a>, mvp_buf: UniformBuffer) -> Self {
         Self {
-            device,
+            renderer,
             render_pass,
             mvp_buf,
         }

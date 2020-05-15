@@ -11,6 +11,7 @@ type TextureUploadItem = (wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3
 
 pub struct Renderer {
     pub(crate) device: wgpu::Device,
+    pub(crate) empty_texture: wgpu::Texture,
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
@@ -48,12 +49,14 @@ impl Renderer {
             present_mode: wgpu::PresentMode::Mailbox,
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
+        let empty_texture = Self::create_empty_texture(&device, &queue);
 
         Self {
             device,
             swap_chain,
             queue,
             texture_upload_queue: Mutex::new(Vec::new()),
+            empty_texture,
         }
     }
 
@@ -82,7 +85,7 @@ impl Renderer {
                 }],
                 depth_stencil_attachment: None,
             });
-            let mut render_context = RenderContext::new(&self.device, render_pass, mvp_buf);
+            let mut render_context = RenderContext::new(&self, render_pass, mvp_buf);
 
             for model in &mut scene.models {
                 model.render(&mut render_context);
@@ -140,5 +143,45 @@ impl Renderer {
 
         let projection = nalgebra::Matrix4::new_perspective(aspect_ratio, 45.0 * PI / 180.0, 1.0, 10.0);
         correction * projection * camera.view()
+    }
+
+    fn create_empty_texture(device: &wgpu::Device, queue: &wgpu::Queue) -> wgpu::Texture {
+        let extent = wgpu::Extent3d {
+            width: 1,
+            height: 1,
+            depth: 1,
+        };
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
+            size: extent,
+            array_layer_count: 1,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+            label: None,
+        });
+
+        let buffer = device.create_buffer_with_data(&vec![0, 0, 0, 0], wgpu::BufferUsage::COPY_SRC);
+        let mut command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        command_encoder.copy_buffer_to_texture(
+            wgpu::BufferCopyView {
+                buffer: &buffer,
+                offset: 0,
+                bytes_per_row: 4,
+                rows_per_image: 0,
+            },
+            wgpu::TextureCopyView {
+                texture: &texture,
+                mip_level: 0,
+                array_layer: 0,
+                origin: wgpu::Origin3d::ZERO,
+            },
+            extent,
+        );
+
+        queue.submit(&[command_encoder.finish()]);
+
+        texture
     }
 }
