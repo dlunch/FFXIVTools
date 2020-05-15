@@ -78,28 +78,26 @@ impl Mtrl {
         })
     }
 
-    pub fn texture_files(&self) -> Vec<String> {
+    pub fn texture_files<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
         let header = cast::<MtrlHeader>(&self.data);
 
         let base_offset = size_of::<MtrlHeader>();
 
-        (0..header.texture_count)
-            .map(|x| {
-                let value = (&self.data[base_offset + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>();
-                let offset = value & 0xffff;
-                let flag = value >> 16;
+        (0..header.texture_count).map(move |x| {
+            let value = (&self.data[base_offset + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>();
+            let offset = value & 0xffff;
+            let flag = value >> 16;
 
-                let path = str::from_null_terminated_utf8(&self.data[self.strings_offset + offset as usize..]).unwrap();
-                if path == "dummy.tex" {
-                    "common/graphics/texture/dummy.tex".to_owned()
-                } else if flag & 0x8000 != 0 {
-                    let separator = path.rfind('/').unwrap() + 1;
-                    format!("{}--{}", &path[..separator], &path[separator..])
-                } else {
-                    path.to_owned()
-                }
-            })
-            .collect::<Vec<_>>()
+            let path = str::from_null_terminated_utf8(&self.data[self.strings_offset + offset as usize..]).unwrap();
+            if path == "dummy.tex" {
+                "common/graphics/texture/dummy.tex".to_owned()
+            } else if flag & 0x8000 != 0 {
+                let separator = path.rfind('/').unwrap() + 1;
+                format!("{}--{}", &path[..separator], &path[separator..])
+            } else {
+                path.to_owned()
+            }
+        })
     }
 
     pub fn parameters(&self) -> &[MtrlParameter] {
