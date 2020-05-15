@@ -4,6 +4,7 @@ use crate::Renderer;
 
 pub enum TextureFormat {
     Rgba8Unorm,
+    Bgra8Unorm,
     Rgba16Float,
 }
 
@@ -11,12 +12,14 @@ impl TextureFormat {
     pub(crate) fn wgpu_type(&self) -> wgpu::TextureFormat {
         match self {
             TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
+            TextureFormat::Bgra8Unorm => wgpu::TextureFormat::Bgra8Unorm,
             TextureFormat::Rgba16Float => wgpu::TextureFormat::Rgba16Float,
         }
     }
     pub(crate) fn bytes_per_row(&self) -> usize {
         match self {
             TextureFormat::Rgba8Unorm => 4,
+            TextureFormat::Bgra8Unorm => 4,
             TextureFormat::Rgba16Float => 8,
         }
     }
