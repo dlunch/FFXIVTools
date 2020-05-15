@@ -18,5 +18,5 @@ pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
 
 ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
-sqpack_reader = { version = "^0.1", default-features = false, path = "../../libs/sqpack_reader" }
+sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../../libs/sqpack_reader" }
 renderer = { version = "^0.1", default-features = false, path = "../../libs/renderer" }
