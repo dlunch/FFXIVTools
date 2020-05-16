@@ -14,6 +14,6 @@ impl<'a> Scene<'a> {
         self.models.push(Box::new(model));
 
         let len = self.models.len();
-        unsafe { &mut *(&mut self.models[len - 1] as *mut Box<(dyn Renderable + 'a)> as *mut F) }
+        unsafe { &mut *(self.models[len - 1].as_mut() as *mut (dyn Renderable + 'a) as *mut F) }
     }
 }
