@@ -7,6 +7,7 @@ use winit::{
     event,
     event::WindowEvent,
     event_loop::{ControlFlow, EventLoop},
+    window::Window,
 };
 
 use ffxiv_model::{Character, ShaderHolder};
@@ -26,27 +27,7 @@ fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
-        debug!("{}/{}", current, total)
-    });
-    let pack = SqPackReaderExtractedFile::new(provider).unwrap();
-
-    let (mut renderer, shader_holder) = rt.block_on(async {
-        let size = window.inner_size();
-        let renderer = Renderer::new(&window, size.width, size.height).await;
-        let shader_holder = ShaderHolder::new(&renderer);
-
-        (renderer, shader_holder)
-    });
-
-    let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-    let mut scene = Scene::new(camera);
-    let shader_holder = Arc::new(shader_holder);
-    let mut character = Character::new(shader_holder.clone());
-    rt.block_on(async {
-        character.add_equipment(&renderer, &pack).await.unwrap();
-    });
-    scene.add(character);
+    let mut app = rt.block_on(async { App::new(&window).await });
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
@@ -69,9 +50,40 @@ fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                rt.block_on(async { renderer.render(&mut scene).await });
+                rt.block_on(async { app.render().await });
             }
             _ => {}
         }
     });
+}
+
+struct App<'a> {
+    renderer: Renderer,
+    scene: Scene<'a>,
+}
+
+impl<'a> App<'a> {
+    pub async fn new(window: &Window) -> App<'a> {
+        let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
+            debug!("{}/{}", current, total)
+        });
+        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
+
+        let size = window.inner_size();
+        let renderer = Renderer::new(window, size.width, size.height).await;
+        let shader_holder = Arc::new(ShaderHolder::new(&renderer));
+
+        let mut character = Character::new(shader_holder.clone());
+        character.add_equipment(&renderer, &pack).await.unwrap();
+
+        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
+        let mut scene = Scene::new(camera);
+        scene.add(character);
+
+        Self { renderer, scene }
+    }
+
+    pub async fn render(&mut self) {
+        self.renderer.render(&self.scene).await;
+    }
 }
