@@ -19,7 +19,7 @@ impl Character {
     pub fn new(shader_holder: Arc<ShaderHolder>) -> Self {
         Self {
             models: Vec::new(),
-            shader_holder: shader_holder.clone(),
+            shader_holder,
         }
     }
 
