@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use log::debug;
 use nalgebra::Point3;
 use tokio::runtime::Runtime;
@@ -7,7 +9,7 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
-use ffxiv_model::Character;
+use ffxiv_model::{Character, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
@@ -24,22 +26,28 @@ fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let size = window.inner_size();
-    let (mut renderer, character) = rt.block_on(async {
-        let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
-            debug!("{}/{}", current, total)
-        });
-        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
+    let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
+        debug!("{}/{}", current, total)
+    });
+    let pack = SqPackReaderExtractedFile::new(provider).unwrap();
 
+    let (mut renderer, shader_holder) = rt.block_on(async {
+        let size = window.inner_size();
         let renderer = Renderer::new(&window, size.width, size.height).await;
-        let character = Character::new(&pack, &renderer).await.unwrap();
+        let shader_holder = ShaderHolder::new(&renderer);
 
-        (renderer, character)
+        (renderer, shader_holder)
     });
 
     let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
     let mut scene = Scene::new(camera);
-    scene.add_model(Box::new(character));
+    let shader_holder = Arc::new(shader_holder);
+    rt.block_on(async {
+        let mut character = Box::new(Character::new(shader_holder.clone()));
+        character.add_equipment(&renderer, &pack).await.unwrap();
+
+        scene.add_model(character);
+    });
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;

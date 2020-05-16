@@ -1,23 +1,29 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use futures::{future, FutureExt};
-use maplit::hashmap;
 
-use renderer::{
-    Material, Mesh, Model, RenderContext, Renderable, Renderer, Shader, ShaderBinding, ShaderBindingType, Texture, TextureFormat, VertexFormat,
-    VertexFormatItem,
-};
+use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
 use sqpack_reader::{Package, Result};
 
 use crate::model_read_context::ModelReadContext;
+use crate::shader_holder::ShaderHolder;
 use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
 
 pub struct Character {
     models: Vec<Model>,
+    shader_holder: Arc<ShaderHolder>,
 }
 
 impl Character {
-    pub async fn new(pack: &dyn Package, renderer: &Renderer) -> Result<Self> {
+    pub fn new(shader_holder: Arc<ShaderHolder>) -> Self {
+        Self {
+            models: Vec::new(),
+            shader_holder: shader_holder.clone(),
+        }
+    }
+
+    pub async fn add_equipment(&mut self, renderer: &Renderer, pack: &dyn Package) -> Result<()> {
         // WIP
         let read_context = ModelReadContext::read_equipment(pack, 6016, 201, "top").await?;
         let mdl = read_context.mdl;
@@ -26,7 +32,6 @@ impl Character {
         let meshes = mdl.meshes(quality);
         let buffer_items = mdl.buffer_items(quality);
 
-        let mut models = Vec::new();
         for (mesh_index, (mesh, buffer_item)) in meshes.zip(buffer_items).enumerate() {
             let vertex_formats = (0..mesh.mesh_info.buffer_count as usize)
                 .map(|buffer_index| {
@@ -67,41 +72,14 @@ impl Character {
                 textures.insert("ColorTable", color_table_tex);
             }
 
-            let vs_bytes = include_bytes!("../shaders/shader.vert.spv");
-            let fs_bytes = include_bytes!("../shaders/shader.frag.spv");
+            let shaders = self.shader_holder.get_shaders(mtrl.shader_name());
 
-            let vs = Shader::new(
-                &renderer,
-                &vs_bytes[..],
-                "main",
-                hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
-                hashmap! {
-                    "Position" => 0,
-                    "BoneWeight" => 1,
-                    "BoneIndex" => 2,
-                    "Normal" => 3,
-                    "TexCoord" => 4,
-                    "Bitangent" => 5,
-                    "Color" => 6,
-                },
-            );
-            let fs = Shader::new(
-                &renderer,
-                &fs_bytes[..],
-                "main",
-                hashmap! {
-                    "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
-                    "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
-                    "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
-                    "Mask" => ShaderBinding::new(4, ShaderBindingType::Texture2D),
-                },
-                HashMap::new(),
-            );
-            let material = Material::new(&renderer, textures, vs, fs);
+            let material = Material::new(&renderer, textures, &shaders.0, &shaders.1);
 
-            models.push(Model::new(&renderer, mesh, material));
+            self.models.push(Model::new(&renderer, mesh, material));
         }
-        Ok(Self { models })
+
+        Ok(())
     }
 }
 
