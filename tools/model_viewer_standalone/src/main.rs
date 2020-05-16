@@ -31,21 +31,19 @@ async fn main() {
 
     unsafe {
         APP = Some(App::new(&window).await.unwrap());
-
-        let app = APP.as_mut().unwrap();
-        app.add_character().await.unwrap();
     }
+
+    let app = unsafe { APP.as_mut().unwrap() };
+    app.add_character().await.unwrap();
 
     let notifier = Arc::new(Notify::new());
     let notify_read = notifier.clone();
 
     tokio::spawn(async move {
-        unsafe {
-            let app = APP.as_mut().unwrap();
-            loop {
-                notify_read.notified().await;
-                app.render().await;
-            }
+        let app = unsafe { APP.as_mut().unwrap() };
+        loop {
+            notify_read.notified().await;
+            app.render().await;
         }
     });
 
