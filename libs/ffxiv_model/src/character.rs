@@ -6,7 +6,7 @@ use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
 
 pub struct Character<'a> {
-    parts: Vec<CharacterPart>,
+    parts: Vec<CharacterPart<'a>>,
     shader_holder: &'a ShaderHolder,
 }
 
@@ -18,7 +18,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub async fn add_equipment(&mut self, renderer: &Renderer, package: &dyn Package) -> Result<()> {
+    pub async fn add_equipment(&'a mut self, renderer: &Renderer, package: &dyn Package) -> Result<()> {
         // WIP
         let read_context = ModelReadContext::read_equipment(package, 6016, 201, "top").await?;
         let part = CharacterPart::new(renderer, read_context, &self.shader_holder).await;

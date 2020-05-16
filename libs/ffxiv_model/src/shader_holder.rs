@@ -1,27 +1,26 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use maplit::hashmap;
 
 use renderer::{Renderer, Shader, ShaderBinding, ShaderBindingType};
 
 pub struct ShaderHolder {
-    vertex_shader: Arc<Shader>,
-    fragment_shaders: HashMap<&'static str, Arc<Shader>>,
+    vertex_shader: Shader,
+    fragment_shaders: HashMap<&'static str, Shader>,
 }
 
 impl ShaderHolder {
     pub fn new(renderer: &Renderer) -> Self {
         Self {
-            vertex_shader: Arc::new(Self::load_vertex_shader(renderer)),
+            vertex_shader: Self::load_vertex_shader(renderer),
             fragment_shaders: hashmap! {
-                "character.shpk" => Arc::new(Self::load_character_shader(renderer)),
-                "skin.shpk" => Arc::new(Self::load_skin_shader(renderer))
+                "character.shpk" => Self::load_character_shader(renderer),
+                "skin.shpk" => Self::load_skin_shader(renderer)
             },
         }
     }
 
-    pub fn get_shaders<T: AsRef<str>>(&self, shader_name: T) -> (&Arc<Shader>, &Arc<Shader>) {
+    pub fn get_shaders<T: AsRef<str>>(&self, shader_name: T) -> (&Shader, &Shader) {
         (&self.vertex_shader, self.fragment_shaders.get(shader_name.as_ref()).unwrap())
     }
 

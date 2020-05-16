@@ -10,7 +10,10 @@ impl<'a> Scene<'a> {
         Self { camera, models: Vec::new() }
     }
 
-    pub fn add<F: Renderable + 'a>(&mut self, model: F) {
-        self.models.push(Box::new(model))
+    pub fn add<F: Renderable + 'a>(&mut self, model: F) -> &mut Box<F> {
+        self.models.push(Box::new(model));
+
+        let len = self.models.len();
+        unsafe { std::mem::transmute(&mut self.models[len - 1]) }
     }
 }
