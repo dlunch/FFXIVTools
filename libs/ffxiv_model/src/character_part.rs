@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use futures::{future, FutureExt};
 
@@ -14,7 +13,7 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &Arc<ShaderHolder>) -> Self {
+    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &ShaderHolder) -> Self {
         let mdl = read_context.mdl;
 
         let quality = 0;
