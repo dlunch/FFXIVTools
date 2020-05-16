@@ -15,9 +15,9 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, pack: &dyn Package, shader_holder: &Arc<ShaderHolder>) -> Result<Self> {
+    pub async fn new(renderer: &Renderer, package: &dyn Package, shader_holder: &Arc<ShaderHolder>) -> Result<Self> {
         // WIP
-        let read_context = ModelReadContext::read_equipment(pack, 6016, 201, "top").await?;
+        let read_context = ModelReadContext::read_equipment(package, 6016, 201, "top").await?;
         let mdl = read_context.mdl;
 
         let quality = 0;
