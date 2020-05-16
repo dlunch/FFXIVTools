@@ -64,7 +64,7 @@ impl Renderer {
         }
     }
 
-    pub async fn render(&mut self, scene: &mut Scene<'_>) {
+    pub async fn render(&mut self, scene: &Scene<'_>) {
         let mvp = Self::get_mvp(&scene.camera, 1024.0 / 768.0);
         self.mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
@@ -90,7 +90,7 @@ impl Renderer {
             });
             let mut render_context = RenderContext::new(render_pass);
 
-            for model in &mut scene.models {
+            for model in &scene.models {
                 model.render(&mut render_context);
             }
         }
