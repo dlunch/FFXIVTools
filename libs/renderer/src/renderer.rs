@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
 use tokio::sync::Mutex;
@@ -7,11 +5,11 @@ use zerocopy::AsBytes;
 
 use crate::{Camera, RenderContext, Scene, UniformBuffer};
 
-type TextureUploadItem = (wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3d);
+type TextureUploadItem = (wgpu::Buffer, wgpu::Texture, usize, wgpu::Extent3d);
 
 pub struct Renderer {
     pub(crate) device: wgpu::Device,
-    pub(crate) empty_texture: wgpu::Texture,
+    pub(crate) empty_texture: wgpu::TextureView,
     pub(crate) mvp_buf: UniformBuffer,
 
     swap_chain: wgpu::SwapChain,
@@ -51,7 +49,7 @@ impl Renderer {
             present_mode: wgpu::PresentMode::Mailbox,
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
-        let empty_texture = Self::create_empty_texture(&device, &queue);
+        let empty_texture = Self::create_empty_texture(&device, &queue).create_default_view();
         let mvp_buf = UniformBuffer::new(&device, 64);
 
         Self {
@@ -98,13 +96,7 @@ impl Renderer {
         self.queue.submit(&[command_encoder.finish()]);
     }
 
-    pub(crate) async fn enqueue_texture_upload(
-        &self,
-        buffer: wgpu::Buffer,
-        texture: Arc<wgpu::Texture>,
-        bytes_per_row: usize,
-        extent: wgpu::Extent3d,
-    ) {
+    pub(crate) async fn enqueue_texture_upload(&self, buffer: wgpu::Buffer, texture: wgpu::Texture, bytes_per_row: usize, extent: wgpu::Extent3d) {
         let mut texture_upload_queue = self.texture_upload_queue.lock().await;
         texture_upload_queue.push((buffer, texture, bytes_per_row, extent));
     }
