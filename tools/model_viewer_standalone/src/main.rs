@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use log::debug;
 use nalgebra::Point3;
-use tokio::runtime::Runtime;
+use tokio::sync::Notify;
 use winit::{
     event,
     event::WindowEvent,
@@ -14,24 +14,29 @@ use ffxiv_model::{Character, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
         .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
         .try_init();
 
-    let mut rt = Runtime::new().unwrap();
     let event_loop = EventLoop::new();
 
     let mut builder = winit::window::WindowBuilder::new();
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut app = rt.block_on(async {
-        let mut app = App::new(&window).await.unwrap();
-        app.add_character().await.unwrap();
+    let mut app = App::new(&window).await.unwrap();
+    app.add_character().await.unwrap();
 
-        app
+    let notifier = Arc::new(Notify::new());
+    let notify_read = notifier.clone();
+    tokio::spawn(async move {
+        loop {
+            notify_read.notified().await;
+            app.render().await;
+        }
     });
 
     event_loop.run(move |event, _, control_flow| {
@@ -54,9 +59,7 @@ fn main() {
                 }
                 _ => {}
             },
-            event::Event::RedrawRequested(_) => {
-                rt.block_on(async { app.render().await });
-            }
+            event::Event::RedrawRequested(_) => notifier.notify(),
             _ => {}
         }
     });
