@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::{Renderer, Shader, ShaderBindingType, Texture, UniformBuffer};
 
 pub struct Material {
-    pub(crate) vertex_shader: Shader,
-    pub(crate) fragment_shader: Shader,
+    pub(crate) vertex_shader: Arc<Shader>,
+    pub(crate) fragment_shader: Arc<Shader>,
     pub(crate) pipeline_layout: wgpu::PipelineLayout,
 
     textures: HashMap<&'static str, Texture>,
@@ -12,7 +13,7 @@ pub struct Material {
 }
 
 impl Material {
-    pub fn new(renderer: &Renderer, textures: HashMap<&'static str, Texture>, vertex_shader: Shader, fragment_shader: Shader) -> Self {
+    pub fn new(renderer: &Renderer, textures: HashMap<&'static str, Texture>, vertex_shader: &Arc<Shader>, fragment_shader: &Arc<Shader>) -> Self {
         let vs_bindings = vertex_shader.wgpu_bindings(wgpu::ShaderStage::VERTEX);
         let fs_bindings = fragment_shader.wgpu_bindings(wgpu::ShaderStage::FRAGMENT);
 
@@ -26,8 +27,8 @@ impl Material {
         });
 
         Self {
-            vertex_shader,
-            fragment_shader,
+            vertex_shader: vertex_shader.clone(),
+            fragment_shader: fragment_shader.clone(),
             pipeline_layout,
             textures,
             bind_group_layout,
