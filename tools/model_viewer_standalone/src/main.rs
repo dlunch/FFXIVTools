@@ -42,12 +42,11 @@ fn main() {
     let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
     let mut scene = Scene::new(camera);
     let shader_holder = Arc::new(shader_holder);
+    let mut character = Character::new(shader_holder.clone());
     rt.block_on(async {
-        let mut character = Box::new(Character::new(shader_holder.clone()));
         character.add_equipment(&renderer, &pack).await.unwrap();
-
-        scene.add_model(character);
     });
+    scene.add(character);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
