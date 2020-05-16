@@ -17,6 +17,7 @@ pub struct Renderer {
 
     depth_texture: wgpu::TextureView,
     texture_upload_queue: Mutex<Vec<TextureUploadItem>>,
+    aspect_ratio: f32,
 }
 
 impl Renderer {
@@ -74,11 +75,12 @@ impl Renderer {
             empty_texture,
             mvp_buf,
             depth_texture,
+            aspect_ratio: (width as f32) / (height as f32),
         }
     }
 
     pub async fn render(&mut self, scene: &Scene<'_>) {
-        let mvp = Self::get_mvp(&scene.camera, 1024.0 / 768.0);
+        let mvp = Self::get_mvp(&scene.camera, self.aspect_ratio);
         self.mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
