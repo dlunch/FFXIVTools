@@ -1,15 +1,13 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::{Renderer, Shader, ShaderBindingType, Texture, UniformBuffer};
+use crate::{Renderer, Shader, ShaderBindingType, Texture};
 
 pub struct Material {
     pub(crate) vertex_shader: Arc<Shader>,
     pub(crate) fragment_shader: Arc<Shader>,
     pub(crate) pipeline_layout: wgpu::PipelineLayout,
-
-    textures: HashMap<&'static str, Texture>,
-    bind_group_layout: wgpu::BindGroupLayout,
+    pub(crate) bind_group: wgpu::BindGroup,
 }
 
 impl Material {
@@ -26,18 +24,7 @@ impl Material {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        Self {
-            vertex_shader: vertex_shader.clone(),
-            fragment_shader: fragment_shader.clone(),
-            pipeline_layout,
-            textures,
-            bind_group_layout,
-        }
-    }
-
-    pub fn bind_group(&self, renderer: &Renderer, mvp_buf: &UniformBuffer) -> wgpu::BindGroup {
-        let texture_views = self
-            .textures
+        let texture_views = textures
             .iter()
             .map(|(name, texture)| (name, texture.texture.create_default_view()))
             .collect::<HashMap<_, _>>();
@@ -56,11 +43,10 @@ impl Material {
             compare: wgpu::CompareFunction::Undefined,
         });
 
-        let bindings = self
-            .vertex_shader
+        let bindings = vertex_shader
             .bindings
             .iter()
-            .chain(self.fragment_shader.bindings.iter())
+            .chain(fragment_shader.bindings.iter())
             .map(|(binding_name, binding)| {
                 let resource = match binding.binding_type {
                     ShaderBindingType::UniformBuffer => {
@@ -68,7 +54,7 @@ impl Material {
                             panic!() // TODO
                         }
 
-                        mvp_buf.binding_resource()
+                        renderer.mvp_buf.binding_resource()
                     }
                     ShaderBindingType::Texture2D => {
                         wgpu::BindingResource::TextureView(&texture_views.get(binding_name).unwrap_or(&empty_texture_view))
@@ -83,10 +69,17 @@ impl Material {
             })
             .collect::<Vec<_>>();
 
-        renderer.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &self.bind_group_layout,
+        let bind_group = renderer.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
             bindings: &bindings,
             label: None,
-        })
+        });
+
+        Self {
+            vertex_shader: vertex_shader.clone(),
+            fragment_shader: fragment_shader.clone(),
+            pipeline_layout,
+            bind_group,
+        }
     }
 }

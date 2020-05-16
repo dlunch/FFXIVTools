@@ -84,8 +84,8 @@ impl Character {
 }
 
 impl Renderable for Character {
-    fn render<'a>(&'a mut self, mut render_context: &mut RenderContext<'a>) {
-        for model in &mut self.models {
+    fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
+        for model in &self.models {
             model.render(&mut render_context);
         }
     }
