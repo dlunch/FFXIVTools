@@ -75,8 +75,8 @@ impl<'a> Material<'a> {
         });
 
         Self {
-            vertex_shader: vertex_shader.clone(),
-            fragment_shader: fragment_shader.clone(),
+            vertex_shader,
+            fragment_shader,
             pipeline_layout,
             bind_group,
         }
