@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use log::debug;
 use nalgebra::Point3;
+use once_cell::sync::OnceCell;
 use tokio::sync::Notify;
 use winit::{
     event,
@@ -14,7 +15,7 @@ use ffxiv_model::{Character, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
-static mut APP: Option<App> = None;
+static mut APP: OnceCell<App> = OnceCell::new();
 
 #[tokio::main]
 async fn main() {
@@ -30,17 +31,15 @@ async fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     unsafe {
-        APP = Some(App::new(&window).await.unwrap());
+        let _ = APP.set(App::new(&window).await.unwrap());
+        APP.get_mut().unwrap().add_character().await.unwrap();
     }
-
-    let app = unsafe { APP.as_mut().unwrap() };
-    app.add_character().await.unwrap();
 
     let notifier = Arc::new(Notify::new());
     let notify_read = notifier.clone();
 
     tokio::spawn(async move {
-        let app = unsafe { APP.as_mut().unwrap() };
+        let app = unsafe { APP.get_mut().unwrap() };
         loop {
             notify_read.notified().await;
             app.render().await;
