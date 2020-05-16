@@ -25,7 +25,7 @@ impl<'a> Character<'a> {
     pub async fn add_equipment(&'a mut self) -> Result<()> {
         // WIP
         let read_context = ModelReadContext::read_equipment(self.package, 6016, 201, "top").await?;
-        let part = CharacterPart::new(self.renderer, read_context, &self.shader_holder).await;
+        let part = CharacterPart::new(self.renderer, read_context, self.shader_holder).await;
         self.parts.push(part);
 
         Ok(())
