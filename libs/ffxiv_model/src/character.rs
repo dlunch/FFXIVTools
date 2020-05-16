@@ -74,7 +74,7 @@ impl Character {
 
             let shaders = self.shader_holder.get_shaders(mtrl.shader_name());
 
-            let material = Material::new(&renderer, textures, &shaders.0, &shaders.1);
+            let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 
             self.models.push(Model::new(&renderer, mesh, material));
         }
