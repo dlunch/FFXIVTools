@@ -23,12 +23,6 @@ impl<'a> Material<'a> {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        let texture_views = textures
-            .iter()
-            .map(|(name, texture)| (name, texture.texture.create_default_view()))
-            .collect::<HashMap<_, _>>();
-        let empty_texture_view = renderer.empty_texture.create_default_view();
-
         // TODO wip
         let sampler = renderer.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
@@ -55,9 +49,10 @@ impl<'a> Material<'a> {
 
                         renderer.mvp_buf.binding_resource()
                     }
-                    ShaderBindingType::Texture2D => {
-                        wgpu::BindingResource::TextureView(&texture_views.get(binding_name).unwrap_or(&empty_texture_view))
-                    }
+                    ShaderBindingType::Texture2D => wgpu::BindingResource::TextureView(match textures.get(binding_name) {
+                        Some(x) => &x.texture_view,
+                        None => &renderer.empty_texture,
+                    }),
                     ShaderBindingType::Sampler => wgpu::BindingResource::Sampler(&sampler),
                 };
 

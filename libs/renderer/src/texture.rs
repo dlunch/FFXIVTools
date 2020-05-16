@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::Renderer;
 
 pub enum TextureFormat {
@@ -42,13 +40,13 @@ impl CompressedTextureFormat {
 }
 
 pub struct Texture {
-    pub(crate) texture: Arc<wgpu::Texture>,
+    pub(crate) texture_view: wgpu::TextureView,
 }
 
 impl Texture {
     pub async fn new(renderer: &Renderer, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
         let extent = wgpu::Extent3d { width, height, depth: 1 };
-        let texture = Arc::new(renderer.device.create_texture(&wgpu::TextureDescriptor {
+        let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
             size: extent,
             array_layer_count: 1,
             mip_level_count: 1,
@@ -57,14 +55,15 @@ impl Texture {
             format: format.wgpu_type(),
             usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
             label: None,
-        }));
+        });
 
+        let texture_view = texture.create_default_view();
         let buffer = renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC);
         renderer
-            .enqueue_texture_upload(buffer, texture.clone(), format.bytes_per_row() * extent.width as usize, extent)
+            .enqueue_texture_upload(buffer, texture, format.bytes_per_row() * extent.width as usize, extent)
             .await;
 
-        Self { texture }
+        Self { texture_view }
     }
 
     pub async fn new_compressed(renderer: &Renderer, width: u32, height: u32, data: &[u8], format: CompressedTextureFormat) -> Self {
