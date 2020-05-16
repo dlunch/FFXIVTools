@@ -1,18 +1,16 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use crate::{Renderer, Shader, ShaderBindingType, Texture};
 
-pub struct Material {
-    // TODO Change Arc<Shader> to &Shader after https://github.com/rust-lang/rust/issues/64552 fix
-    pub(crate) vertex_shader: Arc<Shader>,
-    pub(crate) fragment_shader: Arc<Shader>,
+pub struct Material<'a> {
+    pub(crate) vertex_shader: &'a Shader,
+    pub(crate) fragment_shader: &'a Shader,
     pub(crate) pipeline_layout: wgpu::PipelineLayout,
     pub(crate) bind_group: wgpu::BindGroup,
 }
 
-impl Material {
-    pub fn new(renderer: &Renderer, textures: HashMap<&'static str, Texture>, vertex_shader: &Arc<Shader>, fragment_shader: &Arc<Shader>) -> Self {
+impl<'a> Material<'a> {
+    pub fn new(renderer: &Renderer, textures: HashMap<&'static str, Texture>, vertex_shader: &'a Shader, fragment_shader: &'a Shader) -> Self {
         let vs_bindings = vertex_shader.wgpu_bindings(wgpu::ShaderStage::VERTEX);
         let fs_bindings = fragment_shader.wgpu_bindings(wgpu::ShaderStage::FRAGMENT);
 
