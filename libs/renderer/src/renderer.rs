@@ -15,6 +15,7 @@ pub struct Renderer {
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
+    depth_texture: wgpu::TextureView,
     texture_upload_queue: Mutex<Vec<TextureUploadItem>>,
 }
 
@@ -52,6 +53,19 @@ impl Renderer {
         let empty_texture = Self::create_empty_texture(&device, &queue).create_default_view();
         let mvp_buf = UniformBuffer::new(&device, 64);
 
+        let depth_texture = device
+            .create_texture(&wgpu::TextureDescriptor {
+                size: wgpu::Extent3d { width, height, depth: 1 },
+                array_layer_count: 1,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::Depth24Plus,
+                usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+                label: None,
+            })
+            .create_default_view();
+
         Self {
             device,
             swap_chain,
@@ -59,6 +73,7 @@ impl Renderer {
             texture_upload_queue: Mutex::new(Vec::new()),
             empty_texture,
             mvp_buf,
+            depth_texture,
         }
     }
 
@@ -84,7 +99,15 @@ impl Renderer {
                         a: 1.0,
                     },
                 }],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachmentDescriptor {
+                    attachment: &self.depth_texture,
+                    depth_load_op: wgpu::LoadOp::Clear,
+                    depth_store_op: wgpu::StoreOp::Store,
+                    stencil_load_op: wgpu::LoadOp::Clear,
+                    stencil_store_op: wgpu::StoreOp::Store,
+                    clear_depth: 1.0,
+                    clear_stencil: 0,
+                }),
             });
             let mut render_context = RenderContext::new(render_pass);
 
