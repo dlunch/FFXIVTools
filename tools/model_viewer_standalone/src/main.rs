@@ -14,6 +14,8 @@ use ffxiv_model::{Character, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
+static mut APP: Option<App> = None;
+
 #[tokio::main]
 async fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
@@ -27,15 +29,23 @@ async fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut app = App::new(&window).await.unwrap();
-    app.add_character().await.unwrap();
+    unsafe {
+        APP = Some(App::new(&window).await.unwrap());
+
+        let app = APP.as_mut().unwrap();
+        app.add_character().await.unwrap();
+    }
 
     let notifier = Arc::new(Notify::new());
     let notify_read = notifier.clone();
+
     tokio::spawn(async move {
-        loop {
-            notify_read.notified().await;
-            app.render().await;
+        unsafe {
+            let app = APP.as_mut().unwrap();
+            loop {
+                notify_read.notified().await;
+                app.render().await;
+            }
         }
     });
 
