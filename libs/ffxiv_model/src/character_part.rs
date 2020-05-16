@@ -16,9 +16,9 @@ impl<'a> CharacterPart<'a> {
     pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &'a ShaderHolder) -> CharacterPart<'a> {
         let mdl = read_context.mdl;
 
-        let quality = 0;
-        let meshes = mdl.meshes(quality);
-        let buffer_items = mdl.buffer_items(quality);
+        let lod = 0;
+        let meshes = mdl.meshes(lod);
+        let buffer_items = mdl.buffer_items(lod);
 
         let mut models = Vec::new();
         for (mesh_index, (mesh, buffer_item)) in meshes.zip(buffer_items).enumerate() {

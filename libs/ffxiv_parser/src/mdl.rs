@@ -126,7 +126,7 @@ pub struct Mdl {
 }
 
 impl Mdl {
-    const QUALITY_COUNT: usize = 3;
+    const LOD_COUNT: usize = 3;
 
     pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
         let data = package.read_file(path.as_ref()).await?;
@@ -143,8 +143,8 @@ impl Mdl {
         cursor += size_of::<MdlHeader>() + mdl_header.unk_count3 as usize * 0x20;
 
         let model_header_offset = cursor;
-        let model_headers = &cast_array::<ModelHeader>(&data[cursor..])[..Self::QUALITY_COUNT];
-        cursor += size_of::<ModelHeader>() * Self::QUALITY_COUNT;
+        let model_headers = &cast_array::<ModelHeader>(&data[cursor..])[..Self::LOD_COUNT];
+        cursor += size_of::<ModelHeader>() * Self::LOD_COUNT;
 
         let mesh_info_offset = cursor;
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
@@ -162,9 +162,9 @@ impl Mdl {
         })
     }
 
-    pub fn buffer_items(&self, quality: usize) -> impl Iterator<Item = &BufferItemChunk> {
-        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::QUALITY_COUNT];
-        let model_header = &model_headers[quality];
+    pub fn buffer_items(&self, lod: usize) -> impl Iterator<Item = &BufferItemChunk> {
+        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
+        let model_header = &model_headers[lod];
 
         const BUFFER_ITEM_OFFSET: usize = 0x44;
         let items_chunks = cast_array::<BufferItemChunk>(&self.data[BUFFER_ITEM_OFFSET..]);
@@ -174,12 +174,12 @@ impl Mdl {
             .take(model_header.mesh_count as usize)
     }
 
-    pub fn meshes<'a>(&'a self, quality: usize) -> impl Iterator<Item = Mesh> + 'a {
-        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::QUALITY_COUNT];
+    pub fn meshes<'a>(&'a self, lod: usize) -> impl Iterator<Item = Mesh> + 'a {
+        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&self.data[self.mesh_info_offset..])[..mesh_info_count];
 
-        let model_header = &model_headers[quality];
+        let model_header = &model_headers[lod];
         (0..model_header.mesh_count).map(move |mesh_index| {
             let mesh_info = &mesh_infos[model_header.mesh_offset as usize + mesh_index as usize];
 
