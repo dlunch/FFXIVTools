@@ -12,7 +12,7 @@ use winit::{
 
 use ffxiv_model::{Character, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
-use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
+use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
 fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
@@ -28,8 +28,8 @@ fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     let mut app = rt.block_on(async {
-        let mut app = App::new(&window).await;
-        app.add_character().await;
+        let mut app = App::new(&window).await.unwrap();
+        app.add_character().await.unwrap();
 
         app
     });
@@ -70,11 +70,11 @@ struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub async fn new(window: &Window) -> App<'a> {
+    pub async fn new(window: &Window) -> Result<App<'a>> {
         let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
             debug!("{}/{}", current, total)
         });
-        let package = SqPackReaderExtractedFile::new(provider).unwrap();
+        let package = SqPackReaderExtractedFile::new(provider)?;
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
@@ -83,19 +83,21 @@ impl<'a> App<'a> {
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);
 
-        Self {
+        Ok(Self {
             renderer,
             shader_holder,
             package,
             scene,
-        }
+        })
     }
 
-    pub async fn add_character(&mut self) {
+    pub async fn add_character(&mut self) -> Result<()> {
         let mut character = Character::new(self.shader_holder.clone());
-        character.add_equipment(&self.renderer, &self.package).await.unwrap();
+        character.add_equipment(&self.renderer, &self.package).await?;
 
         self.scene.add(character);
+
+        Ok(())
     }
 
     pub async fn render(&mut self) {
