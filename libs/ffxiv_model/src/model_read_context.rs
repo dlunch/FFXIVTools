@@ -3,18 +3,20 @@ use futures::{future, FutureExt};
 use ffxiv_parser::{Mdl, Mtrl, Tex};
 use sqpack_reader::{Package, Result};
 
+use crate::ModelPart;
+
 pub struct ModelReadContext {
     pub mdl: Mdl,
     pub mtrls: Vec<(Mtrl, Vec<Tex>)>,
 }
 
 impl ModelReadContext {
-    pub async fn read_equipment(pack: &dyn Package, model_id: u16, body_id: u16, model_part: &'static str) -> Result<Self> {
+    pub async fn read_equipment(pack: &dyn Package, model_id: u16, body_id: u16, model_part: ModelPart) -> Result<Self> {
         let mdl_filename = format!(
             "chara/equipment/e{model_id:04}/model/c{body_id:04}e{model_id:04}_{model_part}.mdl",
             model_id = model_id,
             body_id = body_id,
-            model_part = model_part
+            model_part = model_part.as_str()
         );
         let mdl = Mdl::new(pack, &mdl_filename).await?;
 
