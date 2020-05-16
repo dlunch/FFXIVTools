@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::{Renderer, Shader, ShaderBindingType, Texture};
 
 pub struct Material {
+    // TODO Change Arc<Shader> to &Shader after https://github.com/rust-lang/rust/issues/64552 fix
     pub(crate) vertex_shader: Arc<Shader>,
     pub(crate) fragment_shader: Arc<Shader>,
     pub(crate) pipeline_layout: wgpu::PipelineLayout,
