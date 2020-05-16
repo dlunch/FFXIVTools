@@ -19,8 +19,8 @@ impl Character {
         }
     }
 
-    pub async fn add_equipment(&mut self, renderer: &Renderer, pack: &dyn Package) -> Result<()> {
-        let part = CharacterPart::new(renderer, pack, &self.shader_holder).await?;
+    pub async fn add_equipment(&mut self, renderer: &Renderer, package: &dyn Package) -> Result<()> {
+        let part = CharacterPart::new(renderer, package, &self.shader_holder).await?;
         self.parts.push(part);
 
         Ok(())
