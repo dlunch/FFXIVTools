@@ -27,7 +27,12 @@ fn main() {
     builder = builder.with_title("test");
     let window = builder.build(&event_loop).unwrap();
 
-    let mut app = rt.block_on(async { App::new(&window).await });
+    let mut app = rt.block_on(async {
+        let mut app = App::new(&window).await;
+        app.add_character().await;
+
+        app
+    });
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
@@ -59,6 +64,8 @@ fn main() {
 
 struct App<'a> {
     renderer: Renderer,
+    shader_holder: Arc<ShaderHolder>,
+    package: SqPackReaderExtractedFile,
     scene: Scene<'a>,
 }
 
@@ -67,20 +74,28 @@ impl<'a> App<'a> {
         let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
             debug!("{}/{}", current, total)
         });
-        let pack = SqPackReaderExtractedFile::new(provider).unwrap();
+        let package = SqPackReaderExtractedFile::new(provider).unwrap();
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
         let shader_holder = Arc::new(ShaderHolder::new(&renderer));
 
-        let mut character = Character::new(shader_holder.clone());
-        character.add_equipment(&renderer, &pack).await.unwrap();
-
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        let mut scene = Scene::new(camera);
-        scene.add(character);
+        let scene = Scene::new(camera);
 
-        Self { renderer, scene }
+        Self {
+            renderer,
+            shader_holder,
+            package,
+            scene,
+        }
+    }
+
+    pub async fn add_character(&mut self) {
+        let mut character = Character::new(self.shader_holder.clone());
+        character.add_equipment(&self.renderer, &self.package).await.unwrap();
+
+        self.scene.add(character);
     }
 
     pub async fn render(&mut self) {
