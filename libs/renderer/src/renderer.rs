@@ -12,6 +12,8 @@ type TextureUploadItem = (wgpu::Buffer, Arc<wgpu::Texture>, usize, wgpu::Extent3
 pub struct Renderer {
     pub(crate) device: wgpu::Device,
     pub(crate) empty_texture: wgpu::Texture,
+    pub(crate) mvp_buf: UniformBuffer,
+
     swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
@@ -50,6 +52,7 @@ impl Renderer {
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         let empty_texture = Self::create_empty_texture(&device, &queue);
+        let mvp_buf = UniformBuffer::new(&device, 64);
 
         Self {
             device,
@@ -57,13 +60,13 @@ impl Renderer {
             queue,
             texture_upload_queue: Mutex::new(Vec::new()),
             empty_texture,
+            mvp_buf,
         }
     }
 
     pub async fn render(&mut self, scene: &mut Scene) {
         let mvp = Self::get_mvp(&scene.camera, 1024.0 / 768.0);
-        let mut mvp_buf = UniformBuffer::new(&self, 64);
-        mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
+        self.mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.dequeue_texture_uploads(&mut command_encoder);
@@ -85,7 +88,7 @@ impl Renderer {
                 }],
                 depth_stencil_attachment: None,
             });
-            let mut render_context = RenderContext::new(&self, render_pass, mvp_buf);
+            let mut render_context = RenderContext::new(render_pass);
 
             for model in &mut scene.models {
                 model.render(&mut render_context);

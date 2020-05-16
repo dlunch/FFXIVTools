@@ -1,15 +1,13 @@
 use core::task::Poll;
 
-use crate::Renderer;
-
 pub struct UniformBuffer {
     buffer: wgpu::Buffer,
     size: usize,
 }
 
 impl UniformBuffer {
-    pub fn new(renderer: &Renderer, size: usize) -> Self {
-        let buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
+    pub fn new(device: &wgpu::Device, size: usize) -> Self {
+        let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: size as wgpu::BufferAddress,
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::MAP_WRITE,

@@ -5,7 +5,6 @@ pub struct Model {
     material: Material,
 
     pipeline: wgpu::RenderPipeline,
-    bind_group: Option<wgpu::BindGroup>,
 }
 
 impl Model {
@@ -60,22 +59,14 @@ impl Model {
             alpha_to_coverage_enabled: false,
         });
 
-        Self {
-            mesh,
-            material,
-            pipeline,
-            bind_group: None,
-        }
+        Self { mesh, material, pipeline }
     }
 }
 
 impl Renderable for Model {
-    fn render<'a>(&'a mut self, render_context: &mut RenderContext<'a>) {
-        // TODO store bind_group in material
-        self.bind_group = Some(self.material.bind_group(&render_context.renderer, &render_context.mvp_buf));
-
+    fn render<'a>(&'a self, render_context: &mut RenderContext<'a>) {
         render_context.render_pass.set_pipeline(&self.pipeline);
-        render_context.render_pass.set_bind_group(0, &self.bind_group.as_ref().unwrap(), &[]);
+        render_context.render_pass.set_bind_group(0, &self.material.bind_group, &[]);
         render_context.render_pass.set_index_buffer(&self.mesh.index, 0, 0);
         for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
             render_context.render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
