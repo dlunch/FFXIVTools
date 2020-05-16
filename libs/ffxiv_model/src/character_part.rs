@@ -4,7 +4,6 @@ use std::sync::Arc;
 use futures::{future, FutureExt};
 
 use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
-use sqpack_reader::{Package, Result};
 
 use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
@@ -15,9 +14,7 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, package: &dyn Package, shader_holder: &Arc<ShaderHolder>) -> Result<Self> {
-        // WIP
-        let read_context = ModelReadContext::read_equipment(package, 6016, 201, "top").await?;
+    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &Arc<ShaderHolder>) -> Self {
         let mdl = read_context.mdl;
 
         let quality = 0;
@@ -72,7 +69,7 @@ impl CharacterPart {
             models.push(Model::new(&renderer, mesh, material));
         }
 
-        Ok(Self { models })
+        Self { models }
     }
 }
 

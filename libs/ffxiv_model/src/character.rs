@@ -4,6 +4,7 @@ use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result};
 
 use crate::character_part::CharacterPart;
+use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
 
 pub struct Character {
@@ -20,7 +21,9 @@ impl Character {
     }
 
     pub async fn add_equipment(&mut self, renderer: &Renderer, package: &dyn Package) -> Result<()> {
-        let part = CharacterPart::new(renderer, package, &self.shader_holder).await?;
+        // WIP
+        let read_context = ModelReadContext::read_equipment(package, 6016, 201, "top").await?;
+        let part = CharacterPart::new(renderer, read_context, &self.shader_holder).await;
         self.parts.push(part);
 
         Ok(())
