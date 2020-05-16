@@ -77,7 +77,7 @@ async fn main() {
 
 struct App<'a> {
     renderer: Renderer,
-    shader_holder: Arc<ShaderHolder>,
+    shader_holder: ShaderHolder,
     package: SqPackReaderExtractedFile,
     scene: Scene<'a>,
 }
@@ -91,7 +91,7 @@ impl<'a> App<'a> {
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
-        let shader_holder = Arc::new(ShaderHolder::new(&renderer));
+        let shader_holder = ShaderHolder::new(&renderer);
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);
@@ -104,8 +104,8 @@ impl<'a> App<'a> {
         })
     }
 
-    pub async fn add_character(&mut self) -> Result<()> {
-        let mut character = Character::new(self.shader_holder.clone());
+    pub async fn add_character(&'a mut self) -> Result<()> {
+        let mut character = Character::new(&self.shader_holder);
         character.add_equipment(&self.renderer, &self.package).await?;
 
         self.scene.add(character);

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result};
 
@@ -7,13 +5,13 @@ use crate::character_part::CharacterPart;
 use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
 
-pub struct Character {
+pub struct Character<'a> {
     parts: Vec<CharacterPart>,
-    shader_holder: Arc<ShaderHolder>,
+    shader_holder: &'a ShaderHolder,
 }
 
-impl Character {
-    pub fn new(shader_holder: Arc<ShaderHolder>) -> Self {
+impl<'a> Character<'a> {
+    pub fn new(shader_holder: &'a ShaderHolder) -> Self {
         Self {
             parts: Vec::new(),
             shader_holder,
@@ -30,7 +28,7 @@ impl Character {
     }
 }
 
-impl Renderable for Character {
+impl Renderable for Character<'_> {
     fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
         for part in &self.parts {
             part.render(&mut render_context);
