@@ -10,7 +10,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
 
         {
             let mtrl = Mtrl::new(&pack, "chara/equipment/e6016/material/v0001/mt_c0201e6016_top_a.mtrl").await?;

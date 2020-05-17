@@ -34,7 +34,7 @@ async fn main() {
     let window = builder.build(&event_loop).unwrap();
 
     unsafe {
-        let _ = APP.set(App::new(&window).await.unwrap());
+        let _ = APP.set(App::new(&window).await);
         APP.get_mut().unwrap().add_character().await.unwrap();
     }
 
@@ -83,7 +83,7 @@ struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub async fn new(window: &Window) -> Result<App<'a>> {
+    pub async fn new(window: &Window) -> App<'a> {
         #[cfg(unix)]
         let path = "/mnt/d/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
         #[cfg(windows)]
@@ -95,7 +95,7 @@ impl<'a> App<'a> {
             let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
                 debug!("{}/{}", current, total)
             });
-            Box::new(SqPackReaderExtractedFile::new(provider)?)
+            Box::new(SqPackReaderExtractedFile::new(provider))
         };
 
         let size = window.inner_size();
@@ -105,12 +105,12 @@ impl<'a> App<'a> {
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);
 
-        Ok(Self {
+        Self {
             renderer,
             shader_holder,
             package,
             scene,
-        })
+        }
     }
 
     pub async fn add_character(&'a mut self) -> Result<()> {
