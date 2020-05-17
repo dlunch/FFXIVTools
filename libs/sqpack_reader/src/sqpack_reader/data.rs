@@ -127,7 +127,7 @@ impl SqPackData {
         for frame_info in frame_infos {
             let block_sizes = Self::read_block_sizes(
                 file,
-                sizes_table_base + frame_info.sizes_table_offset as u64,
+                sizes_table_base + frame_info.sizes_table_offset as u64 * size_of::<u16>() as u64,
                 frame_info.block_count as usize,
             )
             .await?;
