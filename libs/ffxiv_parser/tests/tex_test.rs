@@ -10,7 +10,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
 
         let tex = Tex::new(&pack, "chara/human/c0101/obj/body/b0001/texture/c0101b0001_d.tex").await?;
         assert_eq!(tex.width(), 256);

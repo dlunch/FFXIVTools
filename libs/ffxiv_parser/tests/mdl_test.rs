@@ -10,7 +10,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
 
         let mdl = Mdl::new(&pack, "bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await?;
         let buffer_item = mdl.buffer_items(0).next().unwrap().items().next().unwrap();

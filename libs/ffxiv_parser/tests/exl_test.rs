@@ -13,7 +13,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
 
         let ex_list = ExList::new(&pack).await?;
         let ex_set: HashSet<String> = HashSet::from_iter(ex_list.ex_names);

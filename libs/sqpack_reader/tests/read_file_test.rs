@@ -15,7 +15,7 @@ mod tests {
             .try_init();
         {
             let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_505"));
-            let pack = SqPackReaderExtractedFile::new(provider)?;
+            let pack = SqPackReaderExtractedFile::new(provider);
 
             let data = pack.read_file("exd/item.exh").await?;
             assert_eq!(data[0], b'E');
@@ -27,7 +27,7 @@ mod tests {
 
         {
             let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackReaderExtractedFile::new(provider)?;
+            let pack = SqPackReaderExtractedFile::new(provider);
 
             let data = pack.read_file("chara/accessory/a0001/model/c0101a0001_ear.mdl").await?;
             assert_eq!(data[0], 3u8);
@@ -36,7 +36,7 @@ mod tests {
 
         {
             let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_500"));
-            let pack = SqPackReaderExtractedFile::new(provider)?;
+            let pack = SqPackReaderExtractedFile::new(provider);
 
             let data = pack.read_file("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex").await?;
             assert_eq!(data[0], 0u8);
@@ -58,7 +58,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
         {
             let data = pack.read_file("exd/item.exh").await?;
             assert_eq!(data[0], b'E');

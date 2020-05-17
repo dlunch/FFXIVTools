@@ -13,13 +13,13 @@ pub struct SqPackReaderExtractedFile {
 }
 
 impl SqPackReaderExtractedFile {
-    pub fn new<T>(provider: T) -> Result<Self>
+    pub fn new<T>(provider: T) -> Self
     where
         T: ExtractedFileProvider + 'static,
     {
-        Ok(Self {
+        Self {
             provider: Box::new(provider),
-        })
+        }
     }
 
     pub async fn read_as_compressed_by_hash(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {

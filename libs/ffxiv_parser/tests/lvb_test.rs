@@ -10,7 +10,7 @@ mod tests {
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
-        let pack = SqPackReaderExtractedFile::new(provider)?;
+        let pack = SqPackReaderExtractedFile::new(provider);
 
         let lvb = Lvb::new(&pack, "ffxiv/sea_s1/twn/s1t1/level/s1t1").await?;
         assert!(lvb.lgb_paths.iter().any(|x| x == "bg/ffxiv/sea_s1/twn/s1t1/level/bg.lgb"));

@@ -46,17 +46,15 @@ impl ContextImpl {
         let packages = packs
             .iter()
             .map(|(path, key)| {
-                Ok((
+                (
                     key.to_owned(),
-                    SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(&path))?,
-                ))
+                    SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(&path)),
+                )
             })
-            .collect::<sqpack_reader::Result<HashMap<_, _>>>()
-            .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))?;
+            .collect::<HashMap<_, _>>();
 
         let all_paths = packs.into_iter().map(|(path, _)| path).collect::<Vec<_>>();
-        let all_package = SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_paths(all_paths))
-            .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))?;
+        let all_package = SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_paths(all_paths));
 
         Ok(Self { all_package, packages })
     }
