@@ -2,6 +2,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use log::debug;
+use maplit::hashmap;
 use nalgebra::Point3;
 use once_cell::sync::OnceCell;
 use tokio::fs;
@@ -116,11 +117,15 @@ impl<'a> App<'a> {
     pub async fn add_character(&'a mut self) -> Result<()> {
         let mut character = Character::new(&self.renderer, &*self.package, &self.shader_holder, BodyId::MidlanderFemale, 1, 1);
 
-        character.add_equipment(6016, 1, ModelPart::Met).await?;
-        character.add_equipment(6016, 1, ModelPart::Top).await?;
-        character.add_equipment(6016, 1, ModelPart::Glv).await?;
-        character.add_equipment(6016, 1, ModelPart::Dwn).await?;
-        character.add_equipment(6016, 1, ModelPart::Sho).await?;
+        character
+            .add_equipments(hashmap! {
+                ModelPart::Met => (6016, 1),
+                ModelPart::Top => (6016, 1),
+                ModelPart::Glv => (6016, 1),
+                ModelPart::Dwn => (6016, 1),
+                ModelPart::Sho => (6016, 1),
+            })
+            .await?;
 
         self.scene.add(character);
         Ok(())
