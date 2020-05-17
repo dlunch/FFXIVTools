@@ -2,7 +2,7 @@ use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result};
 
 use crate::character_part::CharacterPart;
-use crate::constants::ModelPart;
+use crate::constants::{BodyId, ModelPart};
 use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
 
@@ -11,7 +11,7 @@ pub struct Character<'a> {
     package: &'a dyn Package,
     shader_holder: &'a ShaderHolder,
     parts: Vec<CharacterPart>,
-    body_id: u16,
+    body_id: BodyId,
     body_type: u16,
     body_variant_id: u16,
 }
@@ -21,7 +21,7 @@ impl<'a> Character<'a> {
         renderer: &'a Renderer,
         package: &'a dyn Package,
         shader_holder: &'a ShaderHolder,
-        body_id: u16,
+        body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
     ) -> Self {

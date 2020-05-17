@@ -3,7 +3,7 @@ use futures::{future, FutureExt};
 use ffxiv_parser::{Mdl, Mtrl, Tex};
 use sqpack_reader::{Package, Result};
 
-use crate::constants::ModelPart;
+use crate::constants::{BodyId, ModelPart};
 
 pub struct ModelReadContext {
     pub mdl: Mdl,
@@ -13,7 +13,7 @@ pub struct ModelReadContext {
 impl ModelReadContext {
     pub async fn read_equipment(
         package: &dyn Package,
-        body_id: u16,
+        body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
         equipment_id: u16,
@@ -23,7 +23,7 @@ impl ModelReadContext {
         let mdl_filename = format!(
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
             equipment_id = equipment_id,
-            body_id = body_id,
+            body_id = body_id as u16,
             equipment_part = equipment_part.as_str()
         );
         let mdl = Mdl::new(package, &mdl_filename).await?;
@@ -50,7 +50,7 @@ impl ModelReadContext {
 
     fn convert_equipment_material_filename(
         material_file: &str,
-        body_id: u16,
+        body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
         equipment_id: u16,
@@ -59,7 +59,7 @@ impl ModelReadContext {
         if material_file.chars().nth(9).unwrap() == 'b' {
             format!(
                 "chara/human/c{body_id:04}/obj/body/b{body_type:04}/material/v{variant_id:04}/mt_c{body_id:04}b{body_type:04}{path}",
-                body_id = body_id,
+                body_id = body_id as u16,
                 body_type = body_type,
                 variant_id = body_variant_id,
                 path = &material_file[14..]

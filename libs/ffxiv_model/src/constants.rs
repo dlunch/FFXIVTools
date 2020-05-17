@@ -32,3 +32,37 @@ impl ModelPart {
         }
     }
 }
+
+#[derive(Clone, Copy)]
+#[repr(u16)]
+pub enum BodyId {
+    MidlanderMale = 101,
+    MidlanderFemale = 201,
+    HighlanderMale = 301,
+    HighlanderFemale = 401,
+    ElezenMale = 501,
+    ElezenFemale = 601,
+    MiqoteMale = 701,
+    MiqoteFemale = 801,
+    RoegadynMale = 901,
+    RoegadynFemale = 1001,
+    LalafellMale = 1101,
+    LalafellFemale = 1201,
+    AuRaMale = 1301,
+    AuRaFemale = 1401,
+    HrothgarMale = 1501,
+    HrothgarFemale = 1601,
+    VieraMale = 1701,
+    VieraFemale = 1801,
+
+    ChildHyurMale = 104,
+    ChildHyurFemale = 204,
+    ChildElezenMale = 504,
+    ChildElezenFemale = 604,
+    ChildMiqoteMale = 704,
+    ChildMiqoteFemale = 804,
+    ChildAuRaMale = 1304,
+    ChildAuRaFemale = 1404,
+    Unk9104 = 9104,
+    Unk9204 = 9204,
+}
