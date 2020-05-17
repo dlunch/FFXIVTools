@@ -200,7 +200,7 @@ impl Mdl {
         })
     }
 
-    pub fn material_files<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
+    pub fn material_paths<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
         let mut cursor = self.attribute_info_offset;
 
