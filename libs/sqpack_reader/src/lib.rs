@@ -14,6 +14,7 @@ mod reference;
 mod sqpack_reader_extracted_file;
 
 pub use archive_id::SqPackArchiveId;
+pub use batched_package::BatchedPackage;
 pub use error::{Result, SqPackReaderError};
 pub use extracted_file_provider::ExtractedFileProvider;
 pub use package::Package;
