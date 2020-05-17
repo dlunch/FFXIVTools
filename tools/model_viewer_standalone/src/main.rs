@@ -116,17 +116,22 @@ impl<'a> App<'a> {
     }
 
     pub async fn add_character(&'a mut self) -> Result<()> {
-        let mut character = Character::new(&self.renderer, &*self.package, &self.shader_holder, BodyId::MidlanderFemale, 1, 1);
-
-        character
-            .add_equipments(hashmap! {
+        let character = Character::new(
+            &self.renderer,
+            &*self.package,
+            &self.shader_holder,
+            BodyId::MidlanderFemale,
+            1,
+            1,
+            hashmap! {
                 ModelPart::Met => (6016, 1),
                 ModelPart::Top => (6016, 1),
                 ModelPart::Glv => (6016, 1),
                 ModelPart::Dwn => (6016, 1),
                 ModelPart::Sho => (6016, 1),
-            })
-            .await?;
+            },
+        )
+        .await?;
 
         self.scene.add(character);
         Ok(())

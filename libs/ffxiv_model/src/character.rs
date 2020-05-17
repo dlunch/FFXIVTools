@@ -22,15 +22,16 @@ pub struct Character<'a> {
 }
 
 impl<'a> Character<'a> {
-    pub fn new(
+    pub async fn new(
         renderer: &'a Renderer,
         package: &'a dyn Package,
         shader_holder: &'a ShaderHolder,
         body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
-    ) -> Self {
-        Self {
+        equipments: HashMap<ModelPart, (u16, u16)>,
+    ) -> Result<Character<'a>> {
+        let mut result = Self {
             renderer,
             package,
             shader_holder,
@@ -38,48 +39,25 @@ impl<'a> Character<'a> {
             body_id,
             body_type,
             body_variant_id,
-        }
-    }
+        };
 
-    pub async fn add_equipment(&mut self, equipment_id: u16, equipment_variant_id: u16, equipment_part: ModelPart) -> Result<()> {
-        let data = ModelReader::read_equipment(
-            self.package,
-            self.body_id,
-            self.body_type,
-            self.body_variant_id,
-            equipment_id,
-            equipment_variant_id,
-            equipment_part,
-        )
-        .await?;
-        let part = CharacterPart::new(self.renderer, data, self.shader_holder).await;
-        self.parts.push(part);
-
-        Ok(())
-    }
-
-    pub async fn add_equipments(&mut self, equipments: HashMap<ModelPart, (u16, u16)>) -> Result<()> {
-        let parts = future::join_all(equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
+        result.parts = future::join_all(equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
             ModelReader::read_equipment(
-                self.package,
-                self.body_id,
-                self.body_type,
-                self.body_variant_id,
+                result.package,
+                result.body_id,
+                result.body_type,
+                result.body_variant_id,
                 equipment_id,
                 equipment_variant_id,
                 equipment_part,
             )
-            .then(|data| async { Ok(CharacterPart::new(self.renderer, data?, self.shader_holder).await) })
+            .then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.shader_holder).await) })
         }))
         .await
         .into_iter()
         .collect::<Result<Vec<_>>>()?;
 
-        for part in parts {
-            self.parts.push(part);
-        }
-
-        Ok(())
+        Ok(result)
     }
 }
 
