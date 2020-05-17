@@ -19,6 +19,7 @@ use ffxiv_model::{BodyId, Character, ModelPart, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReader, SqPackReaderExtractedFile};
 
+// tokio::spawn requires 'static lifetime.
 static mut APP: OnceCell<App> = OnceCell::new();
 
 #[tokio::main]
