@@ -15,7 +15,7 @@ use winit::{
     window::Window,
 };
 
-use ffxiv_model::{BodyId, Character, ModelPart, ShaderHolder};
+use ffxiv_model::{BodyId, Character, Context, ModelPart};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReader, SqPackReaderExtractedFile};
 
@@ -79,7 +79,7 @@ async fn main() {
 
 struct App<'a> {
     renderer: Renderer,
-    shader_holder: ShaderHolder,
+    context: Context,
     package: Box<dyn Package>,
     scene: Scene<'a>,
 }
@@ -102,14 +102,14 @@ impl<'a> App<'a> {
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
-        let shader_holder = ShaderHolder::new(&renderer);
+        let context = Context::new(&renderer);
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);
 
         Self {
             renderer,
-            shader_holder,
+            context,
             package,
             scene,
         }
@@ -119,7 +119,7 @@ impl<'a> App<'a> {
         let character = Character::new(
             &self.renderer,
             &*self.package,
-            &self.shader_holder,
+            &self.context,
             BodyId::MidlanderFemale,
             1,
             1,

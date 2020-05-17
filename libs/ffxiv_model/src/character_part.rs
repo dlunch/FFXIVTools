@@ -4,8 +4,8 @@ use futures::{future, FutureExt};
 
 use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
 
+use crate::context::Context;
 use crate::model_reader::ModelData;
-use crate::shader_holder::ShaderHolder;
 use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
 
 pub struct CharacterPart {
@@ -13,7 +13,7 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, model_data: ModelData, shader_holder: &ShaderHolder) -> Self {
+    pub async fn new(renderer: &Renderer, model_data: ModelData, context: &Context) -> Self {
         let mdl = model_data.mdl;
 
         let lod = 0;
@@ -61,7 +61,7 @@ impl CharacterPart {
                 textures.insert("ColorTable", color_table_tex);
             }
 
-            let shaders = shader_holder.get_shaders(mtrl.shader_name());
+            let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
 
             let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 

@@ -8,13 +8,13 @@ use sqpack_reader::{Package, Result};
 
 use crate::character_part::CharacterPart;
 use crate::constants::{BodyId, ModelPart};
+use crate::context::Context;
 use crate::model_reader::ModelReader;
-use crate::shader_holder::ShaderHolder;
 
 pub struct Character<'a> {
     renderer: &'a Renderer,
     package: &'a dyn Package,
-    shader_holder: &'a ShaderHolder,
+    context: &'a Context,
     parts: Vec<CharacterPart>,
     body_id: BodyId,
     body_type: u16,
@@ -25,7 +25,7 @@ impl<'a> Character<'a> {
     pub async fn new(
         renderer: &'a Renderer,
         package: &'a dyn Package,
-        shader_holder: &'a ShaderHolder,
+        context: &'a Context,
         body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
@@ -34,7 +34,7 @@ impl<'a> Character<'a> {
         let mut result = Self {
             renderer,
             package,
-            shader_holder,
+            context,
             parts: Vec::new(),
             body_id,
             body_type,
@@ -52,20 +52,19 @@ impl<'a> Character<'a> {
                 equipment_part,
             )
         });
-        result.parts = future::join_all(
-            read_futures.map(|x| x.then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.shader_holder).await) })),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<Vec<_>>>()?;
+        result.parts =
+            future::join_all(read_futures.map(|x| x.then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.context).await) })))
+                .await
+                .into_iter()
+                .collect::<Result<Vec<_>>>()?;
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
         let face_part_model = ModelReader::read_face(result.package, result.body_id, 1).await?;
-        let face_part = CharacterPart::new(result.renderer, face_part_model, result.shader_holder).await;
+        let face_part = CharacterPart::new(result.renderer, face_part_model, result.context).await;
         result.parts.push(face_part);
 
         let hair_part_model = ModelReader::read_hair(result.package, result.body_id, 1, 1).await?;
-        let hair_part = CharacterPart::new(result.renderer, hair_part_model, result.shader_holder).await;
+        let hair_part = CharacterPart::new(result.renderer, hair_part_model, result.context).await;
         result.parts.push(hair_part);
 
         Ok(result)
