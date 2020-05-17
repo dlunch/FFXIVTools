@@ -40,6 +40,15 @@ mod tests {
             assert_eq!(data.len(), 104);
         }
 
+        {
+            let data = pack.read_file("chara/equipment/e6016/texture/v01_c0201e6016_met_m.tex").await?;
+            assert_eq!(data[0], 0u8);
+            assert_eq!(data[1], 0u8);
+            assert_eq!(data[2], 128u8);
+            assert_eq!(data[3], 0u8);
+            assert_eq!(data.len(), 43784);
+        }
+
         Ok(())
     }
 }
