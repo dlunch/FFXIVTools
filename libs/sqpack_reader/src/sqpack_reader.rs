@@ -15,8 +15,8 @@ use crate::error::Result;
 use crate::package::Package;
 use crate::reference::SqPackFileReference;
 
-use self::archive::SqPackArchive;
-use self::archive_container::SqPackArchiveContainer;
+use archive::SqPackArchive;
+use archive_container::SqPackArchiveContainer;
 
 pub struct SqPackReader {
     archives: SqPackArchiveContainer,
