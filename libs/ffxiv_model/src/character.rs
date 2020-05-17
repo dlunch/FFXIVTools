@@ -2,9 +2,9 @@ use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result};
 
 use crate::character_part::CharacterPart;
+use crate::constants::ModelPart;
 use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
-use crate::ModelPart;
 
 pub struct Character<'a> {
     renderer: &'a Renderer,

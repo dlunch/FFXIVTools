@@ -3,7 +3,7 @@ use futures::{future, FutureExt};
 use ffxiv_parser::{Mdl, Mtrl, Tex};
 use sqpack_reader::{Package, Result};
 
-use crate::ModelPart;
+use crate::constants::ModelPart;
 
 pub struct ModelReadContext {
     pub mdl: Mdl,
