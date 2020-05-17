@@ -9,6 +9,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use log::debug;
 
 use crate::archive_id::SqPackArchiveId;
 use crate::error::Result;
@@ -32,6 +33,19 @@ impl SqPackReader {
     pub async fn archive(&self, archive_id: SqPackArchiveId) -> io::Result<Arc<SqPackArchive>> {
         self.archives.get_archive(archive_id).await
     }
+
+    pub async fn read_as_compressed(&self, path: &str) -> Result<Vec<u8>> {
+        debug!("Reading {}", path);
+
+        let reference = SqPackFileReference::new(path);
+        let archive = self.archive(reference.archive_id).await?;
+        let result = archive.read_as_compressed(reference.hash.folder, reference.hash.file).await;
+
+        if result.is_err() {
+            debug!("No such file {}", path);
+        }
+        result
+    }
 }
 
 #[async_trait]
@@ -40,11 +54,5 @@ impl Package for SqPackReader {
         let archive = self.archive(reference.archive_id).await?;
 
         archive.read_file(reference.hash.folder, reference.hash.file).await
-    }
-
-    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
-        let archive = self.archive(reference.archive_id).await?;
-
-        archive.read_as_compressed(reference.hash.folder, reference.hash.file).await
     }
 }
