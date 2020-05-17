@@ -1,10 +1,8 @@
 use alloc::vec::Vec;
 use core::mem::size_of;
 
-use compression::prelude::DecodeExt;
-use compression::prelude::Deflater;
-
 use bytes::Bytes;
+use miniz_oxide::inflate::decompress_to_vec;
 
 use util::{cast, round_up};
 
@@ -116,7 +114,7 @@ impl SqPackRawFile {
         } else {
             let data = &block[header.header_size as usize..header.header_size as usize + header.compressed_length as usize];
 
-            result.extend(data.iter().cloned().decode(&mut Deflater::new()).collect::<Result<Vec<_>, _>>().unwrap());
+            result.extend(decompress_to_vec(data).unwrap());
         }
     }
 }
