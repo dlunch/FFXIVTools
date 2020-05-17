@@ -1,8 +1,10 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use log::debug;
 use nalgebra::Point3;
 use once_cell::sync::OnceCell;
+use tokio::fs;
 use tokio::sync::Notify;
 use winit::{
     dpi::LogicalSize,
@@ -14,7 +16,7 @@ use winit::{
 
 use ffxiv_model::{Character, ModelPart, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
-use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
+use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReader, SqPackReaderExtractedFile};
 
 static mut APP: OnceCell<App> = OnceCell::new();
 
@@ -76,16 +78,25 @@ async fn main() {
 struct App<'a> {
     renderer: Renderer,
     shader_holder: ShaderHolder,
-    package: SqPackReaderExtractedFile,
+    package: Box<dyn Package>,
     scene: Scene<'a>,
 }
 
 impl<'a> App<'a> {
     pub async fn new(window: &Window) -> Result<App<'a>> {
-        let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
-            debug!("{}/{}", current, total)
-        });
-        let package = SqPackReaderExtractedFile::new(provider)?;
+        #[cfg(unix)]
+        let path = "/mnt/d/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
+        #[cfg(windows)]
+        let path = "D:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
+
+        let package: Box<dyn Package> = if fs::metadata(path).await.is_ok() {
+            Box::new(SqPackReader::new(&Path::new(path)).unwrap())
+        } else {
+            let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
+                debug!("{}/{}", current, total)
+            });
+            Box::new(SqPackReaderExtractedFile::new(provider)?)
+        };
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
@@ -105,7 +116,7 @@ impl<'a> App<'a> {
     pub async fn add_character(&'a mut self) -> Result<()> {
         let character = self
             .scene
-            .add(Character::new(&self.renderer, &self.package, &self.shader_holder, 201, 1, 1));
+            .add(Character::new(&self.renderer, &*self.package, &self.shader_holder, 201, 1, 1));
 
         character.add_equipment(6016, 1, ModelPart::Met).await?;
         character.add_equipment(6016, 1, ModelPart::Top).await?;
