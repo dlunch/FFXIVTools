@@ -22,13 +22,13 @@ mod tests {
             assert_eq!(data[1], b'X');
             assert_eq!(data[2], b'H');
             assert_eq!(data[3], b'F');
-            assert_eq!(data.len(), 874);
+            assert_eq!(data.len(), 882);
         }
 
         {
             let data = pack.read_file("bg/ex1/01_roc_r2/common/bgparts/r200_a0_bari1.mdl").await?;
             assert_eq!(data[0], 3u8);
-            assert_eq!(data.len(), 185_024);
+            assert_eq!(data.len(), 185_088);
         }
 
         {
