@@ -1,3 +1,4 @@
+#[derive(Eq, PartialEq, Hash)]
 #[repr(u8)]
 pub enum ModelPart {
     Met,

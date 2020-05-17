@@ -1,3 +1,8 @@
+use std::collections::HashMap;
+
+use futures::future;
+use futures::FutureExt;
+
 use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result};
 
@@ -49,6 +54,30 @@ impl<'a> Character<'a> {
         .await?;
         let part = CharacterPart::new(self.renderer, read_context, self.shader_holder).await;
         self.parts.push(part);
+
+        Ok(())
+    }
+
+    pub async fn add_equipments(&mut self, equipments: HashMap<ModelPart, (u16, u16)>) -> Result<()> {
+        let parts = future::join_all(equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
+            ModelReadContext::read_equipment(
+                self.package,
+                self.body_id,
+                self.body_type,
+                self.body_variant_id,
+                equipment_id,
+                equipment_variant_id,
+                equipment_part,
+            )
+            .then(|read_context| async { Ok(CharacterPart::new(self.renderer, read_context?, self.shader_holder).await) })
+        }))
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?;
+
+        for part in parts {
+            self.parts.push(part);
+        }
 
         Ok(())
     }
