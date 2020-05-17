@@ -4,7 +4,7 @@ use futures::{future, FutureExt};
 
 use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
 
-use crate::model_read_context::ModelReadContext;
+use crate::model_reader::ModelData;
 use crate::shader_holder::ShaderHolder;
 use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
 
@@ -13,8 +13,8 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &ShaderHolder) -> Self {
-        let mdl = read_context.mdl;
+    pub async fn new(renderer: &Renderer, model_data: ModelData, shader_holder: &ShaderHolder) -> Self {
+        let mdl = model_data.mdl;
 
         let lod = 0;
         let meshes = mdl.meshes(lod);
@@ -46,7 +46,7 @@ impl CharacterPart {
                 vertex_formats,
             );
 
-            let (mtrl, texs) = &read_context.mtrls[mesh_index];
+            let (mtrl, texs) = &model_data.mtrls[mesh_index];
             let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
                 let tex_name = convert_texture_name(parameter.parameter_type);
                 load_texture(&renderer, &texs[parameter.texture_index as usize]).map(move |x| (tex_name, x))
