@@ -5,6 +5,7 @@
 extern crate alloc;
 
 mod archive_id;
+mod batched_package;
 mod error;
 mod extracted_file_provider;
 mod package;
@@ -12,17 +13,17 @@ mod raw_file;
 mod reference;
 mod sqpack_reader_extracted_file;
 
-pub use self::archive_id::SqPackArchiveId;
-pub use self::error::{Result, SqPackReaderError};
-pub use self::extracted_file_provider::ExtractedFileProvider;
-pub use self::package::Package;
-pub use self::reference::SqPackFileHash;
-pub use self::sqpack_reader_extracted_file::SqPackReaderExtractedFile;
+pub use archive_id::SqPackArchiveId;
+pub use error::{Result, SqPackReaderError};
+pub use extracted_file_provider::ExtractedFileProvider;
+pub use package::Package;
+pub use reference::SqPackFileHash;
+pub use sqpack_reader_extracted_file::SqPackReaderExtractedFile;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {
         mod sqpack_reader;
-        pub use self::extracted_file_provider::{ExtractedFileProviderLocal, ExtractedFileProviderWeb};
-        pub use self::sqpack_reader::SqPackReader;
+        pub use extracted_file_provider::{ExtractedFileProviderLocal, ExtractedFileProviderWeb};
+        pub use sqpack_reader::SqPackReader;
     }
 }
