@@ -26,7 +26,7 @@ impl ModelReader {
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
             equipment_id = equipment_id,
             body_id = body_id as u16,
-            equipment_part = equipment_part.as_str()
+            equipment_part = equipment_part.as_path_str()
         );
         let mdl = Mdl::new(package, &mdl_filename).await?;
 
