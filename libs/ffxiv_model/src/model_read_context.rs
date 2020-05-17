@@ -12,7 +12,7 @@ pub struct ModelReadContext {
 
 impl ModelReadContext {
     pub async fn read_equipment(
-        pack: &dyn Package,
+        package: &dyn Package,
         body_id: u16,
         body_type: u16,
         body_variant_id: u16,
@@ -26,14 +26,14 @@ impl ModelReadContext {
             body_id = body_id,
             equipment_part = equipment_part.as_str()
         );
-        let mdl = Mdl::new(pack, &mdl_filename).await?;
+        let mdl = Mdl::new(package, &mdl_filename).await?;
 
         let mtrls = future::join_all(mdl.material_files().map(|material_file| {
             let material_file =
                 Self::convert_equipment_material_filename(&material_file, body_id, body_type, body_variant_id, equipment_id, equipment_variant_id);
-            Mtrl::new(pack, material_file).then(|mtrl| async {
+            Mtrl::new(package, material_file).then(|mtrl| async {
                 let mtrl = mtrl?;
-                let texs = future::join_all(mtrl.texture_files().map(|texture_file| Tex::new(pack, texture_file)))
+                let texs = future::join_all(mtrl.texture_files().map(|texture_file| Tex::new(package, texture_file)))
                     .await
                     .into_iter()
                     .collect::<Result<Vec<_>>>()?;
