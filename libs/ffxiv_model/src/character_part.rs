@@ -8,12 +8,12 @@ use crate::model_read_context::ModelReadContext;
 use crate::shader_holder::ShaderHolder;
 use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
 
-pub struct CharacterPart<'a> {
-    models: Vec<Model<'a>>,
+pub struct CharacterPart {
+    models: Vec<Model>,
 }
 
-impl<'a> CharacterPart<'a> {
-    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &'a ShaderHolder) -> CharacterPart<'a> {
+impl CharacterPart {
+    pub async fn new(renderer: &Renderer, read_context: ModelReadContext, shader_holder: &ShaderHolder) -> Self {
         let mdl = read_context.mdl;
 
         let lod = 0;
@@ -72,7 +72,7 @@ impl<'a> CharacterPart<'a> {
     }
 }
 
-impl Renderable for CharacterPart<'_> {
+impl Renderable for CharacterPart {
     fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
         for model in &self.models {
             model.render(&mut render_context);

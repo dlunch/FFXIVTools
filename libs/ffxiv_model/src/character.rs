@@ -10,7 +10,7 @@ pub struct Character<'a> {
     renderer: &'a Renderer,
     package: &'a dyn Package,
     shader_holder: &'a ShaderHolder,
-    parts: Vec<CharacterPart<'a>>,
+    parts: Vec<CharacterPart>,
     body_id: u16,
     body_type: u16,
     body_variant_id: u16,
@@ -36,7 +36,7 @@ impl<'a> Character<'a> {
         }
     }
 
-    pub async fn add_equipment(&'a mut self, equipment_id: u16, equipment_variant_id: u16, equipment_part: ModelPart) -> Result<()> {
+    pub async fn add_equipment(&mut self, equipment_id: u16, equipment_variant_id: u16, equipment_part: ModelPart) -> Result<()> {
         let read_context = ModelReadContext::read_equipment(
             self.package,
             self.body_id,
