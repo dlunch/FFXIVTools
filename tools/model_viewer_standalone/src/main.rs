@@ -14,7 +14,7 @@ use winit::{
     window::Window,
 };
 
-use ffxiv_model::{Character, ModelPart, ShaderHolder};
+use ffxiv_model::{BodyId, Character, ModelPart, ShaderHolder};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReader, SqPackReaderExtractedFile};
 
@@ -114,7 +114,7 @@ impl<'a> App<'a> {
     }
 
     pub async fn add_character(&'a mut self) -> Result<()> {
-        let mut character = Character::new(&self.renderer, &*self.package, &self.shader_holder, 201, 1, 1);
+        let mut character = Character::new(&self.renderer, &*self.package, &self.shader_holder, BodyId::MidlanderFemale, 1, 1);
 
         character.add_equipment(6016, 1, ModelPart::Met).await?;
         character.add_equipment(6016, 1, ModelPart::Top).await?;
