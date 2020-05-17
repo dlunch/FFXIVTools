@@ -114,9 +114,7 @@ impl<'a> App<'a> {
     }
 
     pub async fn add_character(&'a mut self) -> Result<()> {
-        let character = self
-            .scene
-            .add(Character::new(&self.renderer, &*self.package, &self.shader_holder, 201, 1, 1));
+        let mut character = Character::new(&self.renderer, &*self.package, &self.shader_holder, 201, 1, 1);
 
         character.add_equipment(6016, 1, ModelPart::Met).await?;
         character.add_equipment(6016, 1, ModelPart::Top).await?;
@@ -124,6 +122,7 @@ impl<'a> App<'a> {
         character.add_equipment(6016, 1, ModelPart::Dwn).await?;
         character.add_equipment(6016, 1, ModelPart::Sho).await?;
 
+        self.scene.add(character);
         Ok(())
     }
 
