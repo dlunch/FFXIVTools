@@ -1,14 +1,14 @@
 use crate::{Material, Mesh, RenderContext, Renderable, Renderer};
 
-pub struct Model<'a> {
+pub struct Model {
     mesh: Mesh,
-    material: Material<'a>,
+    material: Material,
 
     pipeline: wgpu::RenderPipeline,
 }
 
-impl<'a> Model<'a> {
-    pub fn new(renderer: &Renderer, mesh: Mesh, material: Material<'a>) -> Self {
+impl Model {
+    pub fn new(renderer: &Renderer, mesh: Mesh, material: Material) -> Self {
         let attributes = mesh
             .vertex_formats
             .iter()
@@ -71,7 +71,7 @@ impl<'a> Model<'a> {
     }
 }
 
-impl Renderable for Model<'_> {
+impl Renderable for Model {
     fn render<'a>(&'a self, render_context: &mut RenderContext<'a>) {
         render_context.render_pass.set_pipeline(&self.pipeline);
         render_context.render_pass.set_bind_group(0, &self.material.bind_group, &[]);
