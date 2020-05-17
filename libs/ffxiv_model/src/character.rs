@@ -8,7 +8,7 @@ use sqpack_reader::{Package, Result};
 
 use crate::character_part::CharacterPart;
 use crate::constants::{BodyId, ModelPart};
-use crate::model_read_context::ModelReadContext;
+use crate::model_reader::ModelReader;
 use crate::shader_holder::ShaderHolder;
 
 pub struct Character<'a> {
@@ -42,7 +42,7 @@ impl<'a> Character<'a> {
     }
 
     pub async fn add_equipment(&mut self, equipment_id: u16, equipment_variant_id: u16, equipment_part: ModelPart) -> Result<()> {
-        let read_context = ModelReadContext::read_equipment(
+        let data = ModelReader::read_equipment(
             self.package,
             self.body_id,
             self.body_type,
@@ -52,7 +52,7 @@ impl<'a> Character<'a> {
             equipment_part,
         )
         .await?;
-        let part = CharacterPart::new(self.renderer, read_context, self.shader_holder).await;
+        let part = CharacterPart::new(self.renderer, data, self.shader_holder).await;
         self.parts.push(part);
 
         Ok(())
@@ -60,7 +60,7 @@ impl<'a> Character<'a> {
 
     pub async fn add_equipments(&mut self, equipments: HashMap<ModelPart, (u16, u16)>) -> Result<()> {
         let parts = future::join_all(equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
-            ModelReadContext::read_equipment(
+            ModelReader::read_equipment(
                 self.package,
                 self.body_id,
                 self.body_type,
@@ -69,7 +69,7 @@ impl<'a> Character<'a> {
                 equipment_variant_id,
                 equipment_part,
             )
-            .then(|read_context| async { Ok(CharacterPart::new(self.renderer, read_context?, self.shader_holder).await) })
+            .then(|data| async { Ok(CharacterPart::new(self.renderer, data?, self.shader_holder).await) })
         }))
         .await
         .into_iter()

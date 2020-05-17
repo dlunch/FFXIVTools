@@ -1,7 +1,7 @@
 mod character;
 mod character_part;
 mod constants;
-mod model_read_context;
+mod model_reader;
 mod shader_holder;
 mod type_adapter;
 

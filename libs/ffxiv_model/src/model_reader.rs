@@ -5,12 +5,14 @@ use sqpack_reader::{Package, Result};
 
 use crate::constants::{BodyId, ModelPart};
 
-pub struct ModelReadContext {
+pub struct ModelData {
     pub mdl: Mdl,
     pub mtrls: Vec<(Mtrl, Vec<Tex>)>,
 }
 
-impl ModelReadContext {
+pub struct ModelReader {}
+
+impl ModelReader {
     pub async fn read_equipment(
         package: &dyn Package,
         body_id: BodyId,
@@ -19,7 +21,7 @@ impl ModelReadContext {
         equipment_id: u16,
         equipment_variant_id: u16,
         equipment_part: ModelPart,
-    ) -> Result<Self> {
+    ) -> Result<ModelData> {
         let mdl_filename = format!(
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
             equipment_id = equipment_id,
@@ -45,7 +47,7 @@ impl ModelReadContext {
         .into_iter()
         .collect::<Result<Vec<_>>>()?;
 
-        Ok(Self { mdl, mtrls })
+        Ok(ModelData { mdl, mtrls })
     }
 
     fn convert_equipment_material_filename(
