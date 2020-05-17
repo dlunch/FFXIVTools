@@ -106,7 +106,12 @@ impl<'a> App<'a> {
         let character = self
             .scene
             .add(Character::new(&self.renderer, &self.package, &self.shader_holder, 201, 1, 1));
+
+        character.add_equipment(6016, 1, ModelPart::Met).await?;
         character.add_equipment(6016, 1, ModelPart::Top).await?;
+        character.add_equipment(6016, 1, ModelPart::Glv).await?;
+        character.add_equipment(6016, 1, ModelPart::Dwn).await?;
+        character.add_equipment(6016, 1, ModelPart::Sho).await?;
 
         Ok(())
     }
