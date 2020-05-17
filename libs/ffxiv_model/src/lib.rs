@@ -4,6 +4,7 @@ mod constants;
 mod context;
 mod model_reader;
 mod shader_holder;
+mod texture_cache;
 mod type_adapter;
 
 pub use character::Character;

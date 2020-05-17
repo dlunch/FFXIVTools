@@ -13,6 +13,7 @@ doctest = false
 raw-window-handle = { version = "^0.3", default-features = false }
 maplit = { version = "^1.0", default-features = false }
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
+tokio = { version = "^0.2", features = ["sync"], default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }

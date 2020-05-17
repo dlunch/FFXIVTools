@@ -1,12 +1,11 @@
 use std::collections::HashMap;
-
-use futures::{future, FutureExt};
+use std::sync::Arc;
 
 use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
 
 use crate::context::Context;
 use crate::model_reader::ModelData;
-use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name, load_texture};
+use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name};
 
 pub struct CharacterPart {
     models: Vec<Model>,
@@ -47,18 +46,21 @@ impl CharacterPart {
             );
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
-            let mut textures = future::join_all(mtrl.parameters().iter().map(|parameter| {
-                let tex_name = convert_texture_name(parameter.parameter_type);
-                load_texture(&renderer, &texs[parameter.texture_index as usize]).map(move |x| (tex_name, x))
-            }))
-            .await
-            .into_iter()
-            .collect::<HashMap<_, _>>();
+            let mut textures = mtrl
+                .parameters()
+                .iter()
+                .map(|parameter| {
+                    (
+                        convert_texture_name(parameter.parameter_type),
+                        texs[parameter.texture_index as usize].clone(),
+                    )
+                })
+                .collect::<HashMap<_, _>>();
 
             let color_table_data = mtrl.color_table();
             if !color_table_data.is_empty() {
                 let color_table_tex = Texture::new(&renderer, 4, 16, color_table_data, TextureFormat::Rgba16Float).await;
-                textures.insert("ColorTable", color_table_tex);
+                textures.insert("ColorTable", Arc::new(color_table_tex));
             }
 
             let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
