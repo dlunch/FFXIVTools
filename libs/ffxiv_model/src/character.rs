@@ -41,7 +41,7 @@ impl<'a> Character<'a> {
             body_variant_id,
         };
 
-        result.parts = future::join_all(equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
+        let read_futures = equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
             ModelReader::read_equipment(
                 result.package,
                 result.body_id,
@@ -51,11 +51,22 @@ impl<'a> Character<'a> {
                 equipment_variant_id,
                 equipment_part,
             )
-            .then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.shader_holder).await) })
-        }))
+        });
+        result.parts = future::join_all(
+            read_futures.map(|x| x.then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.shader_holder).await) })),
+        )
         .await
         .into_iter()
         .collect::<Result<Vec<_>>>()?;
+
+        // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
+        let face_part_model = ModelReader::read_face(result.package, result.body_id, 1).await?;
+        let face_part = CharacterPart::new(result.renderer, face_part_model, result.shader_holder).await;
+        result.parts.push(face_part);
+
+        let hair_part_model = ModelReader::read_hair(result.package, result.body_id, 1, 1).await?;
+        let hair_part = CharacterPart::new(result.renderer, hair_part_model, result.shader_holder).await;
+        result.parts.push(hair_part);
 
         Ok(result)
     }

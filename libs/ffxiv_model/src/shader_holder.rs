@@ -16,6 +16,8 @@ impl ShaderHolder {
             vertex_shader: Arc::new(Self::load_vertex_shader(renderer)),
             fragment_shaders: hashmap! {
                 "character.shpk" => Arc::new(Self::load_character_shader(renderer)),
+                "iris.shpk" => Arc::new(Self::load_iris_shader(renderer)),
+                "hair.shpk" => Arc::new(Self::load_hair_shader(renderer)),
                 "skin.shpk" => Arc::new(Self::load_skin_shader(renderer))
             },
         }
@@ -67,6 +69,38 @@ impl ShaderHolder {
 
     fn load_skin_shader(renderer: &Renderer) -> Shader {
         let fs_bytes = include_bytes!("../shaders/skin.frag.spv");
+
+        Shader::new(
+            &renderer,
+            &fs_bytes[..],
+            "main",
+            hashmap! {
+                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
+                "Diffuse" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+            },
+            HashMap::new(),
+        )
+    }
+
+    fn load_iris_shader(renderer: &Renderer) -> Shader {
+        let fs_bytes = include_bytes!("../shaders/iris.frag.spv");
+
+        Shader::new(
+            &renderer,
+            &fs_bytes[..],
+            "main",
+            hashmap! {
+                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
+                "Diffuse" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+            },
+            HashMap::new(),
+        )
+    }
+
+    fn load_hair_shader(renderer: &Renderer) -> Shader {
+        let fs_bytes = include_bytes!("../shaders/hair.frag.spv");
 
         Shader::new(
             &renderer,
