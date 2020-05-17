@@ -16,7 +16,7 @@ pub enum ModelPart {
 }
 
 impl ModelPart {
-    pub fn as_str(&self) -> &'static str {
+    pub fn as_path_str(&self) -> &'static str {
         match self {
             ModelPart::Met => "met",
             ModelPart::Top => "top",
