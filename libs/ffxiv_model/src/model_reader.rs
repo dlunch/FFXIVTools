@@ -17,6 +17,8 @@ pub struct ModelData {
 pub struct ModelReader {}
 
 impl ModelReader {
+    // TODO use customization and equipment type
+    #[allow(clippy::too_many_arguments)]
     pub async fn read_equipment(
         renderer: &Renderer,
         package: &dyn Package,
