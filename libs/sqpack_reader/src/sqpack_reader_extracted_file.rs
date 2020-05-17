@@ -38,8 +38,4 @@ impl Package for SqPackReaderExtractedFile {
 
         Ok(SqPackRawFile::from_compressed_file(data).into_decoded())
     }
-
-    async fn read_as_compressed_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
-        self.read_as_compressed_by_hash(&reference.hash).await
-    }
 }
