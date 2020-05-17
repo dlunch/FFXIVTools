@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-#[derive(Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub struct SqPackArchiveId {
     pub root: u8,
     pub ex: u8,

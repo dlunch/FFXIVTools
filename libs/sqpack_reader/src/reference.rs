@@ -1,5 +1,6 @@
 use super::archive_id::SqPackArchiveId;
 
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub struct SqPackFileHash {
     pub path: u32,
     pub folder: u32,
@@ -34,12 +35,13 @@ impl SqPackFileHash {
     }
 }
 
+#[derive(Clone, Hash, Eq, PartialEq)]
 pub struct SqPackFileReference {
     pub archive_id: SqPackArchiveId,
     pub hash: SqPackFileHash,
 
     #[cfg(debug_assertions)]
-    pub path: alloc::string::String,
+    pub path: String,
 }
 
 impl SqPackFileReference {

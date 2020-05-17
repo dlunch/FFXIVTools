@@ -1,4 +1,5 @@
 use alloc::boxed::Box;
+use std::collections::HashMap;
 
 use async_trait::async_trait;
 use log::debug;
@@ -21,4 +22,9 @@ pub trait Package: Sync + Send {
     }
 
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>>;
+}
+
+#[async_trait]
+pub trait BatchablePackage: Sync + Send {
+    async fn read_many(&self, reference: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>>;
 }
