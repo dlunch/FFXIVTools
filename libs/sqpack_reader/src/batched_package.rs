@@ -29,7 +29,7 @@ impl<'a> BatchedPackage<'a> {
             new_waiters
         };
 
-        let references = waiters.keys().into_iter().collect::<Vec<_>>();
+        let references = waiters.keys().collect::<Vec<_>>();
         let mut result = self.real.read_many(references.as_slice()).await?;
 
         for (reference, mut senders) in waiters.into_iter() {
