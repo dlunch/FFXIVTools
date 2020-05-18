@@ -25,6 +25,8 @@ impl TextureCache {
                 return Ok(x.clone());
             }
         }
+        // TODO wait for fetched but incomplete same request.
+
         let tex = Tex::new(package, &texture_path).await?;
         let texture = Arc::new(Self::load_texture(renderer, &tex).await);
 
