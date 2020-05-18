@@ -99,7 +99,7 @@ impl ModelReader {
                 let mtrl = mtrl?;
                 let texs = future::join_all(
                     mtrl.texture_paths()
-                        .map(|texture_path| context.texture_cache.get_or_create(renderer, package, texture_path)),
+                        .map(|texture_path| context.texture_cache.get_or_read(renderer, package, texture_path)),
                 )
                 .await
                 .into_iter()
