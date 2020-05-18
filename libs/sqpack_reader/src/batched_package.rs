@@ -9,7 +9,7 @@ use crate::reference::SqPackFileReference;
 
 pub struct BatchedPackage<'a> {
     real: Box<dyn BatchablePackage + 'a>,
-    waiters: RwLock<HashMap<SqPackFileReference, oneshot::Sender<Vec<u8>>>>,
+    waiters: RwLock<HashMap<SqPackFileReference, Vec<oneshot::Sender<Vec<u8>>>>>,
 }
 
 impl<'a> BatchedPackage<'a> {
@@ -32,10 +32,17 @@ impl<'a> BatchedPackage<'a> {
         let references = waiters.keys().into_iter().collect::<Vec<_>>();
         let mut result = self.real.read_many(references.as_slice()).await?;
 
-        for (reference, sender) in waiters.into_iter() {
+        for (reference, mut senders) in waiters.into_iter() {
             let value = result.remove(&reference).unwrap();
 
-            sender.send(value).unwrap();
+            if senders.len() == 1 {
+                let sender = senders.pop().unwrap();
+                sender.send(value).unwrap();
+            } else {
+                for sender in senders {
+                    sender.send(value.clone()).unwrap();
+                }
+            }
         }
 
         Ok(())
@@ -49,7 +56,11 @@ impl Package for BatchedPackage<'_> {
 
         {
             let mut waiters = self.waiters.write().await;
-            waiters.insert(reference.clone(), tx);
+            if waiters.contains_key(reference) {
+                waiters.get_mut(reference).unwrap().push(tx);
+            } else {
+                waiters.insert(reference.clone(), vec![tx]);
+            }
         }
 
         Ok(rx.await.unwrap())
