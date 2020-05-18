@@ -18,7 +18,7 @@ impl TextureCache {
         }
     }
 
-    pub async fn get_or_create(&self, renderer: &Renderer, package: &dyn Package, texture_path: String) -> Result<Arc<Texture>> {
+    pub async fn get_or_read(&self, renderer: &Renderer, package: &dyn Package, texture_path: String) -> Result<Arc<Texture>> {
         {
             let textures = self.textures.read().await;
             if let Some(x) = textures.get(&texture_path) {
