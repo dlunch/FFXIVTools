@@ -65,7 +65,11 @@ module.exports = {
       outDir: path.resolve(root, "web/translation_compare/pkg"),
       outName: "index",
     }),
-    new CopyPlugin([{ from: "web/index.html" }]),
+    new CopyPlugin({
+      patterns: [
+        { from: "web/index.html" }
+      ]
+    }),
     new CleanWebpackPlugin(),
   ],
 };
