@@ -4,16 +4,19 @@ mod data;
 mod definition;
 mod index;
 
+use std::collections::HashMap;
 use std::io;
 use std::path::Path;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use futures::future;
+use futures::FutureExt;
 use log::debug;
 
 use crate::archive_id::SqPackArchiveId;
 use crate::error::Result;
-use crate::package::Package;
+use crate::package::{BatchablePackage, Package};
 use crate::reference::SqPackFileReference;
 
 use archive::SqPackArchive;
@@ -54,5 +57,19 @@ impl Package for SqPackReader {
         let archive = self.archive(reference.archive_id).await?;
 
         archive.read_file(reference.hash.folder, reference.hash.file).await
+    }
+}
+
+#[async_trait]
+impl BatchablePackage for SqPackReader {
+    async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
+        future::join_all(
+            references
+                .iter()
+                .map(|reference| self.read_file_by_reference(reference).map(move |x| Ok(((*reference).to_owned(), x?)))),
+        )
+        .await
+        .into_iter()
+        .collect::<Result<HashMap<_, _>>>()
     }
 }
