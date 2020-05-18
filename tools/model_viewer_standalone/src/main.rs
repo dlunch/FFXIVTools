@@ -7,6 +7,7 @@ use nalgebra::Point3;
 use once_cell::sync::OnceCell;
 use tokio::fs;
 use tokio::sync::Notify;
+use tokio::time::{delay_for, Duration};
 use winit::{
     dpi::LogicalSize,
     event,
@@ -17,7 +18,7 @@ use winit::{
 
 use ffxiv_model::{BodyId, Character, Context, ModelPart};
 use renderer::{Camera, Renderer, Scene};
-use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReader, SqPackReaderExtractedFile};
+use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
 
 // tokio::spawn requires 'static lifetime.
 static mut APP: OnceCell<App> = OnceCell::new();
@@ -80,7 +81,7 @@ async fn main() {
 struct App<'a> {
     renderer: Renderer,
     context: Context,
-    package: Box<dyn Package>,
+    package: Arc<BatchedPackage<'a>>,
     scene: Scene<'a>,
 }
 
@@ -91,14 +92,24 @@ impl<'a> App<'a> {
         #[cfg(windows)]
         let path = "D:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
 
-        let package: Box<dyn Package> = if fs::metadata(path).await.is_ok() {
-            Box::new(SqPackReader::new(&Path::new(path)).unwrap())
+        let package = if fs::metadata(path).await.is_ok() {
+            BatchedPackage::new(SqPackReader::new(&Path::new(path)).unwrap())
         } else {
             let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
                 debug!("{}/{}", current, total)
             });
-            Box::new(SqPackReaderExtractedFile::new(provider))
+            BatchedPackage::new(SqPackReaderExtractedFile::new(provider))
         };
+        let package = Arc::new(package);
+
+        // TODO We can't put add_character in tokio::spawn (rust issue #64650), so BatchedPackage::poll can't be in app.update() or somewhere.
+        let package2 = package.clone();
+        tokio::spawn(async move {
+            loop {
+                package2.poll().await.unwrap();
+                delay_for(Duration::from_millis(16)).await;
+            }
+        });
 
         let size = window.inner_size();
         let renderer = Renderer::new(window, size.width, size.height).await;
@@ -110,7 +121,7 @@ impl<'a> App<'a> {
         Self {
             renderer,
             context,
-            package,
+            package: package.clone(),
             scene,
         }
     }
@@ -138,6 +149,7 @@ impl<'a> App<'a> {
     }
 
     pub async fn render(&mut self) {
+        self.package.poll().await.unwrap();
         self.renderer.render(&self.scene).await;
     }
 }

@@ -7,15 +7,15 @@ use crate::error::Result;
 use crate::package::{BatchablePackage, Package};
 use crate::reference::SqPackFileReference;
 
-pub struct BatchedPackage {
-    real: Box<dyn BatchablePackage>,
+pub struct BatchedPackage<'a> {
+    real: Box<dyn BatchablePackage + 'a>,
     waiters: RwLock<HashMap<SqPackFileReference, oneshot::Sender<Vec<u8>>>>,
 }
 
-impl BatchedPackage {
-    pub fn new(real: Box<dyn BatchablePackage>) -> Self {
+impl<'a> BatchedPackage<'a> {
+    pub fn new<R: BatchablePackage + 'a>(real: R) -> Self {
         Self {
-            real,
+            real: Box::new(real),
             waiters: RwLock::new(HashMap::new()),
         }
     }
@@ -43,12 +43,14 @@ impl BatchedPackage {
 }
 
 #[async_trait]
-impl Package for BatchedPackage {
+impl Package for BatchedPackage<'_> {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let (tx, rx) = oneshot::channel();
 
-        let mut waiters = self.waiters.write().await;
-        waiters.insert(reference.clone(), tx);
+        {
+            let mut waiters = self.waiters.write().await;
+            waiters.insert(reference.clone(), tx);
+        }
 
         Ok(rx.await.unwrap())
     }
