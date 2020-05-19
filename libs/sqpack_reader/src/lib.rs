@@ -17,8 +17,8 @@ pub use archive_id::SqPackArchiveId;
 pub use batched_package::BatchedPackage;
 pub use error::{Result, SqPackReaderError};
 pub use extracted_file_provider::ExtractedFileProvider;
-pub use package::Package;
-pub use reference::SqPackFileHash;
+pub use package::{BatchablePackage, Package};
+pub use reference::{SqPackFileHash, SqPackFileReference};
 pub use sqpack_reader_extracted_file::SqPackReaderExtractedFile;
 
 cfg_if::cfg_if! {
