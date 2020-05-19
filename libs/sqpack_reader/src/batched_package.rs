@@ -34,7 +34,7 @@ impl<'a> BatchedPackage<'a> {
         };
 
         let references = waiters.keys().collect::<Vec<_>>();
-        let mut result = self.real.read_many(references.as_slice()).await?;
+        let mut result = self.real.read_files(references.as_slice()).await?;
 
         for (reference, mut senders) in waiters.into_iter() {
             let value = result.remove(&reference).unwrap();
