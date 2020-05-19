@@ -2,8 +2,6 @@ use alloc::boxed::Box;
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use futures::future;
-use futures::FutureExt;
 
 use crate::error::Result;
 use crate::extracted_file_provider::ExtractedFileProvider;
@@ -46,13 +44,15 @@ impl Package for SqPackReaderExtractedFile {
 #[async_trait]
 impl BatchablePackage for SqPackReaderExtractedFile {
     async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
-        future::join_all(
-            references
-                .iter()
-                .map(|reference| self.read_file_by_reference(reference).map(move |x| Ok(((*reference).to_owned(), x?)))),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<HashMap<_, _>>>()
+        let hash_references = references.iter().map(|&x| (x.hash, x)).collect::<HashMap<_, _>>();
+        let hashes = hash_references.keys().into_iter().collect::<Vec<_>>();
+
+        Ok(self
+            .provider
+            .read_files(hashes.as_slice())
+            .await?
+            .into_iter()
+            .map(|(hash, result)| ((*hash_references.get(&hash).unwrap()).clone(), result))
+            .collect::<HashMap<_, _>>())
     }
 }
