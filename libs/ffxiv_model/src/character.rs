@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
-use futures::future;
-use futures::FutureExt;
+use futures::{
+    stream::{FuturesUnordered, TryStreamExt},
+    FutureExt,
+};
 
 use renderer::{RenderContext, Renderable, Renderer};
-use sqpack_reader::{Package, Result};
+use sqpack_reader::{Package, Result, SqPackReaderError};
 
 use crate::character_part::CharacterPart;
 use crate::constants::{BodyId, ModelPart};
@@ -54,11 +56,11 @@ impl<'a> Character<'a> {
                 result.context,
             )
         });
-        result.parts =
-            future::join_all(read_futures.map(|x| x.then(|data| async { Ok(CharacterPart::new(result.renderer, data?, result.context).await) })))
-                .await
-                .into_iter()
-                .collect::<Result<Vec<_>>>()?;
+        result.parts = read_futures
+            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(result.renderer, data?, result.context).await) }))
+            .collect::<FuturesUnordered<_>>()
+            .try_collect::<Vec<_>>()
+            .await?;
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
         let face_part_model = ModelReader::read_face(result.renderer, result.package, result.body_id, 1, result.context).await?;

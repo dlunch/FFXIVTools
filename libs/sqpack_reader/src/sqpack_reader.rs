@@ -10,8 +10,10 @@ use std::path::Path;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures::future;
-use futures::FutureExt;
+use futures::{
+    stream::{FuturesUnordered, TryStreamExt},
+    FutureExt,
+};
 use log::debug;
 
 use crate::archive_id::SqPackArchiveId;
@@ -63,13 +65,11 @@ impl Package for SqPackReader {
 #[async_trait]
 impl BatchablePackage for SqPackReader {
     async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
-        future::join_all(
-            references
-                .iter()
-                .map(|reference| self.read_file_by_reference(reference).map(move |x| Ok(((*reference).to_owned(), x?)))),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<HashMap<_, _>>>()
+        references
+            .iter()
+            .map(|reference| self.read_file_by_reference(reference).map(move |x| Ok(((*reference).to_owned(), x?))))
+            .collect::<FuturesUnordered<_>>()
+            .try_collect::<HashMap<_, _>>()
+            .await
     }
 }

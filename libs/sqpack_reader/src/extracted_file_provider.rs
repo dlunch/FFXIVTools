@@ -1,5 +1,4 @@
 use alloc::boxed::Box;
-use std::collections::HashMap;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {

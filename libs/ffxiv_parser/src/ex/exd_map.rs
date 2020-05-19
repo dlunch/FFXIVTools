@@ -1,7 +1,6 @@
 use alloc::{collections::BTreeMap, vec::Vec};
 
-use futures::future::join_all;
-use futures::future::FutureExt;
+use futures::{future, FutureExt};
 
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
@@ -15,15 +14,17 @@ pub struct ExdMap {
 
 impl ExdMap {
     pub async fn new(package: &dyn Package, name: &str, pages: &[ExhPage], languages: &[Language]) -> Result<Self> {
-        let futures = languages.iter().map(|&language| {
-            let futures = pages
-                .iter()
-                .map(|&page| ExData::new(package, name, page.start, language).map(move |ex_data| Ok::<_, SqPackReaderError>((page, ex_data?))));
-
-            join_all(futures).map(move |data| (language, data.into_iter().filter_map(Result::ok).collect::<Vec<_>>()))
-        });
-
-        let data = join_all(futures).await.into_iter().collect::<BTreeMap<_, _>>();
+        let data = future::try_join_all(languages.iter().map(|&language| {
+            future::try_join_all(
+                pages
+                    .iter()
+                    .map(|&page| ExData::new(package, name, page.start, language).map(move |ex_data| Ok::<_, SqPackReaderError>((page, ex_data?)))),
+            )
+            .map(move |data| Ok::<_, SqPackReaderError>((language, data?)))
+        }))
+        .await?
+        .into_iter()
+        .collect::<BTreeMap<_, _>>();
 
         Ok(Self { data })
     }
