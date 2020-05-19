@@ -9,7 +9,7 @@ use log::debug;
 
 use super::ExtractedFileProvider;
 use crate::error::{Result, SqPackReaderError};
-use crate::reference::SqPackFileHash;
+use crate::reference::{SqPackFileHash, SqPackFileReference};
 
 pub struct ExtractedFileProviderLocal {
     base_dirs: Vec<PathBuf>,
@@ -52,15 +52,6 @@ impl ExtractedFileProvider for ExtractedFileProviderLocal {
         Ok(tokio::fs::read(path).await?)
     }
 
-    async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
-        hashes
-            .iter()
-            .map(|hash| self.read_file(hash).map(move |result| Ok((**hash, result?))))
-            .collect::<FuturesUnordered<_>>()
-            .try_collect::<Vec<_>>()
-            .await
-    }
-
     async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64> {
         let path = self.find_path(hash).ok()?;
         let metadata = tokio::fs::metadata(path).await;
@@ -70,5 +61,14 @@ impl ExtractedFileProvider for ExtractedFileProviderLocal {
         } else {
             None
         }
+    }
+
+    async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+        references
+            .iter()
+            .map(|&reference| self.read_file(&reference.hash).map(move |result| Ok((reference.hash.clone(), result?))))
+            .collect::<FuturesUnordered<_>>()
+            .try_collect::<Vec<_>>()
+            .await
     }
 }

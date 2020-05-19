@@ -6,7 +6,7 @@ use util::cast;
 
 use super::ExtractedFileProvider;
 use crate::error::{Result, SqPackReaderError};
-use crate::reference::SqPackFileHash;
+use crate::reference::{SqPackFileHash, SqPackFileReference};
 
 #[repr(C)]
 struct BulkItemHeader {
@@ -62,20 +62,20 @@ impl ExtractedFileProviderWeb {
         self.download(&uri).await
     }
 
-    async fn fetch_many(&self, hashes: &[&SqPackFileHash]) -> reqwest::Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+    async fn fetch_many(&self, references: &[&SqPackFileReference]) -> reqwest::Result<Vec<(SqPackFileHash, Vec<u8>)>> {
         let uri = format!(
             "{}bulk/{}",
             self.base_uri,
-            hashes
+            references
                 .iter()
-                .map(|x| format!("{:x}-{:x}-{:x}", x.folder, x.file, x.path))
+                .map(|x| format!("{:x}-{:x}-{:x}", x.hash.folder, x.hash.file, x.hash.path))
                 .collect::<Vec<_>>()
                 .join(".")
         );
 
         let data = self.download(&uri).await?;
 
-        Ok((0..hashes.len())
+        Ok((0..references.len())
             .scan(0, |cursor, _| {
                 let header = cast::<BulkItemHeader>(&data[*cursor..]);
                 let data_begin = *cursor + core::mem::size_of::<BulkItemHeader>();
@@ -101,8 +101,8 @@ impl ExtractedFileProvider for ExtractedFileProviderWeb {
         })
     }
 
-    async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
-        self.fetch_many(hashes).await.map_err(|x| {
+    async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+        self.fetch_many(references).await.map_err(|x| {
             debug!("Error downloading file, {}", x);
 
             SqPackReaderError::NoSuchFile
