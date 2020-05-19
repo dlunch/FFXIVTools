@@ -26,5 +26,5 @@ pub trait Package: Sync + Send {
 
 #[async_trait]
 pub trait BatchablePackage: Sync + Send {
-    async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>>;
+    async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>>;
 }

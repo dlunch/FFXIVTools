@@ -64,7 +64,7 @@ impl Package for SqPackReader {
 
 #[async_trait]
 impl BatchablePackage for SqPackReader {
-    async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
+    async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
         references
             .iter()
             .map(|reference| self.read_file_by_reference(reference).map(move |x| Ok(((*reference).to_owned(), x?))))

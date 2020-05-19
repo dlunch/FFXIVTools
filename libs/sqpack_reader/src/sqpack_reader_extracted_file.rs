@@ -43,7 +43,7 @@ impl Package for SqPackReaderExtractedFile {
 
 #[async_trait]
 impl BatchablePackage for SqPackReaderExtractedFile {
-    async fn read_many(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
+    async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
         let hash_references = references.iter().map(|&x| (x.hash, x)).collect::<HashMap<_, _>>();
 
         Ok(self
