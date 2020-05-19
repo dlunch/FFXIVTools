@@ -2,9 +2,13 @@ mod context;
 
 use std::collections::BTreeMap;
 
-use actix_web::{error, web, HttpResponse, Responder, Result};
+use actix_web::{error, web, Error, HttpResponse, Responder, Result};
 use bytes::Bytes;
-use futures::{future, future::FutureExt};
+use futures::{
+    future,
+    future::FutureExt,
+    stream::{FuturesUnordered, TryStreamExt},
+};
 use genawaiter::{rc::gen, yield_};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -76,14 +80,12 @@ async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, Strin
     let (version, language, ex_names) = param.into_inner();
 
     let package = find_package(&context, &version)?;
-    let results = future::join_all(
-        ex_names
-            .split('.')
-            .map(|ex_name| ex_to_json(package, Some(language), &ex_name).map(move |data| Ok((ex_name.to_owned(), data?)))),
-    )
-    .await
-    .into_iter()
-    .collect::<Result<Vec<(_, _)>>>()?;
+    let results = ex_names
+        .split('.')
+        .map(|ex_name| ex_to_json(package, Some(language), &ex_name).map(move |data| Ok::<_, Error>((ex_name.to_owned(), data?))))
+        .collect::<FuturesUnordered<_>>()
+        .try_collect::<Vec<_>>()
+        .await?;
 
     let stream = gen!({
         yield_!(Result::<Bytes>::Ok(Bytes::from_static(b"{\"")));
@@ -133,15 +135,19 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         .collect::<Result<Vec<_>>>()?;
 
     const BULK_ITEM_HEADER_SIZE: usize = (std::mem::size_of::<u32>()) * 4;
-    let total_size = future::join_all(hashes.iter().map(|hash| {
-        context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
-            Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
-            None => Err(error::ErrorNotFound("No such file")),
+    let total_size = hashes
+        .iter()
+        .map(|hash| {
+            context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
+                Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
+                None => Err(error::ErrorNotFound("No such file")),
+            })
         })
-    }))
-    .await
-    .into_iter()
-    .sum::<Result<u64>>()?;
+        .collect::<FuturesUnordered<_>>()
+        .try_collect::<Vec<_>>()
+        .await?
+        .into_iter()
+        .sum::<u64>();
 
     let stream = gen!({
         for hash in hashes {
@@ -170,15 +176,12 @@ async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result
 
     let lvb = Lvb::new(package, &path).await.map_err(|_| error::ErrorNotFound("Not found"))?;
 
-    let layers = future::join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(&context.all_package, lgb_path)))
+    let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(&context.all_package, lgb_path)))
         .await
+        .map_err(|_| error::ErrorNotFound("Not found"))?
         .into_iter()
-        .map(|x| {
-            let x = x?;
-            Ok((x.name().to_owned(), x))
-        })
-        .collect::<sqpack_reader::Result<BTreeMap<_, _>>>()
-        .map_err(|_| error::ErrorNotFound("Not found"))?;
+        .map(|x| (x.name().to_owned(), x))
+        .collect::<BTreeMap<_, _>>();
 
     #[derive(Serialize)]
     struct JsonLvb {

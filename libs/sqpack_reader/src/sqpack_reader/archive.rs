@@ -22,7 +22,7 @@ impl SqPackArchive {
         let index = SqPackIndex::new(index_path).await?;
 
         let futures = (0..index.dat_count).map(|x| SqPackData::new(base_path, x));
-        let data = future::join_all(futures).await.into_iter().collect::<io::Result<Vec<_>>>()?;
+        let data = future::try_join_all(futures).await?;
 
         Ok(Self { index, data })
     }

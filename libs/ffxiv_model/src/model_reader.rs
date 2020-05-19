@@ -4,7 +4,7 @@ use futures::{future, FutureExt};
 
 use ffxiv_parser::{Mdl, Mtrl};
 use renderer::{Renderer, Texture};
-use sqpack_reader::{Package, Result};
+use sqpack_reader::{Package, Result, SqPackReaderError};
 
 use crate::constants::{BodyId, ModelPart};
 use crate::context::Context;
@@ -93,24 +93,20 @@ impl ModelReader {
     {
         let mdl = Mdl::new(package, &mdl_path).await?;
 
-        let mtrls = future::join_all(mdl.material_paths().map(|material_path| {
+        let mtrls = future::try_join_all(mdl.material_paths().map(|material_path| {
             let material_path = material_path_fetcher(&material_path);
             Mtrl::new(package, material_path).then(|mtrl| async {
                 let mtrl = mtrl?;
-                let texs = future::join_all(
+                let texs = future::try_join_all(
                     mtrl.texture_paths()
                         .map(|texture_path| context.texture_cache.get_or_read(renderer, package, texture_path)),
                 )
-                .await
-                .into_iter()
-                .collect::<Result<Vec<_>>>()?;
+                .await?;
 
-                Ok((mtrl, texs))
+                Ok::<_, SqPackReaderError>((mtrl, texs))
             })
         }))
-        .await
-        .into_iter()
-        .collect::<Result<Vec<_>>>()?;
+        .await?;
 
         Ok(ModelData { mdl, mtrls })
     }
