@@ -52,7 +52,12 @@ impl BatchablePackage for SqPackReaderExtractedFile {
             .read_files(hashes.as_slice())
             .await?
             .into_iter()
-            .map(|(hash, result)| ((*hash_references.get(&hash).unwrap()).clone(), result))
+            .map(|(hash, data)| {
+                (
+                    (*hash_references.get(&hash).unwrap()).clone(),
+                    SqPackRawFile::from_compressed_file(data).into_decoded(),
+                )
+            })
             .collect::<HashMap<_, _>>())
     }
 }

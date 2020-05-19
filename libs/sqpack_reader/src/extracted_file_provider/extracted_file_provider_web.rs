@@ -1,13 +1,20 @@
 use async_trait::async_trait;
-use futures::{
-    stream::{FuturesUnordered, StreamExt, TryStreamExt},
-    FutureExt,
-};
+use futures::stream::StreamExt;
 use log::debug;
+
+use util::cast;
 
 use super::ExtractedFileProvider;
 use crate::error::{Result, SqPackReaderError};
 use crate::reference::SqPackFileHash;
+
+#[repr(C)]
+struct BulkItemHeader {
+    folder_hash: u32,
+    file_hash: u32,
+    path_hash: u32,
+    compressed_size: u32,
+}
 
 pub struct ExtractedFileProviderWeb {
     base_uri: String,
@@ -32,12 +39,10 @@ impl ExtractedFileProviderWeb {
         }
     }
 
-    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
-        let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path);
-
+    async fn download(&self, uri: &str) -> reqwest::Result<Vec<u8>> {
         debug!("Fetching {}", uri);
 
-        let response = reqwest::get(&uri).await?.error_for_status()?;
+        let response = reqwest::get(uri).await?.error_for_status()?;
         let total_length = response.content_length().unwrap() as usize;
         let mut result = Vec::with_capacity(total_length);
         let mut stream = response.bytes_stream();
@@ -49,6 +54,40 @@ impl ExtractedFileProviderWeb {
         }
 
         Ok(result)
+    }
+
+    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
+        let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path);
+
+        self.download(&uri).await
+    }
+
+    async fn fetch_many(&self, hashes: &[&SqPackFileHash]) -> reqwest::Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+        let uri = format!(
+            "{}bulk/{}",
+            self.base_uri,
+            hashes
+                .iter()
+                .map(|x| format!("{:x}-{:x}-{:x}", x.folder, x.file, x.path))
+                .collect::<Vec<_>>()
+                .join(".")
+        );
+
+        let data = self.download(&uri).await?;
+
+        Ok((0..hashes.len())
+            .scan(0, |cursor, _| {
+                let header = cast::<BulkItemHeader>(&data[*cursor..]);
+                let data_begin = *cursor + core::mem::size_of::<BulkItemHeader>();
+                let data_end = data_begin + header.compressed_size as usize;
+
+                *cursor = data_end;
+                Some((
+                    SqPackFileHash::from_raw_hash(header.path_hash, header.folder_hash, header.file_hash),
+                    Vec::from(&data[data_begin..data_end]),
+                ))
+            })
+            .collect::<Vec<_>>())
     }
 }
 
@@ -63,12 +102,11 @@ impl ExtractedFileProvider for ExtractedFileProviderWeb {
     }
 
     async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
-        hashes
-            .iter()
-            .map(|hash| self.read_file(hash).map(move |result| Ok(((*hash).clone(), result?))))
-            .collect::<FuturesUnordered<_>>()
-            .try_collect::<Vec<_>>()
-            .await
+        self.fetch_many(hashes).await.map_err(|x| {
+            debug!("Error downloading file, {}", x);
+
+            SqPackReaderError::NoSuchFile
+        })
     }
 
     async fn read_file_size(&self, _: &SqPackFileHash) -> Option<u64> {
