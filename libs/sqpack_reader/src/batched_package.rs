@@ -21,6 +21,10 @@ impl<'a> BatchedPackage<'a> {
     }
 
     pub async fn poll(&self) -> Result<()> {
+        if self.waiters.read().await.is_empty() {
+            return Ok(());
+        }
+
         let waiters = {
             let mut waiters = self.waiters.write().await;
             let mut new_waiters = HashMap::new();
