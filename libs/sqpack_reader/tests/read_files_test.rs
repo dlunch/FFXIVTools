@@ -3,7 +3,7 @@ mod tests {
     #[tokio::test]
     #[cfg(feature = "std")]
     async fn read_files_test() -> sqpack_reader::Result<()> {
-        use sqpack_reader::{ExtractedFileProviderWeb, BatchablePackage, SqPackReaderExtractedFile, SqPackFileReference};
+        use sqpack_reader::{BatchablePackage, ExtractedFileProviderWeb, SqPackFileReference, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
@@ -11,7 +11,11 @@ mod tests {
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
         let pack = SqPackReaderExtractedFile::new(provider);
-        let (reference1, reference2, reference3) = (SqPackFileReference::new("exd/item.exh"), SqPackFileReference::new("chara/accessory/a0001/model/c0101a0001_ear.mdl"), SqPackFileReference::new("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex"));
+        let (reference1, reference2, reference3) = (
+            SqPackFileReference::new("exd/item.exh"),
+            SqPackFileReference::new("chara/accessory/a0001/model/c0101a0001_ear.mdl"),
+            SqPackFileReference::new("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex"),
+        );
         let references = vec![&reference1, &reference2, &reference3];
         let files = pack.read_files(&references).await?;
         {
