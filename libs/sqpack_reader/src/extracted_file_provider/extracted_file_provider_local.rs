@@ -55,7 +55,7 @@ impl ExtractedFileProvider for ExtractedFileProviderLocal {
     async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
         hashes
             .iter()
-            .map(|hash| self.read_file(hash).map(move |result| Ok(((*hash).clone(), result?))))
+            .map(|hash| self.read_file(hash).map(move |result| Ok((**hash, result?))))
             .collect::<FuturesUnordered<_>>()
             .try_collect::<Vec<_>>()
             .await
