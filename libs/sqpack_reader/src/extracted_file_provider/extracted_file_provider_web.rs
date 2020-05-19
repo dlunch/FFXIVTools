@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
-use futures::stream::StreamExt;
+use futures::{future, stream::StreamExt, FutureExt};
 use log::debug;
 
 use super::ExtractedFileProvider;
@@ -57,6 +59,17 @@ impl ExtractedFileProvider for ExtractedFileProviderWeb {
 
             SqPackReaderError::NoSuchFile
         })
+    }
+
+    async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+        future::join_all(
+            hashes
+                .iter()
+                .map(|hash| self.read_file(hash).map(move |result| Ok(((*hash).clone(), result?)))),
+        )
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>>>()
     }
 
     async fn read_file_size(&self, _: &SqPackFileHash) -> Option<u64> {

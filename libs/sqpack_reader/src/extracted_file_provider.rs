@@ -1,4 +1,5 @@
 use alloc::boxed::Box;
+use std::collections::HashMap;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {
@@ -18,5 +19,6 @@ use crate::reference::SqPackFileHash;
 #[async_trait]
 pub trait ExtractedFileProvider: Sync + Send {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>>;
+    async fn read_files(&self, hashes: &[&SqPackFileHash]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>>;
     async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64>;
 }
