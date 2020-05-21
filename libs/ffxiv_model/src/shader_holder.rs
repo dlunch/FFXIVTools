@@ -44,7 +44,7 @@ impl ShaderHolder {
                 "BoneIndex" => 2,
                 "Normal" => 3,
                 "TexCoord" => 4,
-                "Bitangent" => 5,
+                "BiTangent" => 5,
                 "Color" => 6,
             },
         )

@@ -70,7 +70,7 @@ pub enum BufferItemUsage {
     Normal = 3,
     TexCoord = 4,
     Tangent = 5,
-    Bitangent = 6,
+    BiTangent = 6,
     Color = 7,
 }
 

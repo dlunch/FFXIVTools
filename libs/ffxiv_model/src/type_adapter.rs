@@ -22,7 +22,7 @@ pub fn convert_buffer_usage(usage: BufferItemUsage) -> &'static str {
         BufferItemUsage::Normal => "Normal",
         BufferItemUsage::TexCoord => "TexCoord",
         BufferItemUsage::Tangent => "Tangent",
-        BufferItemUsage::Bitangent => "Bitangent",
+        BufferItemUsage::BiTangent => "BiTangent",
         BufferItemUsage::Color => "Color",
     }
 }
