@@ -2,18 +2,24 @@
 
 #include "frag_common.glsl"
 
-layout(location = 0) in vec2 v_TexCoord;
-layout(location = 0) out vec4 o_Target;
+layout(location = 0) in vec2 FragmentTexCoord;
+layout(location = 1) in vec4 FragmentNormal;
+layout(location = 2) in vec4 FragmentPosition;
+layout(location = 3) in mat4 FragmentTBN;
+
+layout(location = 0) out vec4 OutColor;
+
 layout(set = 0, binding = 1) uniform sampler Sampler;
 layout(set = 0, binding = 2) uniform texture2D Normal;
 layout(set = 0, binding = 3) uniform texture2D Diffuse;
 
 void main() {
-    vec4 normal = texture(sampler2D(Normal, Sampler), v_TexCoord);
-    if(normal.a <= 0.5)
+    vec4 normalMap = texture(sampler2D(Normal, Sampler), FragmentTexCoord);
+    if(normalMap.a <= 0.5)
         discard;
 
-    vec4 diffuse = texture(sampler2D(Diffuse, Sampler), v_TexCoord);
+    vec4 diffuseMap = texture(sampler2D(Diffuse, Sampler), FragmentTexCoord);
 
-    o_Target = diffuse;
+    vec3 color = calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, vec4(0, 0, 0, 1), 4.0);
+    OutColor = calculateGamma(color);
 }
