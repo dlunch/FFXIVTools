@@ -30,9 +30,21 @@ fn compile_shader(path: &Path, ext: &str) -> io::Result<shaderc::CompilationArti
         _ => panic!(),
     };
 
+    let mut compile_options = shaderc::CompileOptions::new().unwrap();
+    compile_options.set_include_callback(|name, _, _, _| {
+        let path = path.parent().unwrap().to_owned().join(name);
+        let code = fs::read(path).unwrap();
+
+        Ok(shaderc::ResolvedInclude {
+            resolved_name: name.to_owned(),
+            content: str::from_utf8(&code).unwrap().to_owned(),
+        })
+    });
+
+    let file_name = path.file_name().unwrap().to_str().unwrap();
     let mut compiler = shaderc::Compiler::new().unwrap();
     Ok(compiler
-        .compile_into_spirv(str::from_utf8(&code).unwrap(), stage, "shader.glsl", "main", None)
+        .compile_into_spirv(str::from_utf8(&code).unwrap(), stage, file_name, "main", Some(&compile_options))
         .unwrap())
 }
 

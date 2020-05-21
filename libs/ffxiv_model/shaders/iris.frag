@@ -1,5 +1,7 @@
 #version 450
 
+#include "frag_common.glsl"
+
 layout(location = 0) in vec2 v_TexCoord;
 layout(location = 0) out vec4 o_Target;
 layout(set = 0, binding = 1) uniform sampler Sampler;
