@@ -1,0 +1,15 @@
+[package]
+name = "havok_parser"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[lib]
+doctest = false
+
+[dependencies]
+log = { version = "^0.4", default-features = false }
+
+[dev-dependencies]
+tokio = { version = "^0.2", features = ["macros", "rt-threaded", "fs"], default-features = false }
+pretty_env_logger = { version = "^0.4", default-features = false }
