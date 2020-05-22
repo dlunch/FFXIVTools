@@ -61,6 +61,7 @@ type HavokInteger = u32;
 
 pub struct HavokObject {}
 
+#[allow(clippy::new_without_default)]
 impl HavokObject {
     pub fn new() -> Self {
         Self {}
