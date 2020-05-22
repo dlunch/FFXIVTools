@@ -40,7 +40,7 @@ impl CharacterPart {
 
             let mesh_parts = mdl.parts()
                 [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
-                .into_iter()
+                .iter()
                 .map(|mesh_part| {
                     let begin = mesh_part.index_offset - mesh_data.mesh_info.index_offset;
                     MeshPart::new(begin, mesh_part.index_count)
