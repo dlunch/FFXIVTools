@@ -38,6 +38,15 @@ impl CharacterPart {
                 .map(|i| mesh_data.mesh_info.strides[i] as usize)
                 .collect::<Vec<_>>();
 
+            let mesh_parts = mdl.parts()
+                [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
+                .into_iter()
+                .map(|mesh_part| {
+                    let begin = mesh_part.index_offset - mesh_data.mesh_info.index_offset;
+                    MeshPart::new(begin, mesh_part.index_count)
+                })
+                .collect::<Vec<_>>();
+
             let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats);
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
@@ -54,19 +63,9 @@ impl CharacterPart {
             }
 
             let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
-
             let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 
-            let parts = mdl.parts()
-                [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
-                .into_iter()
-                .map(|mesh_part| {
-                    let begin = mesh_part.index_offset - mesh_data.mesh_info.index_offset;
-                    MeshPart::new(begin, mesh_part.index_count)
-                })
-                .collect::<Vec<_>>();
-
-            models.push(Model::new(&renderer, mesh, material, parts));
+            models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
 
         Self { models }
