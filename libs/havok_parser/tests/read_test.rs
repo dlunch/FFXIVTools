@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use ffxiv_parser::Sklb;
-    use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
     use havok_parser::HavokBinaryTagFileReader;
+    use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
     async fn read_test() -> Result<()> {
