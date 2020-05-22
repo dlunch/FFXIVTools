@@ -46,11 +46,11 @@ impl Sklb {
 
         let header = cast::<SkeletonHeader>(&data);
         let hkx_offset;
-        if header.version == 0x31323030 {
+        if header.version == 0x3132_3030 {
             // '1200'
             let header = cast::<SkeletonHeader12>(&data);
             hkx_offset = header.hkx_offset as u32;
-        } else if header.version == 0x31333030 || header.version == 0x31333031 {
+        } else if header.version == 0x3133_3030 || header.version == 0x3133_3031 {
             // '1300' or '1301'
             let header = cast::<SkeletonHeader13>(&data);
             hkx_offset = header.hkx_offset;
