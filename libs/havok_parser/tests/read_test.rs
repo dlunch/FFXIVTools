@@ -2,6 +2,7 @@
 mod tests {
     use ffxiv_parser::Sklb;
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
+    use havok_parser::HavokBinaryTagFileReader;
 
     #[tokio::test]
     async fn read_test() -> Result<()> {
@@ -15,12 +16,8 @@ mod tests {
 
         let sklb = Sklb::new(&pack, "chara/human/c0101/skeleton/base/b0001/skl_c0101b0001.sklb").await?;
         let hkx = sklb.hkx_data();
-        assert_eq!(hkx[0], b'\x1e');
-        assert_eq!(hkx[1], b'\x0d');
-        assert_eq!(hkx[2], b'\xb0');
-        assert_eq!(hkx[3], b'\xca');
-        assert_eq!(hkx[4], b'\xce');
-        assert_eq!(hkx[5], b'\xfa');
+
+        let _ = HavokBinaryTagFileReader::read(hkx);
 
         Ok(())
     }
