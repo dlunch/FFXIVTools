@@ -1,14 +1,15 @@
-use crate::{Material, Mesh, RenderContext, Renderable, Renderer};
+use crate::{Material, Mesh, MeshPart, RenderContext, Renderable, Renderer};
 
 pub struct Model {
     mesh: Mesh,
     material: Material,
+    mesh_parts: Vec<MeshPart>,
 
     pipeline: wgpu::RenderPipeline,
 }
 
 impl Model {
-    pub fn new(renderer: &Renderer, mesh: Mesh, material: Material) -> Self {
+    pub fn new(renderer: &Renderer, mesh: Mesh, material: Material, mesh_parts: Vec<MeshPart>) -> Self {
         let attributes = mesh
             .vertex_formats
             .iter()
@@ -67,7 +68,12 @@ impl Model {
             alpha_to_coverage_enabled: false,
         });
 
-        Self { mesh, material, pipeline }
+        Self {
+            mesh,
+            material,
+            pipeline,
+            mesh_parts,
+        }
     }
 }
 
@@ -79,6 +85,10 @@ impl Renderable for Model {
         for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
             render_context.render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
         }
-        render_context.render_pass.draw_indexed(0..self.mesh.index_count as u32, 0, 0..1);
+        for mesh_part in &self.mesh_parts {
+            render_context
+                .render_pass
+                .draw_indexed(mesh_part.begin..mesh_part.begin + mesh_part.count, 0, 0..1);
+        }
     }
 }

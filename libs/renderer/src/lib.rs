@@ -13,7 +13,7 @@ mod vertex_format;
 
 pub use camera::Camera;
 pub use material::Material;
-pub use mesh::Mesh;
+pub use mesh::{Mesh, MeshPart};
 pub use model::Model;
 pub use render_context::RenderContext;
 pub use renderable::Renderable;
