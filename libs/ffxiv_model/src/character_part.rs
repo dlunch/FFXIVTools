@@ -60,12 +60,16 @@ impl CharacterPart {
 
             let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 
-            models.push(Model::new(
-                &renderer,
-                mesh,
-                material,
-                vec![MeshPart::new(0, mesh_data.mesh_info.index_count as u32)],
-            ));
+            let parts = mdl.parts()
+                [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
+                .into_iter()
+                .map(|mesh_part| {
+                    let begin = mesh_part.index_offset - mesh_data.mesh_info.index_offset;
+                    MeshPart::new(begin, mesh_part.index_count)
+                })
+                .collect::<Vec<_>>();
+
+            models.push(Model::new(&renderer, mesh, material, parts));
         }
 
         Self { models }

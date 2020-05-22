@@ -25,12 +25,12 @@ struct MdlHeader {
 }
 
 #[repr(C)]
-struct MeshPart {
-    index_offset: u32,
-    index_count: u32,
-    attributes: u32,
-    bone_offset: u16,
-    bone_count: u16,
+pub struct MeshPart {
+    pub index_offset: u32,
+    pub index_count: u32,
+    pub attributes: u32,
+    pub bone_offset: u16,
+    pub bone_count: u16,
 }
 
 #[repr(C)]
@@ -122,7 +122,7 @@ pub struct Mdl {
     mdl_header_offset: usize,
     model_header_offset: usize,
     mesh_info_offset: usize,
-    attribute_info_offset: usize,
+    parts_offset: usize,
 }
 
 impl Mdl {
@@ -137,20 +137,22 @@ impl Mdl {
         let string_block_size = (&data[cursor + 4..]).to_int_le::<u32>() as usize;
         let string_block_offset = cursor + 8;
         cursor += string_block_size + 8;
-
         let mdl_header_offset = cursor;
+
         let mdl_header = cast::<MdlHeader>(&data[cursor..]);
         cursor += size_of::<MdlHeader>() + mdl_header.unk_count3 as usize * 0x20;
-
         let model_header_offset = cursor;
+
         let model_headers = &cast_array::<ModelHeader>(&data[cursor..])[..Self::LOD_COUNT];
         cursor += size_of::<ModelHeader>() * Self::LOD_COUNT;
-
         let mesh_info_offset = cursor;
+
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&data[cursor..])[..mesh_info_count];
         cursor += mesh_infos.len() * size_of::<MeshInfo>();
-        let attribute_info_offset = cursor;
+        cursor += (mdl_header.attribute_count as usize) * size_of::<u32>();
+        cursor += (mdl_header.unk_count4 as usize) * 20;
+        let parts_offset = cursor;
 
         Ok(Self {
             data,
@@ -158,7 +160,7 @@ impl Mdl {
             mdl_header_offset,
             model_header_offset,
             mesh_info_offset,
-            attribute_info_offset,
+            parts_offset,
         })
     }
 
@@ -202,10 +204,8 @@ impl Mdl {
 
     pub fn material_paths<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
-        let mut cursor = self.attribute_info_offset;
+        let mut cursor = self.parts_offset;
 
-        cursor += (mdl_header.attribute_count as usize) * size_of::<u32>();
-        cursor += (mdl_header.unk_count4 as usize) * 20;
         cursor += (mdl_header.part_count as usize) * size_of::<MeshPart>();
         cursor += (mdl_header.unk_count5 as usize) * 12;
 
@@ -214,5 +214,11 @@ impl Mdl {
 
             str::from_null_terminated_utf8(&self.data[self.string_block_offset + string_offset..]).unwrap()
         })
+    }
+
+    pub fn parts<'a>(&'a self) -> &'a [MeshPart] {
+        let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
+
+        &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize]
     }
 }
