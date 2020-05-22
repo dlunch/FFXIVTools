@@ -75,7 +75,7 @@ pub enum BufferItemUsage {
 }
 
 impl BufferItemUsage {
-    pub fn as_str(&self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             BufferItemUsage::Position => "Position",
             BufferItemUsage::BoneWeight => "BoneWeight",

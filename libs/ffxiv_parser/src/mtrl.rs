@@ -27,7 +27,7 @@ pub enum MtrlParameterType {
 }
 
 impl MtrlParameterType {
-    pub fn as_str(&self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             MtrlParameterType::Normal => "Normal",
             MtrlParameterType::Mask => "Mask",
