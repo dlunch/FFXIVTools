@@ -85,10 +85,16 @@ impl Renderable for Model {
         for (i, vertex_buffer) in self.mesh.vertex_buffers.iter().enumerate() {
             render_context.render_pass.set_vertex_buffer(i as u32, &vertex_buffer, 0, 0);
         }
+
+        let mut last_begin = self.mesh_parts[0].begin;
+        let mut last_end = self.mesh_parts[0].begin;
         for mesh_part in &self.mesh_parts {
-            render_context
-                .render_pass
-                .draw_indexed(mesh_part.begin..mesh_part.begin + mesh_part.count, 0, 0..1);
+            if last_end != mesh_part.begin {
+                render_context.render_pass.draw_indexed(last_begin..last_end, 0, 0..1);
+                last_begin = mesh_part.begin;
+            }
+            last_end = mesh_part.begin + mesh_part.count;
         }
+        render_context.render_pass.draw_indexed(last_begin..last_end, 0, 0..1);
     }
 }
