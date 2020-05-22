@@ -5,6 +5,7 @@ members = [
     "libs/ffxiv_model",
     "libs/renderer",
     "libs/util",
+    "libs/havok_parser",
     "tools/sqpack_extractor",
     "tools/model_viewer_standalone",
     "server",
