@@ -6,7 +6,7 @@ mod tests {
     #[tokio::test]
     async fn read_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
-         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .filter(Some("havok_parser"), log::LevelFilter::Debug)
             .try_init();
 
