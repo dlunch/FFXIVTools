@@ -12,6 +12,7 @@ mod lgb;
 mod lvb;
 mod mdl;
 mod mtrl;
+mod sklb;
 mod tex;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -34,4 +35,5 @@ pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
 pub use mtrl::{Mtrl, MtrlParameterType};
+pub use sklb::Sklb;
 pub use tex::{Tex, TextureType};
