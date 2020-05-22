@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use renderer::{Material, Mesh, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
+use renderer::{Material, Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
 
 use crate::context::Context;
 use crate::model_reader::ModelData;
@@ -20,8 +20,8 @@ impl CharacterPart {
         let buffer_items = mdl.buffer_items(lod);
 
         let mut models = Vec::new();
-        for (mesh_index, (mesh, buffer_item)) in meshes.zip(buffer_items).enumerate() {
-            let vertex_formats = (0..mesh.mesh_info.buffer_count as usize)
+        for (mesh_index, (mesh_data, buffer_item)) in meshes.zip(buffer_items).enumerate() {
+            let vertex_formats = (0..mesh_data.mesh_info.buffer_count as usize)
                 .map(|buffer_index| {
                     let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
                     VertexFormat::new(
@@ -32,18 +32,11 @@ impl CharacterPart {
                 })
                 .collect::<Vec<_>>();
 
-            let strides = (0..mesh.mesh_info.buffer_count as usize)
-                .map(|i| mesh.mesh_info.strides[i] as usize)
+            let strides = (0..mesh_data.mesh_info.buffer_count as usize)
+                .map(|i| mesh_data.mesh_info.strides[i] as usize)
                 .collect::<Vec<_>>();
 
-            let mesh = Mesh::new(
-                &renderer,
-                mesh.buffers.as_ref(),
-                &strides,
-                mesh.indices,
-                mesh.mesh_info.index_count as usize,
-                vertex_formats,
-            );
+            let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats);
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
             let mut textures = mtrl
@@ -67,7 +60,12 @@ impl CharacterPart {
 
             let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 
-            models.push(Model::new(&renderer, mesh, material));
+            models.push(Model::new(
+                &renderer,
+                mesh,
+                material,
+                vec![MeshPart::new(0, mesh_data.mesh_info.index_count as u32)],
+            ));
         }
 
         Self { models }
