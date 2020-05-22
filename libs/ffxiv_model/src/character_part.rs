@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use renderer::{Material, Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem};
+use ffxiv_parser::BufferItemType;
+use renderer::{
+    Material, Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
+};
 
 use crate::context::Context;
 use crate::model_reader::ModelData;
-use crate::type_adapter::{convert_buffer_type, convert_buffer_usage, convert_texture_name};
 
 pub struct CharacterPart {
     models: Vec<Model>,
@@ -26,7 +28,7 @@ impl CharacterPart {
                     let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
                     VertexFormat::new(
                         buffer_items
-                            .map(|x| VertexFormatItem::new(convert_buffer_usage(x.usage), convert_buffer_type(x.item_type), x.offset as usize))
+                            .map(|x| VertexFormatItem::new(x.usage.as_str(), Self::convert_buffer_type(x.item_type), x.offset as usize))
                             .collect::<Vec<_>>(),
                     )
                 })
@@ -42,12 +44,7 @@ impl CharacterPart {
             let mut textures = mtrl
                 .parameters()
                 .iter()
-                .map(|parameter| {
-                    (
-                        convert_texture_name(parameter.parameter_type),
-                        texs[parameter.texture_index as usize].clone(),
-                    )
-                })
+                .map(|parameter| (parameter.parameter_type.as_str(), texs[parameter.texture_index as usize].clone()))
                 .collect::<HashMap<_, _>>();
 
             let color_table_data = mtrl.color_table();
@@ -73,6 +70,19 @@ impl CharacterPart {
         }
 
         Self { models }
+    }
+
+    fn convert_buffer_type(item_type: BufferItemType) -> VertexItemType {
+        match item_type {
+            BufferItemType::UByte4 => VertexItemType::UByte4,
+            BufferItemType::UByte4n => VertexItemType::UByte4,
+            BufferItemType::Float2 => VertexItemType::Float2,
+            BufferItemType::Float3 => VertexItemType::Float3,
+            BufferItemType::Float4 => VertexItemType::Float4,
+            BufferItemType::Half2 => VertexItemType::Half2,
+            BufferItemType::Half4 => VertexItemType::Half4,
+            _ => panic!(),
+        }
     }
 }
 
