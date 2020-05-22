@@ -231,7 +231,7 @@ impl Mdl {
         })
     }
 
-    pub fn parts<'a>(&'a self) -> &'a [MeshPart] {
+    pub fn parts(&self) -> &[MeshPart] {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
         &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize]
