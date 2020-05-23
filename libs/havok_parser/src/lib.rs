@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::str;
+use std::sync::Arc;
 
 use bitflags::bitflags;
 use log::debug;
@@ -6,7 +8,7 @@ use log::debug;
 use util::SliceByteOrderExt;
 
 bitflags! {
-    struct HavokType: u32 {
+    pub struct HavokType: u32 {
         const BYTE = 1;
         const INT = 2;
         const REAL = 3;
@@ -44,12 +46,43 @@ bitflags! {
     }
 }
 
+// WIP
+#[allow(dead_code)]
+impl HavokType {
+    pub fn is_tuple(self) -> bool {
+        (self.bits & HavokType::TUPLE.bits) != 0
+    }
+
+    pub fn is_array(self) -> bool {
+        (self.bits & HavokType::ARRAY.bits) != 0
+    }
+
+    pub fn base_type(self) -> HavokType {
+        HavokType::from_bits(self.bits & 0x0f).unwrap()
+    }
+
+    pub fn is_vec(self) -> bool {
+        let base_type = self.base_type();
+        base_type == HavokType::VEC4 || base_type == HavokType::VEC8 || base_type == HavokType::VEC12 || base_type == HavokType::VEC16
+    }
+
+    pub fn vec_size(self) -> u8 {
+        match self.base_type() {
+            HavokType::VEC4 => 4,
+            HavokType::VEC8 => 8,
+            HavokType::VEC12 => 16,
+            HavokType::VEC16 => 16,
+            _ => panic!(),
+        }
+    }
+}
+
 #[repr(i8)]
 enum HavokTagType {
     Eof = -1,
     Invalid = 0,
     FileInfo = 1,
-    Metadata = 2,
+    Type = 2,
     Object = 3,
     ObjectRemember = 4,
     Backref = 5,
@@ -63,7 +96,7 @@ impl HavokTagType {
             255 => HavokTagType::Eof,
             0 => HavokTagType::Invalid,
             1 => HavokTagType::FileInfo,
-            2 => HavokTagType::Metadata,
+            2 => HavokTagType::Type,
             3 => HavokTagType::Object,
             4 => HavokTagType::ObjectRemember,
             5 => HavokTagType::Backref,
@@ -76,12 +109,47 @@ impl HavokTagType {
 
 type HavokInteger = i32;
 
-pub struct HavokObjectMetadata {}
+// WIP
+#[allow(dead_code)]
+pub struct HavokObjectMember {
+    name: String,
+    member_type: HavokType,
+    tuple_size: u32,
+    type_name: Option<String>,
+}
 
-#[allow(clippy::new_without_default)]
-impl HavokObjectMetadata {
-    pub fn new() -> Self {
-        Self {}
+impl HavokObjectMember {
+    pub fn new(name: String, member_type: HavokType, tuple_size: u32, type_name: Option<String>) -> Self {
+        Self {
+            name,
+            member_type,
+            tuple_size,
+            type_name,
+        }
+    }
+}
+
+// WIP
+#[allow(dead_code)]
+pub struct HavokObjectType {
+    name: String,
+    version: u32,
+    parent: Option<Arc<HavokObjectType>>,
+    members: HashMap<usize, HavokObjectMember>,
+}
+
+impl HavokObjectType {
+    pub fn new(name: String, version: u32, parent: Option<Arc<HavokObjectType>>, members: HashMap<usize, HavokObjectMember>) -> Self {
+        Self {
+            name,
+            version,
+            parent,
+            members,
+        }
+    }
+
+    pub fn member_count(&self) -> usize {
+        self.members.len()
     }
 }
 
@@ -97,7 +165,7 @@ impl HavokObject {
 pub struct HavokBinaryTagFileReader<'a> {
     file_version: u8,
     remembered_strings: Vec<String>,
-    remembered_metadatas: Vec<HavokObjectMetadata>,
+    remembered_types: Vec<Arc<HavokObjectType>>,
     remembered_objects: Vec<HavokObject>,
     data: &'a [u8],
     cursor: usize,
@@ -113,13 +181,13 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     fn new(data: &'a [u8]) -> Self {
         let file_version = 0;
         let remembered_strings = vec!["string".to_owned(), "".to_owned()];
-        let remembered_metadatas = vec![HavokObjectMetadata::new()];
+        let remembered_types = vec![Arc::new(HavokObjectType::new("base".to_owned(), 0, None, HashMap::new()))];
         let remembered_objects = Vec::new();
 
         Self {
             file_version,
             remembered_strings,
-            remembered_metadatas,
+            remembered_types,
             remembered_objects,
             data,
             cursor: 0,
@@ -145,9 +213,9 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     debug!("version {}", self.file_version);
                     self.remembered_objects.push(HavokObject::new())
                 }
-                HavokTagType::Metadata => {
-                    let metadata = self.read_metadata();
-                    self.remembered_metadatas.push(metadata);
+                HavokTagType::Type => {
+                    let object_type = self.read_type();
+                    self.remembered_types.push(Arc::new(object_type));
                 }
                 _ => break,
             }
@@ -156,24 +224,52 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         HavokObject::new()
     }
 
-    fn read_metadata(&mut self) -> HavokObjectMetadata {
+    fn read_type(&mut self) -> HavokObjectType {
         let name = self.read_string();
-        debug!("metadata {}", name);
+        let version = self.read_packed_int();
+        let parent = self.read_packed_int();
+        let member_count = self.read_packed_int();
 
-        HavokObjectMetadata::new()
+        let parent = self.remembered_types[parent as usize].clone();
+        let members = (0..member_count)
+            .map(|x| {
+                let member_name = self.read_string();
+                let member_type = HavokType::from_bits(self.read_packed_int() as u32).unwrap();
+
+                let tuple_size = if member_type.is_tuple() { self.read_packed_int() } else { 0 };
+                let type_name = if member_type.base_type() == HavokType::OBJECT || member_type.base_type() == HavokType::STRUCT {
+                    Some(self.read_string())
+                } else {
+                    None
+                };
+
+                let index = parent.member_count() + x as usize;
+                let member = HavokObjectMember::new(member_name, member_type, tuple_size as u32, type_name);
+
+                (index, member)
+            })
+            .collect::<HashMap<_, _>>();
+
+        debug!(
+            "type {} members {}",
+            name,
+            members.values().map(|x| x.name.to_owned()).collect::<Vec<_>>().join(", ")
+        );
+
+        HavokObjectType::new(name, version as u32, Some(parent), members)
     }
 
-    fn read_string(&mut self) -> &str {
+    fn read_string(&mut self) -> String {
         let length = self.read_packed_int();
         if length < 0 {
-            return &self.remembered_strings[-length as usize];
+            return self.remembered_strings[-length as usize].to_owned();
         }
 
-        self.remembered_strings
-            .push(str::from_utf8(&self.data[self.cursor..self.cursor + length as usize]).unwrap().to_owned());
+        let result = str::from_utf8(&self.data[self.cursor..self.cursor + length as usize]).unwrap();
+        self.remembered_strings.push(result.to_owned());
         self.cursor += length as usize;
 
-        &self.remembered_strings[self.remembered_strings.len() - 1]
+        result.to_owned()
     }
 
     fn read_byte(&mut self) -> u8 {
