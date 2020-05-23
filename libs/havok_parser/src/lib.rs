@@ -197,8 +197,9 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             shift += 7;
         }
         if neg == 1 {
-            return -(result as HavokInteger);
+            -(result as HavokInteger)
+        } else {
+            result as HavokInteger
         }
-        return result as HavokInteger;
     }
 }
