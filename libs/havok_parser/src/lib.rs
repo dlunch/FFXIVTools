@@ -1,4 +1,7 @@
+use std::str;
+
 use bitflags::bitflags;
+use log::debug;
 
 use util::SliceByteOrderExt;
 
@@ -41,8 +44,7 @@ bitflags! {
     }
 }
 
-// WIP
-#[allow(dead_code)]
+#[repr(i8)]
 enum HavokTagType {
     Eof = -1,
     Invalid = 0,
@@ -55,9 +57,33 @@ enum HavokTagType {
     FileEnd = 7,
 }
 
-// WIP
-#[allow(dead_code)]
-type HavokInteger = u32;
+impl HavokTagType {
+    fn from(raw: u8) -> Self {
+        match raw {
+            255 => HavokTagType::Eof,
+            0 => HavokTagType::Invalid,
+            1 => HavokTagType::FileInfo,
+            2 => HavokTagType::Metadata,
+            3 => HavokTagType::Object,
+            4 => HavokTagType::ObjectRemember,
+            5 => HavokTagType::Backref,
+            6 => HavokTagType::ObjectNull,
+            7 => HavokTagType::FileEnd,
+            _ => panic!(),
+        }
+    }
+}
+
+type HavokInteger = i32;
+
+pub struct HavokObjectMetadata {}
+
+#[allow(clippy::new_without_default)]
+impl HavokObjectMetadata {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 pub struct HavokObject {}
 
@@ -68,13 +94,13 @@ impl HavokObject {
     }
 }
 
-// WIP
-#[allow(dead_code)]
 pub struct HavokBinaryTagFileReader<'a> {
-    file_version: i8,
-    read_strings: Vec<String>,
-    read_objects: Vec<HavokObject>,
+    file_version: u8,
+    remembered_strings: Vec<String>,
+    remembered_metadatas: Vec<HavokObjectMetadata>,
+    remembered_objects: Vec<HavokObject>,
     data: &'a [u8],
+    cursor: usize,
 }
 
 impl<'a> HavokBinaryTagFileReader<'a> {
@@ -85,15 +111,18 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     }
 
     fn new(data: &'a [u8]) -> Self {
-        let file_version = -1;
-        let read_strings = vec!["string".to_owned(), "".to_owned()];
-        let read_objects = vec![HavokObject::new()];
+        let file_version = 0;
+        let remembered_strings = vec!["string".to_owned(), "".to_owned()];
+        let remembered_metadatas = vec![HavokObjectMetadata::new()];
+        let remembered_objects = Vec::new();
 
         Self {
             file_version,
-            read_strings,
-            read_objects,
+            remembered_strings,
+            remembered_metadatas,
+            remembered_objects,
             data,
+            cursor: 0,
         }
     }
 
@@ -103,7 +132,73 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         if signature1 != 0xCAB0_0D1E || signature2 != 0xD011_FACE {
             panic!()
         }
+        self.cursor = 8;
+
+        loop {
+            let tag_type = HavokTagType::from(self.read_packed_int() as u8);
+            match tag_type {
+                HavokTagType::FileInfo => {
+                    self.file_version = self.read_packed_int() as u8;
+                    if self.file_version != 3 {
+                        panic!("Unimplemented version");
+                    }
+                    debug!("version {}", self.file_version);
+                    self.remembered_objects.push(HavokObject::new())
+                }
+                HavokTagType::Metadata => {
+                    let metadata = self.read_metadata();
+                    self.remembered_metadatas.push(metadata);
+                }
+                _ => break,
+            }
+        }
 
         HavokObject::new()
+    }
+
+    fn read_metadata(&mut self) -> HavokObjectMetadata {
+        let name = self.read_string();
+        debug!("metadata {}", name);
+
+        HavokObjectMetadata::new()
+    }
+
+    fn read_string(&mut self) -> &str {
+        let length = self.read_packed_int();
+        if length < 0 {
+            return &self.remembered_strings[-length as usize];
+        }
+
+        self.remembered_strings
+            .push(str::from_utf8(&self.data[self.cursor..self.cursor + length as usize]).unwrap().to_owned());
+        self.cursor += length as usize;
+
+        &self.remembered_strings[self.remembered_strings.len() - 1]
+    }
+
+    fn read_byte(&mut self) -> u8 {
+        let result = self.data[self.cursor];
+        self.cursor += 1;
+
+        result
+    }
+
+    fn read_packed_int(&mut self) -> HavokInteger {
+        let mut byte = self.read_byte();
+
+        let mut result = ((byte & 0x7f) >> 1) as u32;
+        let neg = byte & 1;
+
+        let mut shift = 6;
+        while byte & 0x80 != 0 {
+            byte = self.read_byte();
+
+            result |= ((byte as u32) & 0xffff_ff7f) << shift;
+            shift += 7;
+        }
+        if neg == 1 {
+            return -(result as HavokInteger);
+        }
+        return result as HavokInteger;
     }
 }
