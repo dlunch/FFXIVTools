@@ -154,11 +154,11 @@ impl HavokObjectType {
         Self { name, parent, members }
     }
 
-    pub fn members<'a>(&'a self) -> Vec<&HavokObjectTypeMember> {
+    pub fn members(&self) -> Vec<&HavokObjectTypeMember> {
         if let Some(x) = &self.parent {
-            return x.members().into_iter().chain(self.members.iter()).collect::<Vec<_>>();
+            x.members().into_iter().chain(self.members.iter()).collect::<Vec<_>>()
         } else {
-            return self.members.iter().collect::<Vec<_>>();
+            self.members.iter().collect::<Vec<_>>()
         }
     }
 
@@ -353,7 +353,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     }
                 }
 
-                result_objects.into_iter().map(|x| HavokValue::Object(x)).collect::<Vec<_>>()
+                result_objects.into_iter().map(HavokValue::Object).collect::<Vec<_>>()
             }
             HavokValueType::OBJECT => (0..array_len)
                 .map(|_| {
@@ -428,7 +428,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         self.remembered_strings.push(result.clone());
         self.cursor += length as usize;
 
-        result.to_owned()
+        result
     }
 
     fn read_byte(&mut self) -> u8 {
@@ -504,14 +504,13 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     debug!("Update reference {} to {}", index, object_ref.borrow().object_type.name);
                 }
                 HavokValue::Array(x) => {
-                    x.iter_mut().enumerate().for_each(|(array_index, item)| match item {
-                        HavokValue::ObjectReference(x) => {
+                    x.iter_mut().enumerate().for_each(|(array_index, item)| {
+                        if let HavokValue::ObjectReference(x) = item {
                             let object_ref = &self.remembered_objects[*x];
                             debug!("Update reference {}.{} to {}", index, array_index, object_ref.borrow().object_type.name);
 
                             *item = HavokValue::Object(object_ref.clone())
                         }
-                        _ => {}
                     });
                 }
                 _ => {}
