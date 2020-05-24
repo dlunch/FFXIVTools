@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::str;
@@ -119,7 +120,7 @@ pub enum HavokValue {
     String(Arc<String>),
     Vec(Vec<HavokReal>),
     Array(Vec<HavokValue>),
-    Struct(HavokObject),
+    Object(Arc<RefCell<HavokObject>>),
 
     ObjectReference(usize),
 }
@@ -185,19 +186,24 @@ impl HavokObject {
 
         &self.data.get(&member_index).unwrap()
     }
+
+    pub fn members_mut(&mut self) -> impl Iterator<Item = (&usize, &mut HavokValue)> {
+        self.data.iter_mut()
+    }
 }
 
 pub struct HavokBinaryTagFileReader<'a> {
     file_version: u8,
     remembered_strings: Vec<Arc<String>>,
     remembered_types: Vec<Arc<HavokObjectType>>,
-    remembered_objects: Vec<Arc<HavokObject>>,
+    remembered_objects: Vec<Arc<RefCell<HavokObject>>>,
+    objects: Vec<Arc<RefCell<HavokObject>>>,
     data: &'a [u8],
     cursor: usize,
 }
 
 impl<'a> HavokBinaryTagFileReader<'a> {
-    pub fn read(data: &'a [u8]) -> Arc<HavokObject> {
+    pub fn read(data: &'a [u8]) -> Arc<RefCell<HavokObject>> {
         let mut reader = Self::new(data);
 
         reader.do_read()
@@ -208,18 +214,20 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         let remembered_strings = vec![Arc::new("string".to_owned()), Arc::new("".to_owned())];
         let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::new("object".to_owned()), None, Vec::new()))];
         let remembered_objects = Vec::new();
+        let objects = Vec::new();
 
         Self {
             file_version,
             remembered_strings,
             remembered_types,
             remembered_objects,
+            objects,
             data,
             cursor: 0,
         }
     }
 
-    fn do_read(&mut self) -> Arc<HavokObject> {
+    fn do_read(&mut self) -> Arc<RefCell<HavokObject>> {
         let signature1 = (&self.data[0..4]).to_int_le::<u32>();
         let signature2 = (&self.data[4..8]).to_int_le::<u32>();
         if signature1 != 0xCAB0_0D1E || signature2 != 0xD011_FACE {
@@ -237,7 +245,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     }
                     debug!("version {}", self.file_version);
                     self.remembered_objects
-                        .push(Arc::new(HavokObject::new(self.remembered_types[0].clone(), HashMap::new())))
+                        .push(Arc::new(RefCell::new(HavokObject::new(self.remembered_types[0].clone(), HashMap::new()))))
                 }
                 HavokTagType::Type => {
                     let object_type = self.read_type();
@@ -245,8 +253,10 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 }
                 HavokTagType::Backref => panic!(),
                 HavokTagType::ObjectRemember => {
-                    let object = self.read_object_top_level();
-                    self.remembered_objects.push(Arc::new(object));
+                    let object = Arc::new(RefCell::new(self.read_object_top_level()));
+
+                    self.remembered_objects.push(object.clone());
+                    self.objects.push(object);
                 }
                 HavokTagType::FileEnd => {
                     break;
@@ -256,9 +266,11 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         }
 
         // fill object references
-        let root = self.remembered_objects[1].clone();
+        for object in &self.objects {
+            self.fill_object_reference(&mut *object.borrow_mut());
+        }
 
-        root
+        self.remembered_objects[1].clone() // root
     }
 
     fn read_object_top_level(&mut self) -> HavokObject {
@@ -319,9 +331,13 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 let target_type = self.find_type(&*member.class_name.as_ref().unwrap());
                 let data_existence = self.read_bit_field(target_type.member_count());
 
-                let mut result_objects = (0..array_len)
-                    .map(|_| HavokObject::new(target_type.clone(), HashMap::new()))
-                    .collect::<Vec<_>>();
+                let mut result_objects = Vec::new();
+                for _ in 0..array_len {
+                    let object = Arc::new(RefCell::new(HavokObject::new(target_type.clone(), HashMap::new())));
+
+                    result_objects.push(object.clone());
+                    self.objects.push(object);
+                }
 
                 // struct of array
                 for (member_index, member) in target_type.members().into_iter().enumerate() {
@@ -331,17 +347,19 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                         } else {
                             let data = self.read_array(member, array_len);
                             for (index, item) in data.into_iter().enumerate() {
-                                result_objects[index].set(member_index, item);
+                                result_objects[index].borrow_mut().set(member_index, item);
                             }
                         }
                     }
                 }
 
-                result_objects.into_iter().map(|x| HavokValue::Struct(x)).collect::<Vec<_>>()
+                result_objects.into_iter().map(|x| HavokValue::Object(x)).collect::<Vec<_>>()
             }
             HavokValueType::OBJECT => (0..array_len)
                 .map(|_| {
                     let object_index = self.read_packed_int();
+                    debug!("Object reference {}", object_index);
+
                     HavokValue::ObjectReference(object_index as usize)
                 })
                 .collect::<Vec<_>>(),
@@ -471,6 +489,38 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
     fn find_type(&self, type_name: &str) -> Arc<HavokObjectType> {
         self.remembered_types.iter().find(|&x| (*x.name) == type_name).unwrap().clone()
+    }
+
+    fn fill_object_reference(&self, object: &mut HavokObject) {
+        debug!("Update reference {}", object.object_type.name.clone());
+
+        let mut values_to_update = Vec::new();
+        for (index, mut value) in object.members_mut() {
+            match &mut value {
+                HavokValue::ObjectReference(x) => {
+                    let object_ref = &self.remembered_objects[*x];
+                    values_to_update.push((*index, HavokValue::Object(object_ref.clone())));
+
+                    debug!("Update reference {} to {}", index, object_ref.borrow().object_type.name);
+                }
+                HavokValue::Array(x) => {
+                    x.iter_mut().enumerate().for_each(|(array_index, item)| match item {
+                        HavokValue::ObjectReference(x) => {
+                            let object_ref = &self.remembered_objects[*x];
+                            debug!("Update reference {}.{} to {}", index, array_index, object_ref.borrow().object_type.name);
+
+                            *item = HavokValue::Object(object_ref.clone())
+                        }
+                        _ => {}
+                    });
+                }
+                _ => {}
+            }
+        }
+
+        for (index, value) in values_to_update {
+            object.set(index, value);
+        }
     }
 
     fn default_value(&self, type_: HavokValueType) -> HavokValue {
