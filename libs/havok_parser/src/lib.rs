@@ -119,6 +119,19 @@ pub enum HavokValue {
     ObjectReference(usize),
 }
 
+impl HavokValue {
+    pub fn default(type_: HavokValueType) -> Self {
+        match type_ {
+            HavokValueType::BYTE => Self::Integer(HavokInteger::default()),
+            HavokValueType::INT => Self::Integer(HavokInteger::default()),
+            _ => {
+                debug!("unimplemented {}", type_.bits);
+                panic!()
+            }
+        }
+    }
+}
+
 // WIP
 #[allow(dead_code)]
 pub struct HavokObjectTypeMember {
@@ -273,7 +286,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 let value = if data_existence[index] {
                     self.read_object_member_value(member)
                 } else {
-                    HavokValue::Integer(HavokInteger::default())
+                    HavokValue::default(member.type_)
                 };
                 (index, value)
             })
@@ -293,7 +306,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
             HavokValue::Array(self.read_array(member, array_len as usize))
         } else {
-            HavokValue::Integer(HavokInteger::default())
+            panic!()
         }
     }
 
