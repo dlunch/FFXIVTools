@@ -345,6 +345,16 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     HavokValue::ObjectReference(object_index as usize)
                 })
                 .collect::<Vec<_>>(),
+            HavokValueType::BYTE => (0..array_len)
+                .map(|_| HavokValue::Integer(self.read_byte() as HavokInteger))
+                .collect::<Vec<_>>(),
+            HavokValueType::INT => {
+                if self.file_version >= 3 {
+                    self.read_packed_int(); // type?
+                }
+                (0..array_len).map(|_| HavokValue::Integer(self.read_packed_int())).collect::<Vec<_>>()
+            }
+            HavokValueType::REAL => (0..array_len).map(|_| HavokValue::Real(self.read_float())).collect::<Vec<_>>(),
             _ => {
                 debug!("unimplemented {}", member.type_.bits);
                 panic!()
