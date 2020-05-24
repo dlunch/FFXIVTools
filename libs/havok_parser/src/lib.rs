@@ -145,11 +145,11 @@ pub struct HavokObjectType {
     name: Arc<String>,
     version: u32,
     parent: Option<Arc<HavokObjectType>>,
-    members: HashMap<usize, HavokObjectTypeMember>,
+    members: Vec<HavokObjectTypeMember>,
 }
 
 impl HavokObjectType {
-    pub fn new(name: Arc<String>, version: u32, parent: Option<Arc<HavokObjectType>>, members: HashMap<usize, HavokObjectTypeMember>) -> Self {
+    pub fn new(name: Arc<String>, version: u32, parent: Option<Arc<HavokObjectType>>, members: Vec<HavokObjectTypeMember>) -> Self {
         Self {
             name,
             version,
@@ -159,11 +159,10 @@ impl HavokObjectType {
     }
 
     pub fn members<'a>(&'a self) -> Vec<&HavokObjectTypeMember> {
-        let members = self.members.values();
         if let Some(x) = &self.parent {
-            return x.members().into_iter().chain(members).collect::<Vec<_>>();
+            return x.members().into_iter().chain(self.members.iter()).collect::<Vec<_>>();
         } else {
-            return members.collect::<Vec<_>>();
+            return self.members.iter().collect::<Vec<_>>();
         }
     }
 
@@ -208,7 +207,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     fn new(data: &'a [u8]) -> Self {
         let file_version = 0;
         let remembered_strings = vec![Arc::new("string".to_owned()), Arc::new("".to_owned())];
-        let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::new("object".to_owned()), 0, None, HashMap::new()))];
+        let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::new("object".to_owned()), 0, None, Vec::new()))];
         let remembered_objects = Vec::new();
 
         Self {
@@ -346,7 +345,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
         let parent = self.remembered_types[parent as usize].clone();
         let members = (0..member_count)
-            .map(|x| {
+            .map(|_| {
                 let member_name = self.read_string();
                 let member = HavokValueType::from_bits(self.read_packed_int() as u32).unwrap();
 
@@ -357,17 +356,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     None
                 };
 
-                let index = parent.member_count() + x as usize;
-                let member = HavokObjectTypeMember::new(member_name, member, tuple_size as u32, type_name);
-
-                (index, member)
+                HavokObjectTypeMember::new(member_name, member, tuple_size as u32, type_name)
             })
-            .collect::<HashMap<_, _>>();
+            .collect::<Vec<_>>();
 
         debug!(
             "type {} members {}",
             name,
-            members.values().map(|x| (*x.name).clone()).collect::<Vec<_>>().join(", ")
+            members.iter().map(|x| (*x.name).clone()).collect::<Vec<_>>().join(", ")
         );
 
         HavokObjectType::new(name, version as u32, Some(parent), members)
