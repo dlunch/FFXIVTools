@@ -73,7 +73,7 @@ impl HavokValueType {
         match self.base_type() {
             HavokValueType::VEC4 => 4,
             HavokValueType::VEC8 => 8,
-            HavokValueType::VEC12 => 16,
+            HavokValueType::VEC12 => 12,
             HavokValueType::VEC16 => 16,
             _ => panic!(),
         }
@@ -117,6 +117,7 @@ pub enum HavokValue {
     Integer(HavokInteger),
     Real(HavokReal),
     String(Arc<String>),
+    Vec(Vec<HavokReal>),
     Array(Vec<HavokValue>),
     Struct(HavokObject),
 
@@ -355,8 +356,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 (0..array_len).map(|_| HavokValue::Integer(self.read_packed_int())).collect::<Vec<_>>()
             }
             HavokValueType::REAL => (0..array_len).map(|_| HavokValue::Real(self.read_float())).collect::<Vec<_>>(),
+            HavokValueType::VEC4 | HavokValueType::VEC8 | HavokValueType::VEC12 | HavokValueType::VEC16 => {
+                let vec_size = member.type_.base_type().vec_size() as usize;
+                (0..array_len)
+                    .map(|_| HavokValue::Vec((0..vec_size).map(|_| self.read_float()).collect::<Vec<_>>()))
+                    .collect::<Vec<_>>()
+            }
             _ => {
-                debug!("unimplemented {}", member.type_.bits);
+                debug!("unimplemented {} {}", member.type_.bits, member.type_.base_type().bits);
                 panic!()
             }
         }
