@@ -283,6 +283,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             .into_iter()
             .enumerate()
             .map(|(index, member)| {
+                debug!("member {}", member.name);
                 let value = if data_existence[index] {
                     self.read_object_member_value(member)
                 } else {
@@ -296,8 +297,6 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     }
 
     fn read_object_member_value(&mut self, member: &HavokObjectTypeMember) -> HavokValue {
-        debug!("member {}", member.name);
-
         if member.type_.is_array() {
             let array_len = self.read_packed_int();
             if member.type_.base_type() == HavokValueType::OBJECT && member.class_name.is_none() {
@@ -360,16 +359,16 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         let members = (0..member_count)
             .map(|_| {
                 let member_name = self.read_string();
-                let member = HavokValueType::from_bits(self.read_packed_int() as u32).unwrap();
+                let type_ = HavokValueType::from_bits(self.read_packed_int() as u32).unwrap();
 
-                let tuple_size = if member.is_tuple() { self.read_packed_int() } else { 0 };
-                let type_name = if member.base_type() == HavokValueType::OBJECT || member.base_type() == HavokValueType::STRUCT {
+                let tuple_size = if type_.is_tuple() { self.read_packed_int() } else { 0 };
+                let type_name = if type_.base_type() == HavokValueType::OBJECT || type_.base_type() == HavokValueType::STRUCT {
                     Some(self.read_string())
                 } else {
                     None
                 };
 
-                HavokObjectTypeMember::new(member_name, member, tuple_size as u32, type_name)
+                HavokObjectTypeMember::new(member_name, type_, tuple_size as u32, type_name)
             })
             .collect::<Vec<_>>();
 
