@@ -9,6 +9,7 @@ use util::SliceByteOrderExt;
 
 bitflags! {
     pub struct HavokValueType: u32 {
+        const EMPTY = 0;
         const BYTE = 1;
         const INT = 2;
         const REAL = 3;
@@ -122,6 +123,7 @@ pub enum HavokValue {
 impl HavokValue {
     pub fn default(type_: HavokValueType) -> Self {
         match type_ {
+            HavokValueType::EMPTY => Self::Integer(HavokInteger::default()),
             HavokValueType::BYTE => Self::Integer(HavokInteger::default()),
             HavokValueType::INT => Self::Integer(HavokInteger::default()),
             _ => {
