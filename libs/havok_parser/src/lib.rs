@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::str;
 use std::sync::Arc;
 
@@ -110,9 +111,11 @@ impl HavokTagType {
 }
 
 type HavokInteger = i32;
+type HavokReal = f32;
 
 pub enum HavokValue {
     Integer(HavokInteger),
+    Real(HavokReal),
     String(Arc<String>),
     Array(Vec<HavokValue>),
     Struct(HavokObject),
@@ -293,7 +296,16 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
             HavokValue::Array(self.read_array(member, array_len as usize))
         } else {
-            panic!()
+            match member.type_ {
+                HavokValueType::BYTE => HavokValue::Integer(self.read_byte() as i32),
+                HavokValueType::INT => HavokValue::Integer(self.read_packed_int()),
+                HavokValueType::REAL => HavokValue::Real(self.read_float()),
+                HavokValueType::STRING => HavokValue::String(self.read_string()),
+                _ => {
+                    debug!("unimplemented {}", member.type_.bits);
+                    panic!()
+                }
+            }
         }
     }
 
@@ -333,7 +345,10 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     HavokValue::ObjectReference(object_index as usize)
                 })
                 .collect::<Vec<_>>(),
-            _ => panic!(),
+            _ => {
+                debug!("unimplemented {}", member.type_.bits);
+                panic!()
+            }
         }
     }
 
@@ -387,6 +402,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         self.cursor += 1;
 
         result
+    }
+
+    fn read_float(&mut self) -> f32 {
+        let len = core::mem::size_of::<f32>();
+        let bytes = &self.data[self.cursor..self.cursor + len];
+        self.cursor += len;
+
+        f32::from_le_bytes(bytes.try_into().unwrap())
     }
 
     fn read_bit_field(&mut self, count: usize) -> Vec<bool> {
