@@ -120,20 +120,6 @@ pub enum HavokValue {
     ObjectReference(usize),
 }
 
-impl HavokValue {
-    pub fn default(type_: HavokValueType) -> Self {
-        match type_ {
-            HavokValueType::EMPTY => Self::Integer(HavokInteger::default()),
-            HavokValueType::BYTE => Self::Integer(HavokInteger::default()),
-            HavokValueType::INT => Self::Integer(HavokInteger::default()),
-            _ => {
-                debug!("unimplemented {}", type_.bits);
-                panic!()
-            }
-        }
-    }
-}
-
 // WIP
 #[allow(dead_code)]
 pub struct HavokObjectTypeMember {
@@ -285,11 +271,11 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             .into_iter()
             .enumerate()
             .map(|(index, member)| {
-                debug!("member {}", member.name);
+                debug!("member {} type {}", member.name, member.type_.bits);
                 let value = if data_existence[index] {
                     self.read_object_member_value(member)
                 } else {
-                    HavokValue::default(member.type_)
+                    self.default_value(member.type_)
                 };
                 (index, value)
             })
@@ -446,5 +432,23 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
     fn find_type(&self, type_name: &str) -> Arc<HavokObjectType> {
         self.remembered_types.iter().find(|&x| (*x.name) == type_name).unwrap().clone()
+    }
+
+    fn default_value(&self, type_: HavokValueType) -> HavokValue {
+        if type_.is_vec() {
+            HavokValue::Array((0..type_.vec_size()).map(|_| self.default_value(type_.base_type())).collect::<Vec<_>>())
+        } else if type_.is_array() || type_.is_tuple() {
+            HavokValue::Array(Vec::new())
+        } else {
+            match type_ {
+                HavokValueType::EMPTY => HavokValue::Integer(HavokInteger::default()),
+                HavokValueType::BYTE => HavokValue::Integer(HavokInteger::default()),
+                HavokValueType::INT => HavokValue::Integer(HavokInteger::default()),
+                _ => {
+                    debug!("unimplemented {}", type_.bits);
+                    panic!()
+                }
+            }
+        }
     }
 }
