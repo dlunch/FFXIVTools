@@ -19,7 +19,7 @@ pub struct HavokBinaryTagFileReader<'a> {
 }
 
 impl<'a> HavokBinaryTagFileReader<'a> {
-    pub fn read(data: &'a [u8]) -> Arc<RefCell<HavokObject>> {
+    pub fn read(data: &'a [u8]) -> HavokValue {
         let mut reader = Self::new(data);
 
         reader.do_read()
@@ -43,7 +43,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         }
     }
 
-    fn do_read(&mut self) -> Arc<RefCell<HavokObject>> {
+    fn do_read(&mut self) -> HavokValue {
         let signature1 = (&self.data[0..4]).to_int_le::<u32>();
         let signature2 = (&self.data[4..8]).to_int_le::<u32>();
         if signature1 != 0xCAB0_0D1E || signature2 != 0xD011_FACE {
@@ -85,7 +85,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             self.fill_object_reference(&mut *object.borrow_mut());
         }
 
-        self.remembered_objects[1].clone() // root
+        HavokValue::Object(self.remembered_objects[1].clone()) // root
     }
 
     fn read_object_top_level(&mut self) -> HavokObject {
