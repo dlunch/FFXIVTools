@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use ffxiv_parser::Sklb;
-    use havok_parser::{HavokBinaryTagFileReader, HavokValue};
+    use havok_parser::HavokBinaryTagFileReader;
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
@@ -17,22 +17,11 @@ mod tests {
         let hkx = sklb.hkx_data();
 
         let root = HavokBinaryTagFileReader::read(hkx);
-        let root_obj = root.borrow();
+        let root_obj = root.as_object();
         let named_variants = root_obj.get("namedVariants");
-        match named_variants {
-            HavokValue::Array(variants) => match &variants[0] {
-                HavokValue::Object(object) => {
-                    let object_obj = object.borrow();
-                    let class_name = object_obj.get("className");
-                    match class_name {
-                        HavokValue::String(x) => assert_eq!(&**x, "hkaAnimationContainer"),
-                        _ => panic!(),
-                    }
-                }
-                _ => panic!(),
-            },
-            _ => panic!(),
-        }
+        let object = named_variants.as_array()[0].as_object();
+        let class_name = object.get("className");
+        assert_eq!(class_name.as_string(), "hkaAnimationContainer");
 
         Ok(())
     }

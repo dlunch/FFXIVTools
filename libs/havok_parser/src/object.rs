@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 use std::str;
 use std::sync::Arc;
@@ -119,6 +119,36 @@ pub enum HavokValue {
     Object(Arc<RefCell<HavokObject>>),
 
     ObjectReference(usize),
+}
+
+impl HavokValue {
+    pub fn as_int(&self) -> &HavokInteger {
+        match self {
+            Self::Integer(x) => x,
+            _ => panic!(),
+        }
+    }
+
+    pub fn as_object(&self) -> Ref<'_, HavokObject> {
+        match self {
+            Self::Object(x) => x.borrow(),
+            _ => panic!(),
+        }
+    }
+
+    pub fn as_array(&self) -> &Vec<HavokValue> {
+        match self {
+            Self::Array(x) => x,
+            _ => panic!(),
+        }
+    }
+
+    pub fn as_string(&self) -> &str {
+        match self {
+            Self::String(x) => &*x,
+            _ => panic!(),
+        }
+    }
 }
 
 pub struct HavokObjectTypeMember {
