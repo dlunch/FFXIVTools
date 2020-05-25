@@ -7,7 +7,7 @@ mod tests {
     #[tokio::test]
     async fn read_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter_level(log::LevelFilter::Debug)
+            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
