@@ -4,8 +4,6 @@ use std::convert::TryInto;
 use std::str;
 use std::sync::Arc;
 
-use log::debug;
-
 use util::SliceByteOrderExt;
 
 use crate::object::{HavokInteger, HavokObject, HavokObjectType, HavokObjectTypeMember, HavokTagType, HavokValue, HavokValueType};
@@ -61,7 +59,6 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     if self.file_version != 3 {
                         panic!("Unimplemented version");
                     }
-                    debug!("version {}", self.file_version);
                     self.remembered_objects
                         .push(Arc::new(RefCell::new(HavokObject::new(self.remembered_types[0].clone(), HashMap::new()))))
                 }
@@ -98,13 +95,10 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         let members = object_type.members();
         let data_existence = self.read_bit_field(members.len());
 
-        debug!("object {}", object_type.name);
-
         let data = members
             .into_iter()
             .enumerate()
             .map(|(index, member)| {
-                debug!("member {} type {}", member.name, member.type_.bits());
                 let value = if data_existence[index] {
                     self.read_object_member_value(member)
                 } else {
@@ -131,17 +125,12 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 HavokValueType::INT => HavokValue::Integer(self.read_packed_int()),
                 HavokValueType::REAL => HavokValue::Real(self.read_float()),
                 HavokValueType::STRING => HavokValue::String(self.read_string()),
-                _ => {
-                    debug!("unimplemented {}", member.type_.bits());
-                    panic!()
-                }
+                _ => panic!("unimplemented {}", member.type_.bits()),
             }
         }
     }
 
     fn read_array(&mut self, member: &HavokObjectTypeMember, array_len: usize) -> Vec<HavokValue> {
-        debug!("read_array member type {}, type {}, len {}", member.name, member.type_.bits(), array_len);
-
         let base_type = member.type_.base_type();
         match base_type {
             HavokValueType::STRING => (0..array_len).map(|_| HavokValue::String(self.read_string())).collect::<Vec<_>>(),
@@ -176,7 +165,6 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             HavokValueType::OBJECT => (0..array_len)
                 .map(|_| {
                     let object_index = self.read_packed_int();
-                    debug!("Object reference {}", object_index);
 
                     HavokValue::ObjectReference(object_index as usize)
                 })
@@ -197,10 +185,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     .map(|_| HavokValue::Vec((0..vec_size).map(|_| self.read_float()).collect::<Vec<_>>()))
                     .collect::<Vec<_>>()
             }
-            _ => {
-                debug!("unimplemented {} {}", member.type_.bits(), member.type_.base_type().bits());
-                panic!()
-            }
+            _ => panic!("unimplemented {} {}", member.type_.bits(), member.type_.base_type().bits()),
         }
     }
 
@@ -226,12 +211,6 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 HavokObjectTypeMember::new(member_name, type_, tuple_size as u32, type_name)
             })
             .collect::<Vec<_>>();
-
-        debug!(
-            "type {} members {}",
-            name,
-            members.iter().map(|x| (*x.name).clone()).collect::<Vec<_>>().join(", ")
-        );
 
         HavokObjectType::new(name, Some(parent), members)
     }
@@ -310,22 +289,17 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     }
 
     fn fill_object_reference(&self, object: &mut HavokObject) {
-        debug!("Update reference {}", object.object_type.name.clone());
-
         let mut values_to_update = Vec::new();
         for (index, mut value) in object.members_mut() {
             match &mut value {
                 HavokValue::ObjectReference(x) => {
                     let object_ref = &self.remembered_objects[*x];
                     values_to_update.push((*index, HavokValue::Object(object_ref.clone())));
-
-                    debug!("Update reference {} to {}", index, object_ref.borrow().object_type.name);
                 }
                 HavokValue::Array(x) => {
-                    x.iter_mut().enumerate().for_each(|(array_index, item)| {
+                    x.iter_mut().enumerate().for_each(|(_, item)| {
                         if let HavokValue::ObjectReference(x) = item {
                             let object_ref = &self.remembered_objects[*x];
-                            debug!("Update reference {}.{} to {}", index, array_index, object_ref.borrow().object_type.name);
 
                             *item = HavokValue::Object(object_ref.clone())
                         }
@@ -350,10 +324,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 HavokValueType::EMPTY => HavokValue::Integer(HavokInteger::default()),
                 HavokValueType::BYTE => HavokValue::Integer(HavokInteger::default()),
                 HavokValueType::INT => HavokValue::Integer(HavokInteger::default()),
-                _ => {
-                    debug!("unimplemented {}", type_.bits());
-                    panic!()
-                }
+                _ => panic!("unimplemented {}", type_.bits()),
             }
         }
     }
