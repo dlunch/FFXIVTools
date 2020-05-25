@@ -17,11 +17,8 @@ mod tests {
         let hkx = sklb.hkx_data();
 
         let root = HavokBinaryTagFileReader::read(hkx);
-        let root_obj = root.as_object();
-        let named_variants = root_obj.get("namedVariants");
-        let object = named_variants.as_array()[0].as_object();
-        let class_name = object.get("className");
-        assert_eq!(class_name.as_string(), "hkaAnimationContainer");
+        let animation_container = root.find_object_by_type("hkaAnimationContainer");
+        assert_eq!(&*animation_container.borrow().object_type.name, "hkaAnimationContainer");
 
         Ok(())
     }

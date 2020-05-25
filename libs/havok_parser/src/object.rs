@@ -1,4 +1,4 @@
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::str;
 use std::sync::Arc;
@@ -129,9 +129,9 @@ impl HavokValue {
         }
     }
 
-    pub fn as_object(&self) -> Ref<'_, HavokObject> {
+    pub fn as_object(&self) -> Arc<RefCell<HavokObject>> {
         match self {
-            Self::Object(x) => x.borrow(),
+            Self::Object(x) => x.clone(),
             _ => panic!(),
         }
     }
@@ -148,6 +148,29 @@ impl HavokValue {
             Self::String(x) => &*x,
             _ => panic!(),
         }
+    }
+}
+
+pub struct HavokRootObject {
+    object: Arc<RefCell<HavokObject>>,
+}
+
+impl HavokRootObject {
+    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+        Self { object }
+    }
+
+    pub fn find_object_by_type(&self, type_name: &'static str) -> Arc<RefCell<HavokObject>> {
+        let root_obj = self.object.borrow();
+        let named_variants = root_obj.get("namedVariants");
+
+        for variant in named_variants.as_array() {
+            let variant_obj = variant.as_object();
+            if variant_obj.borrow().get("className").as_string() == type_name {
+                return variant_obj.borrow().get("variant").as_object();
+            }
+        }
+        unreachable!()
     }
 }
 
