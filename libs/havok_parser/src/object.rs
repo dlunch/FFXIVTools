@@ -236,7 +236,7 @@ impl HavokObject {
         &self.data.get(&member_index).unwrap()
     }
 
-    pub fn members_mut(&mut self) -> impl Iterator<Item = (&usize, &mut HavokValue)> {
+    pub(crate) fn members_mut(&mut self) -> impl Iterator<Item = (&usize, &mut HavokValue)> {
         self.data.iter_mut()
     }
 }
