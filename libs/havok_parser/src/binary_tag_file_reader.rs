@@ -297,7 +297,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     values_to_update.push((*index, HavokValue::Object(object_ref.clone())));
                 }
                 HavokValue::Array(x) => {
-                    x.iter_mut().enumerate().for_each(|(_, item)| {
+                    x.iter_mut().for_each(|item| {
                         if let HavokValue::ObjectReference(x) = item {
                             let object_ref = &self.remembered_objects[*x];
 
