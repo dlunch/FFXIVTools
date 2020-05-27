@@ -149,6 +149,13 @@ impl HavokValue {
             _ => panic!(),
         }
     }
+
+    pub fn as_vec(&self) -> &Vec<HavokReal> {
+        match self {
+            Self::Vec(x) => &*x,
+            _ => panic!(),
+        }
+    }
 }
 
 pub struct HavokRootObject {
