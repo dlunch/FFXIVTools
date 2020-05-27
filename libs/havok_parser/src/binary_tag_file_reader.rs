@@ -68,7 +68,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 }
                 HavokTagType::Backref => panic!(),
                 HavokTagType::ObjectRemember => {
-                    let object = Arc::new(RefCell::new(self.read_object_top_level()));
+                    let object = Arc::new(RefCell::new(self.read_object()));
 
                     self.remembered_objects.push(object.clone());
                     self.objects.push(object);
@@ -88,7 +88,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         HavokRootObject::new(self.remembered_objects[1].clone())
     }
 
-    fn read_object_top_level(&mut self) -> HavokObject {
+    fn read_object(&mut self) -> HavokObject {
         let object_type_index = self.read_packed_int();
         let object_type = self.remembered_types[object_type_index as usize].clone();
 
