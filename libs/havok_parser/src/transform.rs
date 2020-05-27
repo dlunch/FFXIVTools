@@ -9,7 +9,7 @@ pub struct HavokTransform {
 }
 
 impl HavokTransform {
-    pub fn new(vec: &Vec<HavokReal>) -> Self {
+    pub fn new(vec: &[HavokReal]) -> Self {
         Self {
             translation: Vector4::new(vec[0], vec[1], vec[2], vec[3]),
             rotation: Quaternion::new(vec[4], vec[5], vec[6], vec[7]),
