@@ -6,7 +6,37 @@ use std::sync::Arc;
 
 use util::SliceByteOrderExt;
 
-use crate::object::{HavokInteger, HavokObject, HavokObjectType, HavokObjectTypeMember, HavokRootObject, HavokTagType, HavokValue, HavokValueType};
+use crate::object::{HavokInteger, HavokObject, HavokObjectType, HavokObjectTypeMember, HavokRootObject, HavokValue, HavokValueType};
+
+#[repr(i8)]
+enum HavokTagType {
+    Eof = -1,
+    Invalid = 0,
+    FileInfo = 1,
+    Type = 2,
+    Object = 3,
+    ObjectRemember = 4,
+    Backref = 5,
+    ObjectNull = 6,
+    FileEnd = 7,
+}
+
+impl HavokTagType {
+    pub fn from_raw(raw: u8) -> Self {
+        match raw {
+            255 => HavokTagType::Eof,
+            0 => HavokTagType::Invalid,
+            1 => HavokTagType::FileInfo,
+            2 => HavokTagType::Type,
+            3 => HavokTagType::Object,
+            4 => HavokTagType::ObjectRemember,
+            5 => HavokTagType::Backref,
+            6 => HavokTagType::ObjectNull,
+            7 => HavokTagType::FileEnd,
+            _ => panic!(),
+        }
+    }
+}
 
 pub struct HavokBinaryTagFileReader<'a> {
     file_version: u8,
