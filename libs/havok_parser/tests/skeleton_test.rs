@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use ffxiv_parser::Sklb;
-    use havok_parser::{HavokBinaryTagFileReader, HavokSkeleton};
+    use havok_parser::{HavokAnimationContainer, HavokBinaryTagFileReader};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
     #[tokio::test]
@@ -17,13 +17,11 @@ mod tests {
         let hkx = sklb.hkx_data();
 
         let root = HavokBinaryTagFileReader::read(hkx);
-        let animation_container = root.find_object_by_type("hkaAnimationContainer");
-        let animation_container_obj = animation_container.borrow();
+        let raw_animation_container = root.find_object_by_type("hkaAnimationContainer");
+        let animation_container = HavokAnimationContainer::new(raw_animation_container);
 
-        let skeletons = animation_container_obj.get("skeletons").as_array();
-        let skeleton = skeletons[0].as_object();
+        let havok_skeleton = &animation_container.skeletons[0];
 
-        let havok_skeleton = HavokSkeleton::new(skeleton);
         assert!(havok_skeleton.bone_names.contains(&"n_root".to_owned()));
         assert_eq!(havok_skeleton.parent_indices[5], 3);
         assert_eq!(havok_skeleton.reference_pose[0].translation[0], 0.0);
