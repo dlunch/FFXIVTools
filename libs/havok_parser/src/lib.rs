@@ -6,6 +6,5 @@ mod transform;
 
 pub use animation_container::HavokAnimationContainer;
 pub use binary_tag_file_reader::HavokBinaryTagFileReader;
-pub use object::HavokValue;
 pub use skeleton::HavokSkeleton;
 pub use transform::HavokTransform;
