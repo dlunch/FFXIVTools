@@ -29,9 +29,9 @@ impl HavokAnimationBinding {
         let root = object.borrow();
 
         let raw_transform_track_to_bone_indices = root.get("transformTrackToBoneIndices").as_array();
-        let transform_track_to_bone_indices = raw_transform_track_to_bone_indices.iter().map(|x| *x.as_int() as u16).collect::<Vec<_>>();
+        let transform_track_to_bone_indices = raw_transform_track_to_bone_indices.iter().map(|x| x.as_int() as u16).collect::<Vec<_>>();
 
-        let blend_hint = HavokAnimationBlendHint::from_raw(*root.get("blendHint").as_int() as u8);
+        let blend_hint = HavokAnimationBlendHint::from_raw(root.get("blendHint").as_int() as u8);
 
         Self {
             transform_track_to_bone_indices,

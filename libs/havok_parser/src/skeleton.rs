@@ -24,7 +24,7 @@ impl HavokSkeleton {
             .collect::<Vec<_>>();
 
         let raw_parent_indices = root.get("parentIndices").as_array();
-        let parent_indices = raw_parent_indices.iter().map(|x| *x.as_int() as usize).collect::<Vec<_>>();
+        let parent_indices = raw_parent_indices.iter().map(|x| x.as_int() as usize).collect::<Vec<_>>();
 
         let raw_reference_pose = root.get("referencePose").as_array();
         let reference_pose = raw_reference_pose.iter().map(|x| HavokTransform::new(x.as_vec())).collect::<Vec<_>>();

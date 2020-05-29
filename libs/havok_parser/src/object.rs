@@ -92,9 +92,9 @@ pub enum HavokValue {
 }
 
 impl HavokValue {
-    pub fn as_int(&self) -> &HavokInteger {
+    pub fn as_int(&self) -> HavokInteger {
         match self {
-            Self::Integer(x) => x,
+            Self::Integer(x) => *x,
             _ => panic!(),
         }
     }
