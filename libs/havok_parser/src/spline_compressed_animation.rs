@@ -22,4 +22,8 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
     fn sample(&self, time: f32) -> Vec<HavokTransform> {
         Vec::new()
     }
+
+    fn duration(&self) -> f32 {
+        self.duration
+    }
 }
