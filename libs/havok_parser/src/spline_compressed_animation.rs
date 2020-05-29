@@ -53,7 +53,6 @@ pub struct HavokSplineCompressedAnimation {
     num_blocks: usize,
     max_frames_per_block: usize,
     mask_and_quantization_size: u32,
-    _block_duration: f32,
     block_inverse_duration: f32,
     frame_duration: f32,
     block_offsets: Vec<u32>,
@@ -70,7 +69,6 @@ impl HavokSplineCompressedAnimation {
         let num_blocks = root.get("numBlocks").as_int() as usize;
         let max_frames_per_block = root.get("maxFramesPerBlock").as_int() as usize;
         let mask_and_quantization_size = root.get("maskAndQuantizationSize").as_int() as u32;
-        let block_duration = root.get("blockDuration").as_real();
         let block_inverse_duration = root.get("blockInverseDuration").as_real();
         let frame_duration = root.get("frameDuration").as_real();
 
@@ -87,7 +85,6 @@ impl HavokSplineCompressedAnimation {
             num_blocks,
             max_frames_per_block,
             mask_and_quantization_size,
-            _block_duration: block_duration,
             block_inverse_duration,
             frame_duration,
             block_offsets,
