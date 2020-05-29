@@ -1,10 +1,63 @@
 use std::cell::RefCell;
+use std::cmp;
 use std::sync::Arc;
+
+use nalgebra::{Quaternion, Vector4};
 
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
 
+#[repr(u8)]
+enum RotationQuantization {
+    POLAR32 = 0,
+    THREECOMP40 = 1,
+    THREECOMP48 = 2,
+    THREECOMP24 = 3,
+    STRAIGHT16 = 4,
+    UNCOMPRESSED = 5,
+}
+
+impl RotationQuantization {
+    pub fn from_raw(raw: u8) -> Self {
+        match raw {
+            0 => Self::POLAR32,
+            1 => Self::THREECOMP40,
+            2 => Self::THREECOMP48,
+            3 => Self::THREECOMP24,
+            4 => Self::STRAIGHT16,
+            5 => Self::UNCOMPRESSED,
+            _ => panic!(),
+        }
+    }
+}
+
+#[repr(u8)]
+enum ScalarQuantization {
+    BITS8 = 0,
+    BITS16 = 1,
+}
+
+impl ScalarQuantization {
+    pub fn from_raw(raw: u8) -> Self {
+        match raw {
+            0 => Self::BITS8,
+            1 => Self::BITS16,
+            _ => panic!(),
+        }
+    }
+}
+
 pub struct HavokSplineCompressedAnimation {
-    pub duration: f32,
+    duration: f32,
+    number_of_transform_tracks: usize,
+    num_frames: usize,
+    num_blocks: usize,
+    max_frames_per_block: usize,
+    mask_and_quantization_size: u32,
+    _block_duration: f32,
+    block_inverse_duration: f32,
+    frame_duration: f32,
+    block_offsets: Vec<u32>,
+    data: Vec<u8>,
 }
 
 impl HavokSplineCompressedAnimation {
@@ -12,15 +65,94 @@ impl HavokSplineCompressedAnimation {
         let root = object.borrow();
 
         let duration = root.get("duration").as_real();
+        let number_of_transform_tracks = root.get("numberOfTransformTracks").as_int() as usize;
+        let num_frames = root.get("numFrames").as_int() as usize;
+        let num_blocks = root.get("numBlocks").as_int() as usize;
+        let max_frames_per_block = root.get("maxFramesPerBlock").as_int() as usize;
+        let mask_and_quantization_size = root.get("maskAndQuantizationSize").as_int() as u32;
+        let block_duration = root.get("blockDuration").as_real();
+        let block_inverse_duration = root.get("blockInverseDuration").as_real();
+        let frame_duration = root.get("frameDuration").as_real();
 
-        Self { duration }
+        let raw_block_offsets = root.get("blockOffsets").as_array();
+        let block_offsets = raw_block_offsets.iter().map(|x| x.as_int() as u32).collect::<Vec<_>>();
+
+        let raw_data = root.get("data").as_array();
+        let data = raw_data.iter().map(|x| x.as_int() as u8).collect::<Vec<_>>();
+
+        Self {
+            duration,
+            number_of_transform_tracks,
+            num_frames,
+            num_blocks,
+            max_frames_per_block,
+            mask_and_quantization_size,
+            _block_duration: block_duration,
+            block_inverse_duration,
+            frame_duration,
+            block_offsets,
+            data,
+        }
+    }
+
+    fn get_block_and_time(&self, frame: usize, delta: f32) -> (usize, f32, u8) {
+        let mut block_out = frame / (self.max_frames_per_block - 1);
+
+        block_out = cmp::max(block_out, 0);
+        block_out = cmp::min(block_out, self.num_blocks - 1);
+
+        let first_frame_of_block = block_out * (self.max_frames_per_block - 1);
+        let real_frame = (frame - first_frame_of_block) as f32 + delta;
+        let block_time_out = real_frame * self.frame_duration;
+
+        let quantized_time_out = ((block_time_out * self.block_inverse_duration) * (self.max_frames_per_block as f32 - 1.)) as u8;
+
+        (block_out, block_time_out, quantized_time_out)
+    }
+
+    fn compute_packed_nurbs_offsets<'a>(base: &'a [u8], p: &[u32], o2: usize, o3: u32) -> &'a [u8] {
+        let offset = (p[o2] + (o3 & 0x7fff_ffff)) as usize;
+
+        &base[offset..]
+    }
+
+    fn unpack_quantization_types(packed_quantization_types: u8) -> (ScalarQuantization, RotationQuantization, ScalarQuantization) {
+        let translation = ScalarQuantization::from_raw((packed_quantization_types >> 0) & 0x03);
+        let rotation = RotationQuantization::from_raw((packed_quantization_types >> 2) & 0x0F);
+        let scale = ScalarQuantization::from_raw((packed_quantization_types >> 6) & 0x03);
+
+        (translation, rotation, scale)
     }
 }
 
 impl HavokAnimation for HavokSplineCompressedAnimation {
     #[allow(unused_variables)]
     fn sample(&self, time: f32) -> Vec<HavokTransform> {
-        Vec::new()
+        let frame_float = ((time / 1000.) / self.duration) * (self.num_frames as f32 - 1.);
+        let frame = frame_float as usize;
+        let delta = frame_float - frame as f32;
+
+        let (block, block_time, quantized_time) = self.get_block_and_time(frame, delta);
+
+        let data = Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, self.mask_and_quantization_size);
+        let mask = Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, 0x8000_0000);
+
+        let mut result = Vec::with_capacity(self.number_of_transform_tracks);
+        let mut mask_cursor = 0;
+        for _ in 0..self.number_of_transform_tracks {
+            let packed_quantization_types = mask[mask_cursor];
+            mask_cursor += 1;
+
+            let (translation_type, rotation_type, scale_type) = Self::unpack_quantization_types(packed_quantization_types);
+
+            result.push(HavokTransform::from_trs(
+                Vector4::new(0., 0., 0., 1.),
+                Quaternion::new(0., 0., 0., 0.),
+                Vector4::new(1., 1., 1., 1.),
+            ));
+        }
+
+        result
     }
 
     fn duration(&self) -> f32 {

@@ -16,4 +16,12 @@ impl HavokTransform {
             scale: Vector4::new(vec[8], vec[9], vec[10], vec[11]),
         }
     }
+
+    pub fn from_trs(translation: Vector4<f32>, rotation: Quaternion<f32>, scale: Vector4<f32>) -> Self {
+        Self {
+            translation,
+            rotation,
+            scale,
+        }
+    }
 }
