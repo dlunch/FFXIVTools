@@ -155,6 +155,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 HavokValueType::INT => HavokValue::Integer(self.read_packed_int()),
                 HavokValueType::REAL => HavokValue::Real(self.read_float()),
                 HavokValueType::STRING => HavokValue::String(self.read_string()),
+                HavokValueType::OBJECT => HavokValue::ObjectReference(self.read_packed_int() as usize),
                 _ => panic!("unimplemented {}", member.type_.bits()),
             }
         }
@@ -354,6 +355,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 HavokValueType::EMPTY => HavokValue::Integer(HavokInteger::default()),
                 HavokValueType::BYTE => HavokValue::Integer(HavokInteger::default()),
                 HavokValueType::INT => HavokValue::Integer(HavokInteger::default()),
+                HavokValueType::OBJECT => HavokValue::ObjectReference(0),
                 _ => panic!("unimplemented {}", type_.bits()),
             }
         }
