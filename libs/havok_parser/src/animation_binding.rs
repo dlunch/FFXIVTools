@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::sync::Arc;
 
-use crate::object::HavokObject;
+use crate::{animation::HavokAnimation, object::HavokObject, spline_compressed_animation::HavokSplineCompressedAnimation};
 
 #[repr(u8)]
 pub enum HavokAnimationBlendHint {
@@ -22,6 +22,7 @@ impl HavokAnimationBlendHint {
 pub struct HavokAnimationBinding {
     pub transform_track_to_bone_indices: Vec<u16>,
     pub blend_hint: HavokAnimationBlendHint,
+    pub animation: Box<dyn HavokAnimation>,
 }
 
 impl HavokAnimationBinding {
@@ -33,9 +34,12 @@ impl HavokAnimationBinding {
 
         let blend_hint = HavokAnimationBlendHint::from_raw(root.get("blendHint").as_int() as u8);
 
+        let animation = Box::new(HavokSplineCompressedAnimation::new(root.get("animation").as_object()));
+
         Self {
             transform_track_to_bone_indices,
             blend_hint,
+            animation,
         }
     }
 }
