@@ -12,6 +12,7 @@ mod lgb;
 mod lvb;
 mod mdl;
 mod mtrl;
+mod pap;
 mod sklb;
 mod tex;
 
@@ -35,5 +36,6 @@ pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
 pub use mtrl::{Mtrl, MtrlParameterType};
+pub use pap::Pap;
 pub use sklb::Sklb;
 pub use tex::{Tex, TextureType};
