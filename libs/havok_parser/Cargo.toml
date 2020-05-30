@@ -9,7 +9,6 @@ doctest = false
 
 [dependencies]
 bitflags = { version = "^1.2", default-features = false }
-nalgebra = { version = "^0.21", default-features = false }
 
 util = { version = "^0.1", default-features = false, path = "../util" }
 

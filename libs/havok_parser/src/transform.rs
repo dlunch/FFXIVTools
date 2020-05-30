@@ -1,23 +1,21 @@
-use nalgebra::{Quaternion, Vector4};
-
 use crate::object::HavokReal;
 
 pub struct HavokTransform {
-    pub translation: Vector4<f32>,
-    pub rotation: Quaternion<f32>,
-    pub scale: Vector4<f32>,
+    pub translation: [f32; 4],
+    pub rotation: [f32; 4],
+    pub scale: [f32; 4],
 }
 
 impl HavokTransform {
     pub fn new(vec: &[HavokReal]) -> Self {
         Self {
-            translation: Vector4::new(vec[0], vec[1], vec[2], vec[3]),
-            rotation: Quaternion::new(vec[4], vec[5], vec[6], vec[7]),
-            scale: Vector4::new(vec[8], vec[9], vec[10], vec[11]),
+            translation: [vec[0], vec[1], vec[2], vec[3]],
+            rotation: [vec[4], vec[5], vec[6], vec[7]],
+            scale: [vec[8], vec[9], vec[10], vec[11]],
         }
     }
 
-    pub fn from_trs(translation: Vector4<f32>, rotation: Quaternion<f32>, scale: Vector4<f32>) -> Self {
+    pub fn from_trs(translation: [f32; 4], rotation: [f32; 4], scale: [f32; 4]) -> Self {
         Self {
             translation,
             rotation,
