@@ -2,6 +2,7 @@ mod animation;
 mod animation_binding;
 mod animation_container;
 mod binary_tag_file_reader;
+mod byte_reader;
 mod object;
 mod skeleton;
 mod spline_compressed_animation;

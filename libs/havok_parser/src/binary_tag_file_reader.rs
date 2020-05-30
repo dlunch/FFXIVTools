@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use util::SliceByteOrderExt;
 
+use crate::byte_reader::ByteReader;
 use crate::object::{HavokInteger, HavokObject, HavokObjectType, HavokObjectTypeMember, HavokRootObject, HavokValue, HavokValueType};
 
 #[repr(i8)]
@@ -44,18 +45,17 @@ pub struct HavokBinaryTagFileReader<'a> {
     remembered_types: Vec<Arc<HavokObjectType>>,
     remembered_objects: Vec<Arc<RefCell<HavokObject>>>,
     objects: Vec<Arc<RefCell<HavokObject>>>,
-    data: &'a [u8],
-    cursor: usize,
+    reader: ByteReader<'a>,
 }
 
 impl<'a> HavokBinaryTagFileReader<'a> {
     pub fn read(data: &'a [u8]) -> HavokRootObject {
-        let mut reader = Self::new(data);
+        let mut reader = Self::new(ByteReader::new(data));
 
         reader.do_read()
     }
 
-    fn new(data: &'a [u8]) -> Self {
+    fn new(reader: ByteReader<'a>) -> Self {
         let file_version = 0;
         let remembered_strings = vec![Arc::new("string".to_owned()), Arc::new("".to_owned())];
         let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::new("object".to_owned()), None, Vec::new()))];
@@ -68,18 +68,16 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             remembered_types,
             remembered_objects,
             objects,
-            data,
-            cursor: 0,
+            reader,
         }
     }
 
     fn do_read(&mut self) -> HavokRootObject {
-        let signature1 = (&self.data[0..4]).to_int_le::<u32>();
-        let signature2 = (&self.data[4..8]).to_int_le::<u32>();
+        let signature1 = self.reader.read_bytes(4).to_int_le::<u32>();
+        let signature2 = self.reader.read_bytes(4).to_int_le::<u32>();
         if signature1 != 0xCAB0_0D1E || signature2 != 0xD011_FACE {
             panic!()
         }
-        self.cursor = 8;
 
         loop {
             let tag_type = HavokTagType::from_raw(self.read_packed_int() as u8);
@@ -151,7 +149,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             HavokValue::Array(self.read_array(member, array_len as usize))
         } else {
             match member.type_ {
-                HavokValueType::BYTE => HavokValue::Integer(self.read_byte() as i32),
+                HavokValueType::BYTE => HavokValue::Integer(self.reader.read() as i32),
                 HavokValueType::INT => HavokValue::Integer(self.read_packed_int()),
                 HavokValueType::REAL => HavokValue::Real(self.read_float()),
                 HavokValueType::STRING => HavokValue::String(self.read_string()),
@@ -201,7 +199,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 })
                 .collect::<Vec<_>>(),
             HavokValueType::BYTE => (0..array_len)
-                .map(|_| HavokValue::Integer(self.read_byte() as HavokInteger))
+                .map(|_| HavokValue::Integer(self.reader.read() as HavokInteger))
                 .collect::<Vec<_>>(),
             HavokValueType::INT => {
                 if self.file_version >= 3 {
@@ -252,32 +250,21 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             return self.remembered_strings[-length as usize].clone();
         }
 
-        let result = Arc::new(str::from_utf8(&self.data[self.cursor..self.cursor + length as usize]).unwrap().to_owned());
+        let result = Arc::new(str::from_utf8(self.reader.read_bytes(length as usize)).unwrap().to_owned());
         self.remembered_strings.push(result.clone());
-        self.cursor += length as usize;
 
         result
     }
-
-    fn read_byte(&mut self) -> u8 {
-        let result = self.data[self.cursor];
-        self.cursor += 1;
-
-        result
-    }
-
     fn read_float(&mut self) -> f32 {
         let len = core::mem::size_of::<f32>();
-        let bytes = &self.data[self.cursor..self.cursor + len];
-        self.cursor += len;
+        let bytes = self.reader.read_bytes(len);
 
         f32::from_le_bytes(bytes.try_into().unwrap())
     }
 
     fn read_bit_field(&mut self, count: usize) -> Vec<bool> {
         let bytes_to_read = ((count + 7) & 0xffff_fff8) / 8;
-        let bytes = &self.data[self.cursor..self.cursor + bytes_to_read];
-        self.cursor += bytes_to_read;
+        let bytes = self.reader.read_bytes(bytes_to_read);
 
         let mut result = Vec::with_capacity(count);
         for byte in bytes {
@@ -296,14 +283,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     }
 
     fn read_packed_int(&mut self) -> HavokInteger {
-        let mut byte = self.read_byte();
+        let mut byte = self.reader.read();
 
         let mut result = ((byte & 0x7f) >> 1) as u32;
         let neg = byte & 1;
 
         let mut shift = 6;
         while byte & 0x80 != 0 {
-            byte = self.read_byte();
+            byte = self.reader.read();
 
             result |= ((byte as u32) & 0xffff_ff7f) << shift;
             shift += 7;
