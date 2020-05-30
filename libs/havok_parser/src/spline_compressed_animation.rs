@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::cmp;
 use std::sync::Arc;
 
+use crate::byte_reader::ByteReader;
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
 
 #[repr(u8)]
@@ -112,7 +113,7 @@ impl HavokSplineCompressedAnimation {
     }
 
     fn unpack_quantization_types(packed_quantization_types: u8) -> (ScalarQuantization, RotationQuantization, ScalarQuantization) {
-        let translation = ScalarQuantization::from_raw((packed_quantization_types >> 0) & 0x03);
+        let translation = ScalarQuantization::from_raw(packed_quantization_types & 0x03);
         let rotation = RotationQuantization::from_raw((packed_quantization_types >> 2) & 0x0F);
         let scale = ScalarQuantization::from_raw((packed_quantization_types >> 6) & 0x03);
 
@@ -129,14 +130,17 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
 
         let (block, block_time, quantized_time) = self.get_block_and_time(frame, delta);
 
-        let data = Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, self.mask_and_quantization_size);
-        let mask = Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, 0x8000_0000);
+        let data = ByteReader::new(Self::compute_packed_nurbs_offsets(
+            &self.data,
+            &self.block_offsets,
+            block,
+            self.mask_and_quantization_size,
+        ));
+        let mut mask = ByteReader::new(Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, 0x8000_0000));
 
         let mut result = Vec::with_capacity(self.number_of_transform_tracks);
-        let mut mask_cursor = 0;
         for _ in 0..self.number_of_transform_tracks {
-            let packed_quantization_types = mask[mask_cursor];
-            mask_cursor += 1;
+            let packed_quantization_types = mask.read();
 
             let (translation_type, rotation_type, scale_type) = Self::unpack_quantization_types(packed_quantization_types);
 
