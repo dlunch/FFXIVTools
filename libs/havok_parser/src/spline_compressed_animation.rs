@@ -2,8 +2,6 @@ use std::cell::RefCell;
 use std::cmp;
 use std::sync::Arc;
 
-use nalgebra::{Quaternion, Vector4};
-
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
 
 #[repr(u8)]
@@ -142,11 +140,7 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
 
             let (translation_type, rotation_type, scale_type) = Self::unpack_quantization_types(packed_quantization_types);
 
-            result.push(HavokTransform::from_trs(
-                Vector4::new(0., 0., 0., 1.),
-                Quaternion::new(0., 0., 0., 0.),
-                Vector4::new(1., 1., 1., 1.),
-            ));
+            result.push(HavokTransform::from_trs([0., 0., 0., 1.], [0., 0., 0., 0.], [1., 1., 1., 1.]));
         }
 
         result
