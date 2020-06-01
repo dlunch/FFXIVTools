@@ -9,13 +9,13 @@ doctest = false
 
 [dependencies]
 bitflags = { version = "^1.2", default-features = false }
+log = { version = "^0.4", default-features = false }
 
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 [dev-dependencies]
 tokio = { version = "^0.2", features = ["macros", "rt-threaded", "fs"], default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
-log = { version = "^0.4", default-features = false }
 
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../sqpack_reader"  }
