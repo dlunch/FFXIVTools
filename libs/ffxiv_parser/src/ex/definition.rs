@@ -36,7 +36,7 @@ pub enum ExRowType {
 }
 
 impl ExRowType {
-    pub fn from(raw: u16) -> Self {
+    pub fn from_raw(raw: u16) -> Self {
         match raw {
             1 => ExRowType::Single,
             2 => ExRowType::Multi,
@@ -77,7 +77,7 @@ pub struct ExhPage {
 }
 
 impl ExhPage {
-    pub fn from(raw: &[u8]) -> Self {
+    pub fn from_raw(raw: &[u8]) -> Self {
         let start = (&raw[..]).to_int_be::<u32>();
         let count = (&raw[size_of::<u32>()..]).to_int_be::<u32>();
 
@@ -122,7 +122,7 @@ pub struct ExdDataHeader {
 }
 
 impl Language {
-    pub fn from(raw: &[u8]) -> Self {
+    pub fn from_raw(raw: &[u8]) -> Self {
         match (&raw[..]).to_int_le::<u16>() {
             0 => Language::None,
             1 => Language::Japanese,
@@ -154,7 +154,7 @@ pub enum ExFieldType {
 }
 
 impl ExFieldType {
-    pub fn from(raw: u16) -> Self {
+    pub fn from_raw(raw: u16) -> Self {
         match raw {
             0 => ExFieldType::String,
             1 => ExFieldType::Bool,

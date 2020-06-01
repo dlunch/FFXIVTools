@@ -51,7 +51,7 @@ pub enum FileType {
 }
 
 impl FileType {
-    pub fn from(raw: u32) -> Self {
+    pub fn from_raw(raw: u32) -> Self {
         match raw {
             2 => FileType::Default,
             3 => FileType::Model,

@@ -92,7 +92,7 @@ impl Serialize for LayerGroupResourceItem<'_> {
 }
 
 impl<'a> LayerGroupResourceItem<'a> {
-    pub fn from(raw: &'a [u8]) -> Self {
+    pub fn from_raw(raw: &'a [u8]) -> Self {
         let item_type = raw.to_int_le::<u32>();
 
         match item_type {
@@ -151,7 +151,7 @@ impl Lgb {
                 let offset = base_offset + (i as usize) * size_of::<u32>();
                 let data_offset = (&data[offset..]).to_int_le::<u32>();
 
-                LayerGroupResourceItem::from(&data[base_offset + data_offset as usize..])
+                LayerGroupResourceItem::from_raw(&data[base_offset + data_offset as usize..])
             })
             .collect::<Vec<_>>();
 
