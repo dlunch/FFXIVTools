@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::cmp;
 use std::sync::Arc;
 
+use log::debug;
+
 use crate::byte_reader::ByteReader;
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
 
@@ -129,6 +131,7 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
         let delta = frame_float - frame as f32;
 
         let (block, block_time, quantized_time) = self.get_block_and_time(frame, delta);
+        debug!("{} {} {}", block, block_time, quantized_time);
 
         let data = ByteReader::new(Self::compute_packed_nurbs_offsets(
             &self.data,
@@ -143,6 +146,9 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
             let packed_quantization_types = mask.read();
 
             let (translation_type, rotation_type, scale_type) = Self::unpack_quantization_types(packed_quantization_types);
+            let translation_mask = mask.read();
+            let rotation_mas = mask.read();
+            let scale_mask = mask.read();
 
             result.push(HavokTransform::from_trs([0., 0., 0., 1.], [0., 0., 0., 0.], [1., 1., 1., 1.]));
         }
