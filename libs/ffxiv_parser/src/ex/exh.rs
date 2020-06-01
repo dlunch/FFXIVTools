@@ -27,19 +27,19 @@ impl ExHeader {
 
         let pages_base = size_of::<ExhHeader>() + header.column_count.get() as usize * size_of::<ExhColumnDefinition>();
         let pages = (0..header.page_count.get() as usize)
-            .map(|x| ExhPage::from(&data[pages_base + x * size_of::<ExhPage>()..]))
+            .map(|x| ExhPage::from_raw(&data[pages_base + x * size_of::<ExhPage>()..]))
             .collect::<Vec<_>>();
 
         let languages_base = size_of::<ExhHeader>()
             + header.column_count.get() as usize * size_of::<ExhColumnDefinition>()
             + header.page_count.get() as usize * size_of::<ExhPage>();
         let languages = (0..header.language_count.get() as usize)
-            .map(|x| Language::from(&data[languages_base + x * size_of::<Language>()..]))
+            .map(|x| Language::from_raw(&data[languages_base + x * size_of::<Language>()..]))
             .collect::<Vec<_>>();
 
         Ok(Self {
             row_size: header.row_size.get(),
-            row_type: ExRowType::from(header.row_type.get()),
+            row_type: ExRowType::from_raw(header.row_type.get()),
             columns,
             pages,
             languages,

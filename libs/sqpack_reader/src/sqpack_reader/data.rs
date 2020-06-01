@@ -39,7 +39,7 @@ impl SqPackData {
 
         let file_header_data = file.read_bytes(offset, size_of::<FileHeader>()).await?;
         let file_header = cast::<FileHeader>(&file_header_data);
-        match FileType::from(file_header.file_type) {
+        match FileType::from_raw(file_header.file_type) {
             FileType::Default => Ok(Self::read_default(&mut file, offset, file_header).await?),
             FileType::Model => Ok(Self::read_model(&mut file, offset, file_header).await?),
             FileType::Image => Ok(Self::read_image(&mut file, offset, file_header).await?),
