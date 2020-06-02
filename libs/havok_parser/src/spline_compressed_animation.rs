@@ -121,10 +121,66 @@ impl HavokSplineCompressedAnimation {
 
         (translation, rotation, scale)
     }
+
+    fn sample_translation(&self, quantization: ScalarQuantization, time: f32, quantized_time: u8, mask: u8, data: &mut ByteReader) -> [f32; 4] {
+        let result = if mask != 0 {
+            Self::read_nurbs_curve(quantization, data, quantized_time, self.frame_duration, time, mask, [0., 0., 0., 0.])
+        } else {
+            [0., 0., 0., 0.]
+        };
+
+        data.align(4);
+
+        result
+    }
+
+    fn sample_rotation(&self, quantization: RotationQuantization, time: f32, quantized_time: u8, mask: u8, data: &mut ByteReader) -> [f32; 4] {
+        let result = Self::read_nurbs_quaternion(quantization, data, quantized_time, self.frame_duration, time, mask);
+
+        data.align(4);
+
+        result
+    }
+
+    fn sample_scale(&self, quantization: ScalarQuantization, time: f32, quantized_time: u8, mask: u8, data: &mut ByteReader) -> [f32; 4] {
+        let result = if mask != 0 {
+            Self::read_nurbs_curve(quantization, data, quantized_time, self.frame_duration, time, mask, [1., 1., 1., 1.])
+        } else {
+            [1., 1., 1., 1.]
+        };
+
+        data.align(4);
+
+        result
+    }
+
+    #[allow(unused_variables)]
+    fn read_nurbs_curve(
+        quantization: ScalarQuantization,
+        data: &mut ByteReader,
+        quantized_time: u8,
+        frame_duration: f32,
+        u: f32,
+        mask: u8,
+        initial_value: [f32; 4],
+    ) -> [f32; 4] {
+        initial_value
+    }
+
+    #[allow(unused_variables)]
+    fn read_nurbs_quaternion(
+        quantization: RotationQuantization,
+        data: &mut ByteReader,
+        quantized_time: u8,
+        frame_duration: f32,
+        u: f32,
+        mask: u8,
+    ) -> [f32; 4] {
+        [0., 0., 0., 1.]
+    }
 }
 
 impl HavokAnimation for HavokSplineCompressedAnimation {
-    #[allow(unused_variables)]
     fn sample(&self, time: f32) -> Vec<HavokTransform> {
         let frame_float = ((time / 1000.) / self.duration) * (self.num_frames as f32 - 1.);
         let frame = frame_float as usize;
@@ -133,7 +189,7 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
         let (block, block_time, quantized_time) = self.get_block_and_time(frame, delta);
         debug!("{} {} {}", block, block_time, quantized_time);
 
-        let data = ByteReader::new(Self::compute_packed_nurbs_offsets(
+        let mut data = ByteReader::new(Self::compute_packed_nurbs_offsets(
             &self.data,
             &self.block_offsets,
             block,
@@ -146,11 +202,12 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
             let packed_quantization_types = mask.read();
 
             let (translation_type, rotation_type, scale_type) = Self::unpack_quantization_types(packed_quantization_types);
-            let translation_mask = mask.read();
-            let rotation_mas = mask.read();
-            let scale_mask = mask.read();
 
-            result.push(HavokTransform::from_trs([0., 0., 0., 1.], [0., 0., 0., 0.], [1., 1., 1., 1.]));
+            let translation = self.sample_translation(translation_type, block_time, quantized_time, mask.read(), &mut data);
+            let rotation = self.sample_rotation(rotation_type, block_time, quantized_time, mask.read(), &mut data);
+            let scale = self.sample_scale(scale_type, block_time, quantized_time, mask.read(), &mut data);
+
+            result.push(HavokTransform::from_trs(translation, rotation, scale));
         }
 
         result
