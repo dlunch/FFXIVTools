@@ -1,3 +1,5 @@
+use util::round_up;
+
 pub struct ByteReader<'a> {
     data: &'a [u8],
     cursor: usize,
@@ -20,5 +22,9 @@ impl<'a> ByteReader<'a> {
         self.cursor += size;
 
         result
+    }
+
+    pub fn align(&mut self, align: usize) {
+        self.cursor = round_up(self.cursor, align)
     }
 }
