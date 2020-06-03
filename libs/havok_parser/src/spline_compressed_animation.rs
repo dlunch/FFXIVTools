@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::cmp;
+use std::convert::TryInto;
 use std::sync::Arc;
 
 use log::debug;
@@ -108,6 +109,44 @@ impl HavokSplineCompressedAnimation {
         (block_out, block_time_out, quantized_time_out)
     }
 
+    fn find_span(n: usize, p: usize, u: u8, data: &[u8]) -> usize {
+        if u >= data[n + 1] {
+            return n;
+        }
+        if u <= data[0] {
+            return p;
+        }
+
+        let mut low = p;
+        let mut high = n + 1;
+        let mut mid = (low + high) / 2;
+        while u < data[mid] || u >= data[mid + 1] {
+            if u < data[mid] {
+                high = mid;
+            } else {
+                low = mid;
+            }
+            mid = (low + high) / 2;
+        }
+        return mid;
+    }
+
+    fn read_knots(data: &mut ByteReader, u: u8, frame_duration: f32) -> (usize, usize, Vec<f32>, usize) {
+        let n = u16::from_le_bytes(data.read_bytes(2).try_into().unwrap()) as usize;
+        let p = data.read() as usize;
+        let raw = data.raw();
+        let span = Self::find_span(n, p, u, raw);
+
+        let mut u = vec![0.; 2 * p];
+
+        for i in 0..2 * p {
+            let item = raw[i + 1] as usize + span - p;
+            u[i] = (item as f32) * frame_duration;
+        }
+
+        (n, p, u, span)
+    }
+
     fn compute_packed_nurbs_offsets<'a>(base: &'a [u8], p: &[u32], o2: usize, o3: u32) -> &'a [u8] {
         let offset = (p[o2] + (o3 & 0x7fff_ffff)) as usize;
 
@@ -164,6 +203,16 @@ impl HavokSplineCompressedAnimation {
         mask: u8,
         initial_value: [f32; 4],
     ) -> [f32; 4] {
+        let max_p = [0.; 4];
+        let min_p = [0.; 4];
+        let s = [0.; 4];
+
+        let (n, p, u, span) = if mask & 0xf0 != 0 {
+            Self::read_knots(data, quantized_time, frame_duration)
+        } else {
+            (0, 0, vec![0.; 10], 0)
+        };
+
         initial_value
     }
 

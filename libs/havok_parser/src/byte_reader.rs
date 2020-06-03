@@ -27,4 +27,8 @@ impl<'a> ByteReader<'a> {
     pub fn align(&mut self, align: usize) {
         self.cursor = round_up(self.cursor, align)
     }
+
+    pub fn raw(&self) -> &[u8] {
+        &self.data[self.cursor..]
+    }
 }
