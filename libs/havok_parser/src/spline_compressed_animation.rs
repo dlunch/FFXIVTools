@@ -204,7 +204,7 @@ impl HavokSplineCompressedAnimation {
     }
 
     fn unpack_vec_8(min_p: [f32; 4], max_p: [f32; 4], vals: &[u8]) -> [f32; 4] {
-        let mut result = [0.; 4];
+        let mut result = [0., 0., 0., 1.];
         for i in 0..4 {
             result[i] = ((vals[i] as f32) / 255.) * (max_p[i] - min_p[i]) + min_p[i];
         }
@@ -213,7 +213,7 @@ impl HavokSplineCompressedAnimation {
     }
 
     fn unpack_vec_16(min_p: [f32; 4], max_p: [f32; 4], vals: &[u16]) -> [f32; 4] {
-        let mut result = [0.; 4];
+        let mut result = [0., 0., 0., 1.];
         for i in 0..4 {
             result[i] = ((vals[i] as f32) / 65535.) * (max_p[i] - min_p[i]) + min_p[i];
         }
@@ -238,7 +238,7 @@ impl HavokSplineCompressedAnimation {
 
     #[allow(non_snake_case)]
     fn evaluate(time: f32, p: usize, U: &[f32], P: &[[f32; 4]]) -> [f32; 4] {
-        let mut result = [0.; 4];
+        let mut result = [0., 0., 0., 1.];
         if p == 1 {
             let t = (time - U[0]) / (U[1] - U[0]);
 
@@ -308,9 +308,9 @@ impl HavokSplineCompressedAnimation {
         mask: u8,
         I: [f32; 4],
     ) -> [f32; 4] {
-        let mut max_p = [0.; 4];
-        let mut min_p = [0.; 4];
-        let mut S = [0.; 4];
+        let mut max_p = [0., 0., 0., 1.];
+        let mut min_p = [0., 0., 0., 1.];
+        let mut S = [0., 0., 0., 1.];
 
         let (n, p, U, span) = if mask & 0xf0 != 0 {
             Self::read_knots(data, quantized_time, frame_duration)
@@ -340,7 +340,7 @@ impl HavokSplineCompressedAnimation {
             let mut new_data = data.clone();
             new_data.seek(bytes_per_component * size * (span - p));
 
-            let mut P = [[0.; 4]; 4];
+            let mut P = [[0., 0., 0., 1.]; 4];
             for i in 0..(p + 1) {
                 match quantization {
                     ScalarQuantization::BITS8 => {
