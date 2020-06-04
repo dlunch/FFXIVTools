@@ -1,5 +1,6 @@
 use util::round_up;
 
+#[derive(Clone)]
 pub struct ByteReader<'a> {
     data: &'a [u8],
     cursor: usize,
@@ -30,5 +31,9 @@ impl<'a> ByteReader<'a> {
 
     pub fn raw(&self) -> &[u8] {
         &self.data[self.cursor..]
+    }
+
+    pub fn seek(&mut self, offset: usize) {
+        self.cursor += offset;
     }
 }

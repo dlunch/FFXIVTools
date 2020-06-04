@@ -46,6 +46,13 @@ impl ScalarQuantization {
             _ => panic!(),
         }
     }
+
+    pub fn bytes_per_component(&self) -> usize {
+        match self {
+            Self::BITS8 => 1,
+            Self::BITS16 => 2,
+        }
+    }
 }
 
 pub struct HavokSplineCompressedAnimation {
@@ -109,19 +116,20 @@ impl HavokSplineCompressedAnimation {
         (block_out, block_time_out, quantized_time_out)
     }
 
-    fn find_span(n: usize, p: usize, u: u8, data: &[u8]) -> usize {
-        if u >= data[n + 1] {
+    #[allow(non_snake_case)]
+    fn find_span(n: usize, p: usize, u: u8, U: &[u8]) -> usize {
+        if u >= U[n + 1] {
             return n;
         }
-        if u <= data[0] {
+        if u <= U[0] {
             return p;
         }
 
         let mut low = p;
         let mut high = n + 1;
         let mut mid = (low + high) / 2;
-        while u < data[mid] || u >= data[mid + 1] {
-            if u < data[mid] {
+        while u < U[mid] || u >= U[mid + 1] {
+            if u < U[mid] {
                 high = mid;
             } else {
                 low = mid;
@@ -145,6 +153,55 @@ impl HavokSplineCompressedAnimation {
         }
 
         (n, p, u, span)
+    }
+
+    fn unpack_vec_8(min_p: [f32; 4], max_p: [f32; 4], vals: &[u8]) -> [f32; 4] {
+        let mut result = [0.; 4];
+        for i in 0..4 {
+            result[i] = ((vals[i] as f32) / 255.) * (max_p[i] - min_p[i]) + min_p[i];
+        }
+
+        result
+    }
+
+    fn unpack_vec_16(min_p: [f32; 4], max_p: [f32; 4], vals: &[u16]) -> [f32; 4] {
+        let mut result = [0.; 4];
+        for i in 0..4 {
+            result[i] = ((vals[i] as f32) / 65535.) * (max_p[i] - min_p[i]) + min_p[i];
+        }
+
+        result
+    }
+
+    #[allow(non_snake_case)]
+    fn recompose(stat_mask: u8, dyn_mask: u8, S: [f32; 4], I: [f32; 4], in_out: &mut [f32; 4]) {
+        for i in 0..4 {
+            if stat_mask & (1 << i) != 0 {
+                in_out[i] = S[i];
+            }
+        }
+
+        for i in 0..4 {
+            if dyn_mask & (1 << i) != 0 {
+                in_out[i] = I[i];
+            }
+        }
+    }
+
+    #[allow(non_snake_case)]
+    fn evaluate(time: f32, p: usize, U: &[f32], P: &[[f32; 4]]) -> [f32; 4] {
+        let mut result = [0.; 4];
+        if p == 1 {
+            let t = (time - U[0]) / (U[1] - U[0]);
+
+            for i in 0..4 {
+                result[i] = P[0][i] + t * (P[1][i] - P[0][i]);
+            }
+        } else {
+            panic!()
+        }
+
+        result
     }
 
     fn compute_packed_nurbs_offsets<'a>(base: &'a [u8], p: &[u32], o2: usize, o3: u32) -> &'a [u8] {
@@ -193,7 +250,7 @@ impl HavokSplineCompressedAnimation {
         result
     }
 
-    #[allow(unused_variables)]
+    #[allow(non_snake_case)]
     fn read_nurbs_curve(
         quantization: ScalarQuantization,
         data: &mut ByteReader,
@@ -201,19 +258,79 @@ impl HavokSplineCompressedAnimation {
         frame_duration: f32,
         u: f32,
         mask: u8,
-        initial_value: [f32; 4],
+        I: [f32; 4],
     ) -> [f32; 4] {
-        let max_p = [0.; 4];
-        let min_p = [0.; 4];
-        let s = [0.; 4];
+        let mut max_p = [0.; 4];
+        let mut min_p = [0.; 4];
+        let mut S = [0.; 4];
 
-        let (n, p, u, span) = if mask & 0xf0 != 0 {
+        let (n, p, U, span) = if mask & 0xf0 != 0 {
             Self::read_knots(data, quantized_time, frame_duration)
         } else {
             (0, 0, vec![0.; 10], 0)
         };
+        data.align(4);
 
-        initial_value
+        for i in 0..3 {
+            if (1 << i) & mask != 0 {
+                S[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
+            } else if (1 << (i + 4)) & mask != 0 {
+                min_p[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
+                max_p[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
+            }
+        }
+
+        let stat_mask = mask & 0x0f;
+        let dyn_mask = (!mask >> 4) & (!mask & 0x0f);
+
+        if mask & 0xf0 != 0 {
+            let bytes_per_component = quantization.bytes_per_component();
+            data.align(2);
+
+            let sizes = [0, 1, 1, 2, 1, 2, 2, 3];
+            let size = sizes[((mask >> 4) & 7) as usize];
+            let mut new_data = data.clone();
+            new_data.seek(bytes_per_component * size * (span - p));
+
+            let mut P = [[0.; 4]; 4];
+            for i in 0..(p + 1) {
+                match quantization {
+                    ScalarQuantization::BITS8 => {
+                        let mut vals = [0; 4];
+                        for j in 0..3 {
+                            if (1 << (j + 4)) & mask != 0 {
+                                vals[j] = new_data.read();
+                            }
+                        }
+
+                        P[i] = Self::unpack_vec_8(min_p, max_p, &vals);
+                    }
+                    ScalarQuantization::BITS16 => {
+                        let mut vals = [0; 4];
+                        for j in 0..3 {
+                            if (1 << (j + 4)) & mask != 0 {
+                                vals[j] = u16::from_le_bytes(new_data.read_bytes(2).try_into().unwrap());
+                            }
+                        }
+
+                        P[i] = Self::unpack_vec_16(min_p, max_p, &vals);
+                    }
+                }
+
+                Self::recompose(stat_mask, dyn_mask, S, I, &mut P[i]);
+            }
+
+            let result = Self::evaluate(u, p, &U, &P);
+
+            data.seek(bytes_per_component * size * (n + 1));
+
+            result
+        } else {
+            let mut result = I;
+            Self::recompose(stat_mask, dyn_mask, S, I, &mut result);
+
+            result
+        }
     }
 
     #[allow(unused_variables)]
