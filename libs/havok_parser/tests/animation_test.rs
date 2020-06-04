@@ -21,11 +21,11 @@ mod tests {
         let raw_animation_container = root.find_object_by_type("hkaAnimationContainer");
         let animation_container = HavokAnimationContainer::new(raw_animation_container);
 
-        let havok_animation_binding = &animation_container.bindings[0];
+        let havok_animation_binding = &animation_container.bindings[1];
         assert_eq!(havok_animation_binding.transform_track_to_bone_indices[0], 1);
 
         let havok_animation = &havok_animation_binding.animation;
-        assert_eq!(havok_animation.duration(), 0.966666626);
+        assert_eq!(havok_animation.duration(), 2.5);
 
         let frame = havok_animation.sample(0.);
         assert_eq!(frame[0].scale, [1., 1., 1., 1.]);

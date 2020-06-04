@@ -175,6 +175,25 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug integration test 'animation_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=animation_test",
+          "--package=havok_parser"
+        ],
+        "filter": {
+          "name": "animation_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug executable 'server'",
       "cargo": {
         "args": ["build", "--bin=server", "--package=server"],

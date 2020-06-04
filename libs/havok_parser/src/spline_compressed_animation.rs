@@ -175,6 +175,8 @@ impl HavokSplineCompressedAnimation {
             U[i] = (item as f32) * frame_duration;
         }
 
+        data.seek(n + p + 2);
+
         (n, p, U, span)
     }
 
