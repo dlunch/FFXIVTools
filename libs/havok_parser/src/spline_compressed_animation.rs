@@ -30,6 +30,28 @@ impl RotationQuantization {
             _ => panic!(),
         }
     }
+
+    pub fn align(&self) -> usize {
+        match self {
+            Self::POLAR32 => 4,
+            Self::THREECOMP40 => 1,
+            Self::THREECOMP48 => 2,
+            Self::THREECOMP24 => 1,
+            Self::STRAIGHT16 => 2,
+            Self::UNCOMPRESSED => 4,
+        }
+    }
+
+    pub fn bytes_per_quaternion(&self) -> usize {
+        match self {
+            Self::POLAR32 => 4,
+            Self::THREECOMP40 => 5,
+            Self::THREECOMP48 => 6,
+            Self::THREECOMP24 => 3,
+            Self::STRAIGHT16 => 2,
+            Self::UNCOMPRESSED => 16,
+        }
+    }
 }
 
 #[repr(u8)]
@@ -145,14 +167,38 @@ impl HavokSplineCompressedAnimation {
         let raw = data.raw();
         let span = Self::find_span(n, p, u, raw);
 
-        let mut u = vec![0.; 2 * p];
+        #[allow(non_snake_case)]
+        let mut U = vec![0.; 2 * p];
 
         for i in 0..2 * p {
             let item = raw[i + 1] as usize + span - p;
-            u[i] = (item as f32) * frame_duration;
+            U[i] = (item as f32) * frame_duration;
         }
 
-        (n, p, u, span)
+        (n, p, U, span)
+    }
+
+    #[allow(unused_variables)]
+    fn unpack_quaternion(quantization: &RotationQuantization, data: &[u8]) -> [f32; 4] {
+        // TODO
+        [0., 0., 0., 1.]
+    }
+
+    fn read_packed_quaternions(quantization: RotationQuantization, data: &mut ByteReader, n: usize, p: usize, span: usize) -> Vec<[f32; 4]> {
+        data.align(quantization.align());
+        let bytes_per_quaternion = quantization.bytes_per_quaternion();
+
+        let mut result = Vec::new();
+        for i in 0..(p + 1) {
+            result.push(Self::unpack_quaternion(
+                &quantization,
+                &data.raw()[bytes_per_quaternion * (i + span - p)..],
+            ));
+        }
+
+        data.seek(bytes_per_quaternion * (n + 1));
+
+        result
     }
 
     fn unpack_vec_8(min_p: [f32; 4], max_p: [f32; 4], vals: &[u8]) -> [f32; 4] {
@@ -333,7 +379,7 @@ impl HavokSplineCompressedAnimation {
         }
     }
 
-    #[allow(unused_variables)]
+    #[allow(non_snake_case)]
     fn read_nurbs_quaternion(
         quantization: RotationQuantization,
         data: &mut ByteReader,
@@ -342,7 +388,19 @@ impl HavokSplineCompressedAnimation {
         u: f32,
         mask: u8,
     ) -> [f32; 4] {
-        [0., 0., 0., 1.]
+        if mask & 0xf0 != 0 {
+            let (n, p, U, span) = Self::read_knots(data, quantized_time, frame_duration);
+            let P = Self::read_packed_quaternions(quantization, data, n, p, span);
+            Self::evaluate(u, p, &U, &P)
+        } else if mask & 0x0f != 0 {
+            data.align(quantization.align());
+            let result = Self::unpack_quaternion(&quantization, data.raw());
+            data.seek(quantization.bytes_per_quaternion());
+
+            result
+        } else {
+            [0., 0., 0., 1.]
+        }
     }
 }
 
