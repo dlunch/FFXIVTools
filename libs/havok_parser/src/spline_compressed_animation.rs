@@ -242,8 +242,8 @@ impl HavokSplineCompressedAnimation {
         if p == 1 {
             let t = (time - U[0]) / (U[1] - U[0]);
 
-            for i in 0..4 {
-                result[i] = P[0][i] + t * (P[1][i] - P[0][i]);
+            for (i, item) in result.iter_mut().enumerate() {
+                *item = P[0][i] + t * (P[1][i] - P[0][i]);
             }
         } else {
             // evaluate interpolation.
@@ -266,8 +266,8 @@ impl HavokSplineCompressedAnimation {
                 v29[4 * i] = v21;
             }
             for i in 0..(p + 1) {
-                for j in 0..4 {
-                    result[j] += v29[4 * i] * P[i][j];
+                for (j, item) in result.iter_mut().enumerate() {
+                    *item += v29[4 * i] * P[i][j];
                 }
             }
         }
@@ -364,31 +364,31 @@ impl HavokSplineCompressedAnimation {
             new_data.seek(bytes_per_component * size * (span - p));
 
             let mut P = [[0., 0., 0., 1.]; 4];
-            for i in 0..(p + 1) {
+            for pv in P.iter_mut().take(p + 1) {
                 match quantization {
                     ScalarQuantization::BITS8 => {
                         let mut vals = [0; 4];
-                        for j in 0..3 {
+                        for (j, item) in vals.iter_mut().enumerate().take(3) {
                             if (1 << (j + 4)) & mask != 0 {
-                                vals[j] = new_data.read();
+                                *item = new_data.read();
                             }
                         }
 
-                        P[i] = Self::unpack_vec_8(min_p, max_p, &vals);
+                        *pv = Self::unpack_vec_8(min_p, max_p, &vals);
                     }
                     ScalarQuantization::BITS16 => {
                         let mut vals = [0; 4];
-                        for j in 0..3 {
+                        for (j, item) in vals.iter_mut().enumerate().take(3) {
                             if (1 << (j + 4)) & mask != 0 {
-                                vals[j] = u16::from_le_bytes(new_data.read_bytes(2).try_into().unwrap());
+                                *item = u16::from_le_bytes(new_data.read_bytes(2).try_into().unwrap());
                             }
                         }
 
-                        P[i] = Self::unpack_vec_16(min_p, max_p, &vals);
+                        *pv = Self::unpack_vec_16(min_p, max_p, &vals);
                     }
                 }
 
-                Self::recompose(stat_mask, dyn_mask, S, I, &mut P[i]);
+                Self::recompose(stat_mask, dyn_mask, S, I, pv);
             }
 
             let result = Self::evaluate(u, p, &U, &P);
