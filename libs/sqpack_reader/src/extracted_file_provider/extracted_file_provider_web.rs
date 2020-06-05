@@ -18,7 +18,7 @@ struct BulkItemHeader {
 
 pub struct ExtractedFileProviderWeb {
     base_uri: String,
-    progress_callback: Option<Box<dyn Fn(usize, usize) -> () + Sync + Send + 'static>>,
+    progress_callback: Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>,
 }
 
 impl ExtractedFileProviderWeb {
@@ -31,7 +31,7 @@ impl ExtractedFileProviderWeb {
 
     pub fn with_progress<F>(base_uri: &str, progress_callback: F) -> Self
     where
-        F: Fn(usize, usize) -> () + Sync + Send + 'static,
+        F: Fn(usize, usize) + Sync + Send + 'static,
     {
         Self {
             base_uri: base_uri.to_owned(),
