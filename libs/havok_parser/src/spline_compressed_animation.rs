@@ -246,7 +246,30 @@ impl HavokSplineCompressedAnimation {
                 result[i] = P[0][i] + t * (P[1][i] - P[0][i]);
             }
         } else {
-            panic!()
+            // evaluate interpolation.
+            let p_minus_1 = p - 1;
+            let mut values = [1.; 16];
+            let mut low = [0.; 16];
+            let mut high = [0.; 16];
+
+            for i in 1..(p + 1) {
+                high[4 * i] = time - U[p_minus_1 + 1 - i];
+                low[4 * i] = U[i + p_minus_1] - time;
+                let mut val = 0.;
+                for j in 0..i {
+                    let a = low[4 * (j + 1)] + high[4 * (i - j)];
+                    let b = values[4 * j] / a;
+                    let c = low[4 * (j + 1)] * b;
+                    values[4 * j] = val + c;
+                    val = high[4 * (i - j)] * b;
+                }
+                values[4 * i] = val;
+            }
+            for i in 0..(p + 1) {
+                for j in 0..4 {
+                    result[j] += values[4 * i] * P[i][j];
+                }
+            }
         }
 
         result
