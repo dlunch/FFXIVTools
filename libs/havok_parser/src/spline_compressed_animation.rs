@@ -158,7 +158,7 @@ impl HavokSplineCompressedAnimation {
             }
             mid = (low + high) / 2;
         }
-        return mid;
+        mid
     }
 
     fn read_knots(data: &mut ByteReader, u: u8, frame_duration: f32) -> (usize, usize, Vec<f32>, usize) {
