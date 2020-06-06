@@ -1,3 +1,5 @@
+use alloc::vec;
+
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 pub struct App {}
