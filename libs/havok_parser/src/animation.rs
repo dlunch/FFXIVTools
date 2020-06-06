@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use crate::transform::HavokTransform;
 
 pub trait HavokAnimation {
