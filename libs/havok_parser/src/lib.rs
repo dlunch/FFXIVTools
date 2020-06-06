@@ -1,3 +1,6 @@
+#![no_std]
+extern crate alloc;
+
 mod animation;
 mod animation_binding;
 mod animation_container;

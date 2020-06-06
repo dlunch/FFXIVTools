@@ -1,5 +1,5 @@
-use std::cell::RefCell;
-use std::sync::Arc;
+use alloc::{borrow::ToOwned, string::String, sync::Arc, vec::Vec};
+use core::cell::RefCell;
 
 use crate::{object::HavokObject, transform::HavokTransform};
 

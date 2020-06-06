@@ -1,5 +1,5 @@
-use std::cell::RefCell;
-use std::sync::Arc;
+use alloc::{sync::Arc, vec::Vec};
+use core::cell::RefCell;
 
 use crate::{animation_binding::HavokAnimationBinding, object::HavokObject, skeleton::HavokSkeleton};
 

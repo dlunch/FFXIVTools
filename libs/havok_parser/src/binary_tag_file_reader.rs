@@ -1,8 +1,7 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::convert::TryInto;
-use std::str;
-use std::sync::Arc;
+use alloc::{borrow::ToOwned, str, string::String, sync::Arc, vec, vec::Vec};
+use core::{cell::RefCell, convert::TryInto};
+
+use hashbrown::HashMap;
 
 use util::SliceByteOrderExt;
 
