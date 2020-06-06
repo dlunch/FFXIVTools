@@ -1,3 +1,4 @@
+use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 use core::mem::size_of;
 
 use sqpack_reader::{Package, Result};
