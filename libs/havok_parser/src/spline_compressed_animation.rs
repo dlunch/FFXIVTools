@@ -1,5 +1,5 @@
 use alloc::{sync::Arc, vec, vec::Vec};
-use core::{cell::RefCell, cmp, convert::TryInto};
+use core::{cell::RefCell, cmp};
 
 use log::debug;
 
@@ -160,7 +160,7 @@ impl HavokSplineCompressedAnimation {
     }
 
     fn read_knots(data: &mut ByteReader, u: u8, frame_duration: f32) -> (usize, usize, Vec<f32>, usize) {
-        let n = u16::from_le_bytes(data.read_bytes(2).try_into().unwrap()) as usize;
+        let n = data.read_u16_le() as usize;
         let p = data.read() as usize;
         let raw = data.raw();
         let span = Self::find_span(n, p, u, raw);
@@ -342,10 +342,10 @@ impl HavokSplineCompressedAnimation {
 
         for i in 0..3 {
             if (1 << i) & mask != 0 {
-                S[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
+                S[i] = data.read_f32_le();
             } else if (1 << (i + 4)) & mask != 0 {
-                min_p[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
-                max_p[i] = f32::from_le_bytes(data.read_bytes(4).try_into().unwrap());
+                min_p[i] = data.read_f32_le();
+                max_p[i] = data.read_f32_le();
             }
         }
 
@@ -378,7 +378,7 @@ impl HavokSplineCompressedAnimation {
                         let mut vals = [0; 4];
                         for (j, item) in vals.iter_mut().enumerate().take(3) {
                             if (1 << (j + 4)) & mask != 0 {
-                                *item = u16::from_le_bytes(new_data.read_bytes(2).try_into().unwrap());
+                                *item = data.read_u16_le();
                             }
                         }
 
