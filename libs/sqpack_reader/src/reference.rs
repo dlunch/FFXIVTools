@@ -1,3 +1,5 @@
+use alloc::string::String;
+
 use super::archive_id::SqPackArchiveId;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
