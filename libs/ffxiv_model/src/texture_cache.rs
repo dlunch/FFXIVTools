@@ -1,5 +1,6 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use alloc::{string::String, sync::Arc};
+
+use hashbrown::HashMap;
 
 use tokio::sync::RwLock;
 

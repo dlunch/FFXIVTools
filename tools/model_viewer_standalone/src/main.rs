@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::sync::Arc;
 
+use hashbrown::HashMap;
 use log::debug;
-use maplit::hashmap;
 use nalgebra::Point3;
 use once_cell::sync::OnceCell;
 use tokio::fs;
@@ -127,22 +127,14 @@ impl<'a> App<'a> {
     }
 
     pub async fn add_character(&'a mut self) -> Result<()> {
-        let character = Character::new(
-            &self.renderer,
-            &*self.package,
-            &self.context,
-            BodyId::MidlanderFemale,
-            1,
-            1,
-            hashmap! {
-                ModelPart::Met => (6016, 1),
-                ModelPart::Top => (6016, 1),
-                ModelPart::Glv => (6016, 1),
-                ModelPart::Dwn => (6016, 1),
-                ModelPart::Sho => (6016, 1),
-            },
-        )
-        .await?;
+        let mut equipments = HashMap::new();
+        equipments.insert(ModelPart::Met, (6016, 1));
+        equipments.insert(ModelPart::Top, (6016, 1));
+        equipments.insert(ModelPart::Glv, (6016, 1));
+        equipments.insert(ModelPart::Dwn, (6016, 1));
+        equipments.insert(ModelPart::Sho, (6016, 1));
+
+        let character = Character::new(&self.renderer, &*self.package, &self.context, BodyId::MidlanderFemale, 1, 1, equipments).await?;
 
         self.scene.add(character);
         Ok(())

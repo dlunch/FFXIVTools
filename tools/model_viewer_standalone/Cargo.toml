@@ -16,8 +16,8 @@ tokio = { version = "^0.2", features = ["macros", "rt-threaded", "fs", "time"], 
 nalgebra = { version = "^0.21", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
+hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-features = false }
 once_cell = { version = "^1.4", features = ["std"], default-features = false }
-maplit = { version = "^1.0", default-features = false }
 
 ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
 sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../../libs/sqpack_reader" }

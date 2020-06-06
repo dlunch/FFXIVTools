@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use alloc::vec::Vec;
+
+use hashbrown::HashMap;
 
 use futures::{
     stream::{FuturesUnordered, TryStreamExt},
