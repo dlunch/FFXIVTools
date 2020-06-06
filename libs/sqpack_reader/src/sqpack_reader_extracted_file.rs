@@ -1,7 +1,7 @@
-use alloc::boxed::Box;
-use std::collections::HashMap;
+use alloc::{boxed::Box, vec::Vec};
 
 use async_trait::async_trait;
+use hashbrown::HashMap;
 
 use crate::error::Result;
 use crate::extracted_file_provider::ExtractedFileProvider;

@@ -4,7 +4,7 @@ mod data;
 mod definition;
 mod index;
 
-use std::collections::HashMap;
+use alloc::boxed::Box;
 use std::io;
 use std::path::Path;
 use std::sync::Arc;
@@ -14,6 +14,7 @@ use futures::{
     stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
 };
+use hashbrown::HashMap;
 use log::debug;
 
 use crate::archive_id::SqPackArchiveId;
