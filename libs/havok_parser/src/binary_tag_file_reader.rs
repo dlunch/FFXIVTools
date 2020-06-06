@@ -1,5 +1,5 @@
 use alloc::{borrow::ToOwned, str, string::String, sync::Arc, vec, vec::Vec};
-use core::{cell::RefCell, convert::TryInto};
+use core::cell::RefCell;
 
 use hashbrown::HashMap;
 
@@ -150,7 +150,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             match member.type_ {
                 HavokValueType::BYTE => HavokValue::Integer(self.reader.read() as i32),
                 HavokValueType::INT => HavokValue::Integer(self.read_packed_int()),
-                HavokValueType::REAL => HavokValue::Real(self.read_float()),
+                HavokValueType::REAL => HavokValue::Real(self.reader.read_f32_le()),
                 HavokValueType::STRING => HavokValue::String(self.read_string()),
                 HavokValueType::OBJECT => HavokValue::ObjectReference(self.read_packed_int() as usize),
                 _ => panic!("unimplemented {}", member.type_.bits()),
@@ -206,11 +206,11 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 }
                 (0..array_len).map(|_| HavokValue::Integer(self.read_packed_int())).collect::<Vec<_>>()
             }
-            HavokValueType::REAL => (0..array_len).map(|_| HavokValue::Real(self.read_float())).collect::<Vec<_>>(),
+            HavokValueType::REAL => (0..array_len).map(|_| HavokValue::Real(self.reader.read_f32_le())).collect::<Vec<_>>(),
             HavokValueType::VEC4 | HavokValueType::VEC8 | HavokValueType::VEC12 | HavokValueType::VEC16 => {
                 let vec_size = member.type_.base_type().vec_size() as usize;
                 (0..array_len)
-                    .map(|_| HavokValue::Vec((0..vec_size).map(|_| self.read_float()).collect::<Vec<_>>()))
+                    .map(|_| HavokValue::Vec((0..vec_size).map(|_| self.reader.read_f32_le()).collect::<Vec<_>>()))
                     .collect::<Vec<_>>()
             }
             _ => panic!("unimplemented {} {}", member.type_.bits(), member.type_.base_type().bits()),
@@ -253,12 +253,6 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         self.remembered_strings.push(result.clone());
 
         result
-    }
-    fn read_float(&mut self) -> f32 {
-        let len = core::mem::size_of::<f32>();
-        let bytes = self.reader.read_bytes(len);
-
-        f32::from_le_bytes(bytes.try_into().unwrap())
     }
 
     fn read_bit_field(&mut self, count: usize) -> Vec<bool> {
