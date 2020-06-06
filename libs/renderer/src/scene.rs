@@ -1,3 +1,5 @@
+use alloc::{boxed::Box, vec::Vec};
+
 use crate::{Camera, Renderable};
 
 pub struct Scene<'a> {

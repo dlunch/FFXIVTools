@@ -1,9 +1,26 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use alloc::sync::Arc;
 
-use maplit::hashmap;
+use hashbrown::HashMap;
 
 use renderer::{Renderer, Shader, ShaderBinding, ShaderBindingType};
+
+// hashbrown version of https://github.com/bluss/maplit/blob/master/src/lib.rs#L46
+macro_rules! hashmap {
+    (@single $($x:tt)*) => (());
+    (@count $($rest:expr),*) => (<[()]>::len(&[$(hashmap!(@single $rest)),*]));
+
+    ($($key:expr => $value:expr,)+) => { hashmap!($($key => $value),+) };
+    ($($key:expr => $value:expr),*) => {
+        {
+            let _cap = hashmap!(@count $($key),*);
+            let mut _map = HashMap::with_capacity(_cap);
+            $(
+                let _ = _map.insert($key, $value);
+            )*
+            _map
+        }
+    };
+}
 
 pub struct ShaderHolder {
     vertex_shader: Arc<Shader>,

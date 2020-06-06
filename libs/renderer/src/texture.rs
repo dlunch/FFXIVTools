@@ -1,3 +1,5 @@
+use alloc::{vec, vec::Vec};
+
 use crate::Renderer;
 
 pub enum TextureFormat {

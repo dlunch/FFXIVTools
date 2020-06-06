@@ -1,5 +1,6 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use alloc::{sync::Arc, vec::Vec};
+
+use hashbrown::HashMap;
 
 use ffxiv_parser::BufferItemType;
 use renderer::{

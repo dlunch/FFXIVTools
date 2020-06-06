@@ -1,5 +1,6 @@
-use std::collections::HashMap;
-use std::io::Cursor;
+use alloc::vec::Vec;
+
+use hashbrown::HashMap;
 
 use crate::Renderer;
 
@@ -57,7 +58,9 @@ impl Shader {
         bindings: HashMap<&'static str, ShaderBinding>,
         inputs: HashMap<&'static str, u32>,
     ) -> Self {
-        let spv = wgpu::read_spirv(Cursor::new(bytes)).unwrap();
+        let spv = (0..bytes.len() / 4)
+            .map(|_| u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+            .collect::<Vec<_>>();
         let module = renderer.device.create_shader_module(&spv);
 
         Self {
