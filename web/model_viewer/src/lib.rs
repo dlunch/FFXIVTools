@@ -1,3 +1,6 @@
+#![no_std]
+extern crate alloc;
+
 mod app;
 
 use wasm_bindgen::prelude::wasm_bindgen;
