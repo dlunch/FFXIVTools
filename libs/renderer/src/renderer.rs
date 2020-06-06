@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
 use tokio::sync::Mutex;
@@ -128,7 +130,7 @@ impl Renderer {
 
     fn dequeue_texture_uploads(&mut self, command_encoder: &mut wgpu::CommandEncoder) {
         let mut queue = Mutex::new(Vec::new());
-        std::mem::swap(&mut self.texture_upload_queue, &mut queue);
+        core::mem::swap(&mut self.texture_upload_queue, &mut queue);
 
         for (buffer, texture, bytes_per_row, extent) in queue.into_inner() {
             command_encoder.copy_buffer_to_texture(

@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use crate::{Renderer, VertexFormat};
 
 pub struct MeshPart {

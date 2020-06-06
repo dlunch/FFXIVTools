@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use crate::{Material, Mesh, MeshPart, RenderContext, Renderable, Renderer};
 
 pub struct Model {

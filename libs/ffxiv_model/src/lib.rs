@@ -1,3 +1,6 @@
+#![no_std]
+extern crate alloc;
+
 mod character;
 mod character_part;
 mod constants;

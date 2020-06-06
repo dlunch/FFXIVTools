@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use alloc::vec::Vec;
+
+use hashbrown::HashMap;
 
 pub enum VertexItemType {
     UByte4,
