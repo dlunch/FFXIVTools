@@ -1,5 +1,4 @@
-// after rust 1.44
-// #![no_std]
+#![no_std]
 
 #[cfg(target_endian = "big")]
 compile_error!("Not supported on big endian");

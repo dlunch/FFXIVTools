@@ -1,4 +1,8 @@
-use alloc::{str, string::String};
+use alloc::{
+    borrow::ToOwned,
+    format, str,
+    string::{String, ToString},
+};
 use core::convert::Into;
 
 pub struct FFXIVString<'a> {

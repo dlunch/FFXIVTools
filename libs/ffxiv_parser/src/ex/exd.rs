@@ -1,4 +1,4 @@
-use alloc::{collections::BTreeMap, format};
+use alloc::{collections::BTreeMap, format, vec::Vec};
 use core::mem::size_of;
 
 use sqpack_reader::{Package, Result};
