@@ -59,7 +59,7 @@ impl Shader {
         inputs: HashMap<&'static str, u32>,
     ) -> Self {
         let spv = (0..bytes.len() / 4)
-            .map(|_| u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+            .map(|x| u32::from_le_bytes([bytes[x * 4], bytes[x * 4 + 1], bytes[x * 4 + 2], bytes[x * 4 + 3]]))
             .collect::<Vec<_>>();
         let module = renderer.device.create_shader_module(&spv);
 
