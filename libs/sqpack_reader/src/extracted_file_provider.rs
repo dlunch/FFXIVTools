@@ -1,4 +1,4 @@
-use alloc::boxed::Box;
+use alloc::{boxed::Box, vec::Vec};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {

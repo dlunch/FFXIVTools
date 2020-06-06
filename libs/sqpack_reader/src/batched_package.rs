@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use alloc::{boxed::Box, vec, vec::Vec};
 
 use async_trait::async_trait;
+use hashbrown::HashMap;
 use tokio::sync::{oneshot, RwLock};
 
 use crate::error::Result;
@@ -28,7 +29,7 @@ impl<'a> BatchedPackage<'a> {
         let waiters = {
             let mut waiters = self.waiters.write().await;
             let mut new_waiters = HashMap::new();
-            std::mem::swap(&mut *waiters, &mut new_waiters);
+            core::mem::swap(&mut *waiters, &mut new_waiters);
 
             new_waiters
         };
