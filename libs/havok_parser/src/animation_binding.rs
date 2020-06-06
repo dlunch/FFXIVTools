@@ -1,5 +1,5 @@
-use std::cell::RefCell;
-use std::sync::Arc;
+use alloc::{boxed::Box, sync::Arc, vec::Vec};
+use core::cell::RefCell;
 
 use crate::{animation::HavokAnimation, object::HavokObject, spline_compressed_animation::HavokSplineCompressedAnimation};
 

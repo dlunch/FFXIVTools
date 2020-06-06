@@ -1,9 +1,8 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::str;
-use std::sync::Arc;
+use alloc::{str, string::String, sync::Arc, vec::Vec};
+use core::cell::RefCell;
 
 use bitflags::bitflags;
+use hashbrown::HashMap;
 
 bitflags! {
     pub struct HavokValueType: u32 {
