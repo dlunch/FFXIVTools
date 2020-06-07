@@ -1,7 +1,5 @@
 use alloc::{sync::Arc, vec, vec::Vec};
-use core::{cell::RefCell, cmp};
-
-use log::debug;
+use core::{cell::RefCell, cmp, f32};
 
 use crate::byte_reader::ByteReader;
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
@@ -178,10 +176,131 @@ impl HavokSplineCompressedAnimation {
         (n, p, U, span)
     }
 
-    #[allow(unused_variables)]
+    fn unpack_signed_quaternion_32(data: &[u8]) -> [f32; 4] {
+        let input = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+
+        let low = (input & 0x3FFFF) as f32;
+        let high = ((input & 0xFFC0000) >> 18) as f32 / 1023.0;
+
+        let value = 1. - high * high;
+
+        let a = f32::sqrt(low);
+        let b = low - a * a;
+        let c = if a == 0. { f32::MAX } else { 1. / (a + a) };
+
+        let theta = a / 511.0 * (f32::consts::PI / 2.);
+        let phi = b * c * (f32::consts::PI / 2.);
+
+        // spherical coordinate to cartesian coordinate
+        let mut result = [f32::sin(theta) * f32::cos(phi), f32::sin(theta) * f32::sin(phi), f32::cos(theta), 1.];
+        for item in result.iter_mut() {
+            *item *= f32::sqrt(1. - value * value);
+        }
+        result[3] = value;
+
+        let mask = input >> 28;
+        for (i, item) in result.iter_mut().enumerate() {
+            if mask & (1 << i) != 0 {
+                *item = -*item;
+            }
+        }
+
+        result
+    }
+
+    fn unpack_signed_quaternion_40(data: &[u8]) -> [f32; 4] {
+        let permute = [256, 513, 1027, 0];
+        let data_mask_and = [4095, 4095, 4095, 0];
+        let data_mask_or = [0, 0, 0, 2047];
+        let data = [
+            u32::from_le_bytes([data[0], data[1], data[2], data[3]]),
+            u32::from_le_bytes([data[4], data[5], data[6], data[7]]),
+        ];
+
+        let mut buf = [0u32; 4];
+        unsafe {
+            let m = core::slice::from_raw_parts(permute.as_ptr() as *const u8, permute.len() * core::mem::size_of::<u32>());
+            let a = core::slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * core::mem::size_of::<u32>());
+            let r = core::slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut u8, buf.len() * core::mem::size_of::<u32>());
+            for i in 0..16 {
+                r[i] = a[m[i] as usize];
+            }
+        }
+
+        let mask = 2;
+        for (i, item) in buf.iter_mut().enumerate() {
+            if mask & (1 << i) != 0 {
+                *item >>= 4;
+            }
+        }
+
+        for (i, item) in buf.iter_mut().enumerate() {
+            *item = (*item & data_mask_and[i]) | data_mask_or[i];
+        }
+
+        let mut result = [0., 0., 0., 1.];
+        for (i, &item) in buf.iter().enumerate() {
+            result[i] = ((item as f32) - 2047.0) * 0.00034543566;
+        }
+
+        let length_square = result.iter().map(|x| x * x).sum::<f32>();
+        let mut remaining = f32::sqrt(1. - length_square);
+        if (data[1] & 64) == 64 {
+            remaining = -remaining;
+        }
+
+        match data[1] & 48 {
+            0 => [remaining, result[0], result[1], result[2]],
+            16 => [result[0], remaining, result[1], result[2]],
+            32 => [result[0], result[1], remaining, result[2]],
+            48 => [result[0], result[1], result[2], remaining],
+            _ => panic!(),
+        }
+    }
+
+    fn unpack_signed_quaternion_48(data: &[u8]) -> [f32; 4] {
+        let data = [
+            u16::from_le_bytes([data[0], data[1]]),
+            u16::from_le_bytes([data[2], data[3]]),
+            u16::from_le_bytes([data[4], data[5]]),
+        ];
+
+        let item1 = data[0] & 0x7FFF;
+        let item2 = data[1] & 0x7FFF;
+        let item3 = data[2] & 0x7FFF;
+        let missing_index = (((data[1] & 0x8000) >> 14) | ((data[0] & 0x8000) >> 15)) as usize;
+        let mut vals = [0x3fff, 0x3fff, 0x3fff, 0x3fff];
+
+        let mut index = if missing_index == 0 { 1 } else { 0 };
+        vals[index] = item1;
+        index += 1 + (if missing_index == index + 1 { 1 } else { 0 });
+        vals[index] = item2;
+        index += 1 + (if missing_index == index + 1 { 1 } else { 0 });
+        vals[index] = item3;
+
+        let mut result = [0., 0., 0., 1.];
+        for (i, &item) in vals.iter().enumerate() {
+            result[i] = ((item as f32) - 16383.0) * 0.000043161006;
+        }
+
+        let length_square = result.iter().map(|x| x * x).sum::<f32>();
+        let mut remaining = f32::sqrt(1. - length_square);
+        if data[2] & 0x8000 != 0 {
+            remaining = -remaining;
+        }
+
+        result[missing_index] = remaining;
+
+        result
+    }
+
     fn unpack_quaternion(quantization: &RotationQuantization, data: &[u8]) -> [f32; 4] {
-        // TODO
-        [0., 0., 0., 1.]
+        match quantization {
+            RotationQuantization::POLAR32 => Self::unpack_signed_quaternion_32(data),
+            RotationQuantization::THREECOMP40 => Self::unpack_signed_quaternion_40(data),
+            RotationQuantization::THREECOMP48 => Self::unpack_signed_quaternion_48(data),
+            _ => panic!(),
+        }
     }
 
     fn read_packed_quaternions(quantization: RotationQuantization, data: &mut ByteReader, n: usize, p: usize, span: usize) -> Vec<[f32; 4]> {
@@ -236,7 +355,11 @@ impl HavokSplineCompressedAnimation {
 
     #[allow(non_snake_case)]
     fn evaluate(time: f32, p: usize, U: &[f32], P: &[[f32; 4]]) -> [f32; 4] {
-        let mut result = [0., 0., 0., 1.];
+        if p > 3 {
+            panic!()
+        }
+
+        let mut result = [0., 0., 0., 0.];
         if p == 1 {
             let t = (time - U[0]) / (U[1] - U[0]);
 
@@ -378,7 +501,7 @@ impl HavokSplineCompressedAnimation {
                         let mut vals = [0; 4];
                         for (j, item) in vals.iter_mut().enumerate().take(3) {
                             if (1 << (j + 4)) & mask != 0 {
-                                *item = data.read_u16_le();
+                                *item = new_data.read_u16_le();
                             }
                         }
 
@@ -434,7 +557,6 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
         let delta = frame_float - frame as f32;
 
         let (block, block_time, quantized_time) = self.get_block_and_time(frame, delta);
-        debug!("{} {} {}", block, block_time, quantized_time);
 
         let mut data = ByteReader::new(Self::compute_packed_nurbs_offsets(
             &self.data,
