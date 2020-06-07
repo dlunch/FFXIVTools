@@ -2,7 +2,7 @@ use core::mem::size_of;
 use std::io;
 use std::path::Path;
 
-use tokio::fs;
+use async_std::fs;
 
 use util::cast;
 
