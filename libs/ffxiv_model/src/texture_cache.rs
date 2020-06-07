@@ -2,26 +2,26 @@ use alloc::{string::String, sync::Arc};
 
 use hashbrown::HashMap;
 
-use tokio::sync::RwLock;
+use futures::lock::Mutex;
 
 use ffxiv_parser::{Tex, TextureType};
 use renderer::{CompressedTextureFormat, Renderer, Texture, TextureFormat};
 use sqpack_reader::{Package, Result};
 
 pub struct TextureCache {
-    textures: RwLock<HashMap<String, Arc<Texture>>>,
+    textures: Mutex<HashMap<String, Arc<Texture>>>,
 }
 
 impl TextureCache {
     pub fn new() -> Self {
         Self {
-            textures: RwLock::new(HashMap::new()),
+            textures: Mutex::new(HashMap::new()),
         }
     }
 
     pub async fn get_or_read(&self, renderer: &Renderer, package: &dyn Package, texture_path: String) -> Result<Arc<Texture>> {
         {
-            let textures = self.textures.read().await;
+            let textures = self.textures.lock().await;
             if let Some(x) = textures.get(&texture_path) {
                 return Ok(x.clone());
             }
@@ -31,7 +31,7 @@ impl TextureCache {
         let tex = Tex::new(package, &texture_path).await?;
         let texture = Arc::new(Self::load_texture(renderer, &tex).await);
 
-        let mut textures = self.textures.write().await;
+        let mut textures = self.textures.lock().await;
         textures.insert(texture_path, texture.clone());
 
         Ok(texture)

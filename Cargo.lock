@@ -688,7 +688,6 @@ dependencies = [
  "renderer 0.1.0",
  "shaderc 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
- "tokio 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
