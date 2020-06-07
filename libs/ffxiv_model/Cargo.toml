@@ -12,7 +12,6 @@ doctest = false
 [dependencies]
 raw-window-handle = { version = "^0.3", default-features = false }
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
-tokio = { version = "^0.2", features = ["sync"], default-features = false }
 hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
