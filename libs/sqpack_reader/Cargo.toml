@@ -9,7 +9,7 @@ doctest = false
 
 [features]
 default = []
-std = ["crc32fast/std", "async-std/default", "reqwest", "util/std"]
+std = ["crc32fast/std", "async-std/default", "surf", "util/std"]
 test_local = ["std"]
 
 [dependencies]
@@ -25,7 +25,7 @@ hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-fea
 
 util = { version = "^0.1", default-features = false, path = "../util" }
 
-reqwest = { version = "^0.10", features = ["default-tls", "stream"], default-features = false, optional = true }
+surf = { version = "^2.0.0-alpha.4", features = ["native-client"], default-features = false, optional = true }
 
 [dev-dependencies]
 pretty_env_logger = { version = "^0.4", default-features = false }
