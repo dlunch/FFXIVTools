@@ -775,13 +775,13 @@ dependencies = [
 name = "ffxiv_parser"
 version = "0.1.0"
 dependencies = [
+ "async-std 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.111 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_repr 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
- "tokio 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "util 0.1.0",
 ]
 
@@ -1184,13 +1184,13 @@ dependencies = [
 name = "havok_parser"
 version = "0.1.0"
 dependencies = [
+ "async-std 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ffxiv_parser 0.1.0",
  "hashbrown 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqpack_reader 0.1.0",
- "tokio 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "util 0.1.0",
 ]
 
