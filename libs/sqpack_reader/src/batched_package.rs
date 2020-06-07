@@ -2,8 +2,8 @@ use alloc::{boxed::Box, vec, vec::Vec};
 
 use async_trait::async_trait;
 use futures::channel::oneshot;
-use futures::lock::Mutex;
 use hashbrown::HashMap;
+use spin::Mutex;
 
 use crate::error::Result;
 use crate::package::{BatchablePackage, Package};
@@ -23,12 +23,12 @@ impl<'a> BatchedPackage<'a> {
     }
 
     pub async fn poll(&self) -> Result<()> {
-        if self.waiters.lock().await.is_empty() {
+        if self.waiters.lock().is_empty() {
             return Ok(());
         }
 
         let waiters = {
-            let mut waiters = self.waiters.lock().await;
+            let mut waiters = self.waiters.lock();
             let mut new_waiters = HashMap::new();
             core::mem::swap(&mut *waiters, &mut new_waiters);
 
@@ -61,7 +61,7 @@ impl Package for BatchedPackage<'_> {
         let (tx, rx) = oneshot::channel();
 
         {
-            let mut waiters = self.waiters.lock().await;
+            let mut waiters = self.waiters.lock();
             if waiters.contains_key(reference) {
                 waiters.get_mut(reference).unwrap().push(tx);
             } else {
