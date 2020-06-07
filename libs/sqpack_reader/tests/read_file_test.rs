@@ -2,7 +2,7 @@
 mod tests {
 
     #[cfg(feature = "test_local")]
-    #[tokio::test]
+    #[async_std::test]
     #[cfg(unix)]
     async fn read_file_test() -> Result<()> {
         use std::path::Path;
@@ -48,7 +48,7 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
+    #[async_std::test]
     #[cfg(feature = "std")]
     async fn read_web_test() -> sqpack_reader::Result<()> {
         use sqpack_reader::{ExtractedFileProviderWeb, Package, SqPackReaderExtractedFile};

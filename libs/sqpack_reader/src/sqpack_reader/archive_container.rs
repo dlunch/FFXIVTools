@@ -4,8 +4,8 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use async_std::sync::RwLock;
 use log::debug;
-use tokio::sync::RwLock;
 
 use super::archive::SqPackArchive;
 use crate::archive_id::SqPackArchiveId;

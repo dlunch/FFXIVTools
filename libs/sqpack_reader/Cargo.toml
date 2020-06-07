@@ -9,18 +9,18 @@ doctest = false
 
 [features]
 default = []
-std = ["crc32fast/std", "tokio/fs", "reqwest", "util/std"]
+std = ["crc32fast/std", "async-std/default", "reqwest", "util/std"]
 test_local = ["std"]
 
 [dependencies]
 cfg-if = { version = "^0.1", default-features = false }
-futures = {version = "^0.3", features = ["alloc"], default-features = false }
+futures = {version = "^0.3", features = ["default"], default-features = false }
 crc32fast = { version = "^1.2.0", default-features = false }
 miniz_oxide = { version = "^0.3", default-features = false }
 log = { version = "^0.4", default-features = false }
 async-trait = { version = "^0.1.24", default-features = false }
 bytes = { version = "^0.5.4", default-features = false }
-tokio = { version = "^0.2", features = ["sync"], default-features = false }
+async-std = { version = "^1.6", features = ["alloc"], default-features = false }
 hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-features = false }
 
 util = { version = "^0.1", default-features = false, path = "../util" }
@@ -28,5 +28,5 @@ util = { version = "^0.1", default-features = false, path = "../util" }
 reqwest = { version = "^0.10", features = ["default-tls", "stream"], default-features = false, optional = true }
 
 [dev-dependencies]
-tokio = { version = "^0.2", features = ["macros", "rt-threaded"], default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
+async-std = { version = "^1.6", features = ["attributes"], default-features = false }

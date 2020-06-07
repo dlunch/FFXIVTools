@@ -2,8 +2,8 @@ use core::mem::size_of;
 use std::io;
 use std::path::PathBuf;
 
+use async_std::fs::File;
 use bytes::Bytes;
-use tokio::fs::File;
 
 use util::{cast, ReadExt, SliceByteOrderExt};
 
