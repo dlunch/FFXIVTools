@@ -1,7 +1,7 @@
 #[cfg(feature = "test_local")]
 #[cfg(test)]
 mod tests {
-    #[tokio::test]
+    #[async_std::test]
     #[cfg(unix)]
     async fn read_as_compressed_test() -> sqpack_reader::Result<()> {
         use std::path::Path;

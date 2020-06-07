@@ -5,7 +5,7 @@ mod tests {
 
     use sqpack_reader::{Package, Result, SqPackReader};
 
-    #[tokio::test]
+    #[async_std::test]
     async fn read_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
