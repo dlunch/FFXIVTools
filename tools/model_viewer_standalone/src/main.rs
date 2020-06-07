@@ -1,13 +1,13 @@
 use std::path::Path;
 use std::sync::Arc;
+use std::time::Duration;
 
+use async_std::fs;
+use async_std::task;
 use hashbrown::HashMap;
 use log::debug;
 use nalgebra::Point3;
 use once_cell::sync::OnceCell;
-use tokio::fs;
-use tokio::sync::Notify;
-use tokio::time::{delay_for, Duration};
 use winit::{
     dpi::LogicalSize,
     event,
@@ -20,11 +20,10 @@ use ffxiv_model::{BodyId, Character, Context, ModelPart};
 use renderer::{Camera, Renderer, Scene};
 use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
 
-// tokio::spawn requires 'static lifetime.
+// task::spawn requires 'static lifetime.
 static mut APP: OnceCell<App> = OnceCell::new();
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
         .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
@@ -36,19 +35,10 @@ async fn main() {
     builder = builder.with_title("test").with_inner_size(LogicalSize::new(1920, 1080));
     let window = builder.build(&event_loop).unwrap();
 
-    unsafe {
-        let _ = APP.set(App::new(&window).await);
-        APP.get_mut().unwrap().add_character().await.unwrap();
-    }
-
-    let notifier = Arc::new(Notify::new());
-    let notify_read = notifier.clone();
-
-    tokio::spawn(async move {
-        let app = unsafe { APP.get_mut().unwrap() };
-        loop {
-            notify_read.notified().await;
-            app.render().await;
+    task::block_on(async {
+        unsafe {
+            let _ = APP.set(App::new(&window).await);
+            APP.get_mut().unwrap().add_character().await.unwrap();
         }
     });
 
@@ -72,7 +62,12 @@ async fn main() {
                 }
                 _ => {}
             },
-            event::Event::RedrawRequested(_) => notifier.notify(),
+            event::Event::RedrawRequested(_) => {
+                task::block_on(async move {
+                    let app = unsafe { APP.get_mut().unwrap() };
+                    app.render().await;
+                });
+            }
             _ => {}
         }
     });
@@ -102,12 +97,12 @@ impl<'a> App<'a> {
         };
         let package = Arc::new(package);
 
-        // TODO We can't put add_character in tokio::spawn (rust issue #64650), so BatchedPackage::poll can't be in app.update() or somewhere.
+        // TODO We can't put add_character in task::spawn (rust issue #64650), so BatchedPackage::poll can't be in app.update() or somewhere.
         let package2 = package.clone();
-        tokio::spawn(async move {
+        task::spawn(async move {
             loop {
                 package2.poll().await.unwrap();
-                delay_for(Duration::from_millis(16)).await;
+                task::sleep(Duration::from_millis(16)).await;
             }
         });
 
