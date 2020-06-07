@@ -2012,7 +2012,6 @@ dependencies = [
  "nalgebra 0.21.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "raw-window-handle 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "squish 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tokio 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "wgpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "zerocopy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

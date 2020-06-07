@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 
+use futures::lock::Mutex;
 use nalgebra::Matrix4;
 use raw_window_handle::HasRawWindowHandle;
-use tokio::sync::Mutex;
 use zerocopy::AsBytes;
 
 use crate::{Camera, RenderContext, Scene, UniformBuffer};
