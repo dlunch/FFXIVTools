@@ -1,3 +1,4 @@
+#[cfg(debug_assertions)]
 use alloc::string::String;
 
 use super::archive_id::SqPackArchiveId;
