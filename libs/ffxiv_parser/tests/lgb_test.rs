@@ -3,7 +3,7 @@ mod tests {
     use ffxiv_parser::{LayerGroupResourceItem, Lgb};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
-    #[tokio::test]
+    #[async_std::test]
     async fn lgb_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
