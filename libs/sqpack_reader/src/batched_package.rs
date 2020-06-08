@@ -3,7 +3,7 @@ use alloc::{boxed::Box, vec, vec::Vec};
 use async_trait::async_trait;
 use futures::channel::oneshot;
 use hashbrown::HashMap;
-use spin::Mutex;
+use spinning_top::Spinlock;
 
 use crate::error::Result;
 use crate::package::{BatchablePackage, Package};
@@ -11,14 +11,14 @@ use crate::reference::SqPackFileReference;
 
 pub struct BatchedPackage<'a> {
     real: Box<dyn BatchablePackage + 'a>,
-    waiters: Mutex<HashMap<SqPackFileReference, Vec<oneshot::Sender<Vec<u8>>>>>,
+    waiters: Spinlock<HashMap<SqPackFileReference, Vec<oneshot::Sender<Vec<u8>>>>>,
 }
 
 impl<'a> BatchedPackage<'a> {
     pub fn new<R: BatchablePackage + 'a>(real: R) -> Self {
         Self {
             real: Box::new(real),
-            waiters: Mutex::new(HashMap::new()),
+            waiters: Spinlock::new(HashMap::new()),
         }
     }
 
