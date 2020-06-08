@@ -2,10 +2,9 @@ use alloc::vec::Vec;
 
 use futures::lock::Mutex;
 use nalgebra::Matrix4;
-use raw_window_handle::HasRawWindowHandle;
 use zerocopy::AsBytes;
 
-use crate::{Camera, RenderContext, Scene, UniformBuffer};
+use crate::{Camera, RenderContext, RenderTarget, Scene, UniformBuffer};
 
 type TextureUploadItem = (wgpu::Buffer, wgpu::Texture, usize, wgpu::Extent3d);
 
@@ -14,22 +13,17 @@ pub struct Renderer {
     pub(crate) empty_texture: wgpu::TextureView,
     pub(crate) mvp_buf: UniformBuffer,
 
-    swap_chain: wgpu::SwapChain,
     queue: wgpu::Queue,
 
-    depth_texture: wgpu::TextureView,
     texture_upload_queue: Mutex<Vec<TextureUploadItem>>,
-    aspect_ratio: f32,
 }
 
 impl Renderer {
-    pub async fn new<W: HasRawWindowHandle>(window: &W, width: u32, height: u32) -> Self {
-        let surface = wgpu::Surface::create(window);
-
+    pub async fn new() -> Self {
         let adapter = wgpu::Adapter::request(
             &wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::Default,
-                compatible_surface: Some(&surface),
+                compatible_surface: None,
             },
             wgpu::BackendBit::PRIMARY,
         )
@@ -45,54 +39,33 @@ impl Renderer {
             })
             .await;
 
-        let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8Unorm,
-            width,
-            height,
-            present_mode: wgpu::PresentMode::Mailbox,
-        };
-        let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         let empty_texture = Self::create_empty_texture(&device, &queue).create_default_view();
         let mvp_buf = UniformBuffer::new(&device, 64);
 
-        let depth_texture = device
-            .create_texture(&wgpu::TextureDescriptor {
-                size: wgpu::Extent3d { width, height, depth: 1 },
-                array_layer_count: 1,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Depth24Plus,
-                usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-                label: None,
-            })
-            .create_default_view();
-
         Self {
             device,
-            swap_chain,
             queue,
             texture_upload_queue: Mutex::new(Vec::new()),
             empty_texture,
             mvp_buf,
-            depth_texture,
-            aspect_ratio: (width as f32) / (height as f32),
         }
     }
 
-    pub async fn render(&mut self, scene: &Scene<'_>) {
-        let mvp = Self::get_mvp(&scene.camera, self.aspect_ratio);
+    pub async fn render(&mut self, scene: &Scene<'_>, target: &mut dyn RenderTarget) {
+        let size = target.size();
+
+        let mvp = Self::get_mvp(&scene.camera, size.0 as f32 / size.1 as f32);
         self.mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.dequeue_texture_uploads(&mut command_encoder);
 
-        let frame = self.swap_chain.get_next_texture().unwrap();
+        let color_target = target.color_attachment();
+        let depth_target = target.depth_attachment();
         {
             let render_pass = command_encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
+                    attachment: color_target,
                     resolve_target: None,
                     load_op: wgpu::LoadOp::Clear,
                     store_op: wgpu::StoreOp::Store,
@@ -104,7 +77,7 @@ impl Renderer {
                     },
                 }],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachmentDescriptor {
-                    attachment: &self.depth_texture,
+                    attachment: depth_target,
                     depth_load_op: wgpu::LoadOp::Clear,
                     depth_store_op: wgpu::StoreOp::Store,
                     stencil_load_op: wgpu::LoadOp::Clear,
@@ -121,6 +94,7 @@ impl Renderer {
         }
 
         self.queue.submit(&[command_encoder.finish()]);
+        target.submit();
     }
 
     pub(crate) async fn enqueue_texture_upload(&self, buffer: wgpu::Buffer, texture: wgpu::Texture, bytes_per_row: usize, extent: wgpu::Extent3d) {
