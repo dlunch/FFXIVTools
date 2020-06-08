@@ -17,7 +17,7 @@ use winit::{
 };
 
 use ffxiv_model::{BodyId, Character, Context, ModelPart};
-use renderer::{Camera, Renderer, Scene};
+use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
 use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
 
 // task::spawn requires 'static lifetime.
@@ -75,6 +75,7 @@ fn main() {
 
 struct App<'a> {
     renderer: Renderer,
+    render_target: WindowRenderTarget,
     context: Context,
     package: Arc<BatchedPackage<'a>>,
     scene: Scene<'a>,
@@ -107,7 +108,8 @@ impl<'a> App<'a> {
         });
 
         let size = window.inner_size();
-        let renderer = Renderer::new(window, size.width, size.height).await;
+        let renderer = Renderer::new().await;
+        let render_target = WindowRenderTarget::new(&renderer, window, size.width, size.height);
         let context = Context::new(&renderer);
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
@@ -116,6 +118,7 @@ impl<'a> App<'a> {
         Self {
             renderer,
             context,
+            render_target,
             package: package.clone(),
             scene,
         }
@@ -137,6 +140,6 @@ impl<'a> App<'a> {
 
     pub async fn render(&mut self) {
         self.package.poll().await.unwrap();
-        self.renderer.render(&self.scene).await;
+        self.renderer.render(&self.scene, &mut self.render_target).await;
     }
 }
