@@ -26,7 +26,7 @@ impl UniformBuffer {
                 mapping = x?;
                 break;
             }
-            device.poll(wgpu::Maintain::Poll);
+            device.poll(wgpu::Maintain::Wait);
         }
 
         mapping.as_slice().copy_from_slice(data);
