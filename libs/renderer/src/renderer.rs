@@ -69,12 +69,7 @@ impl Renderer {
                     resolve_target: None,
                     load_op: wgpu::LoadOp::Clear,
                     store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color {
-                        r: 0.1,
-                        g: 0.2,
-                        b: 0.3,
-                        a: 1.0,
-                    },
+                    clear_color: wgpu::Color { r: 1., g: 1., b: 1., a: 1. },
                 }],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachmentDescriptor {
                     attachment: depth_target,
@@ -82,7 +77,7 @@ impl Renderer {
                     depth_store_op: wgpu::StoreOp::Store,
                     stencil_load_op: wgpu::LoadOp::Clear,
                     stencil_store_op: wgpu::StoreOp::Store,
-                    clear_depth: 1.0,
+                    clear_depth: 1.,
                     clear_stencil: 0,
                 }),
             });
