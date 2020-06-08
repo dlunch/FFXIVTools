@@ -20,7 +20,7 @@ impl UniformBuffer {
         // TODO move poll to event loop
         let mut future = self.buffer.map_write(0, self.size as u64);
 
-        let mut mapping: wgpu::BufferWriteMapping;
+        let mut mapping;
         loop {
             if let Poll::Ready(x) = futures::poll!(&mut future) {
                 mapping = x?;
