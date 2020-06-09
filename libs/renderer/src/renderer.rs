@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{vec, vec::Vec};
 
 use futures::lock::Mutex;
 use nalgebra::Matrix4;
@@ -39,13 +39,14 @@ impl Renderer {
             })
             .await;
 
-        let empty_texture = Self::create_empty_texture(&device, &queue).create_default_view();
+        let texture_upload_item = Self::create_empty_texture(&device);
+        let empty_texture = texture_upload_item.1.create_default_view();
         let mvp_buf = UniformBuffer::new(&device, 64);
 
         Self {
             device,
             queue,
-            texture_upload_queue: Mutex::new(Vec::new()),
+            texture_upload_queue: Mutex::new(vec![texture_upload_item]),
             empty_texture,
             mvp_buf,
         }
@@ -136,7 +137,7 @@ impl Renderer {
         correction * projection * camera.view()
     }
 
-    fn create_empty_texture(device: &wgpu::Device, queue: &wgpu::Queue) -> wgpu::Texture {
+    fn create_empty_texture(device: &wgpu::Device) -> TextureUploadItem {
         let extent = wgpu::Extent3d {
             width: 1,
             height: 1,
@@ -154,25 +155,7 @@ impl Renderer {
         });
 
         let buffer = device.create_buffer_with_data(&[0, 0, 0, 0], wgpu::BufferUsage::COPY_SRC);
-        let mut command_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        command_encoder.copy_buffer_to_texture(
-            wgpu::BufferCopyView {
-                buffer: &buffer,
-                offset: 0,
-                bytes_per_row: 4,
-                rows_per_image: 0,
-            },
-            wgpu::TextureCopyView {
-                texture: &texture,
-                mip_level: 0,
-                array_layer: 0,
-                origin: wgpu::Origin3d::ZERO,
-            },
-            extent,
-        );
 
-        queue.submit(&[command_encoder.finish()]);
-
-        texture
+        (buffer, texture, 4, extent)
     }
 }
