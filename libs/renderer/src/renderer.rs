@@ -4,14 +4,15 @@ use futures::lock::Mutex;
 use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
-use crate::{Camera, RenderContext, RenderTarget, Scene, UniformBuffer};
+use crate::{buffer::Buffer, buffer_pool::BufferPool, Camera, RenderContext, RenderTarget, Scene};
 
 type TextureUploadItem = (wgpu::Buffer, wgpu::Texture, usize, wgpu::Extent3d);
 
 pub struct Renderer {
     pub(crate) device: wgpu::Device,
     pub(crate) empty_texture: wgpu::TextureView,
-    pub(crate) mvp_buf: UniformBuffer,
+    pub(crate) mvp_buf: Option<Buffer>,
+    pub(crate) buffer_pool: BufferPool,
 
     queue: wgpu::Queue,
 
@@ -41,22 +42,32 @@ impl Renderer {
 
         let texture_upload_item = Self::create_empty_texture(&device);
         let empty_texture = texture_upload_item.1.create_default_view();
-        let mvp_buf = UniformBuffer::new(&device, 64);
 
-        Self {
+        let mut result = Self {
             device,
             queue,
             texture_upload_queue: Mutex::new(vec![texture_upload_item]),
             empty_texture,
-            mvp_buf,
-        }
+            buffer_pool: BufferPool::new(),
+            mvp_buf: None,
+        };
+
+        // TODO
+        result.mvp_buf = Some(result.buffer_pool.alloc(&result.device, 64));
+
+        result
     }
 
     pub async fn render(&mut self, scene: &Scene<'_>, target: &mut dyn RenderTarget) {
         let size = target.size();
 
         let mvp = Self::get_mvp(&scene.camera, size.0 as f32 / size.1 as f32);
-        self.mvp_buf.write(&self.device, mvp.as_slice().as_bytes()).await.unwrap();
+        self.mvp_buf
+            .as_mut()
+            .unwrap()
+            .write(&self.device, mvp.as_slice().as_bytes())
+            .await
+            .unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.dequeue_texture_uploads(&mut command_encoder);
