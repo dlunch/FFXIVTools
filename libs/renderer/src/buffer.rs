@@ -1,22 +1,18 @@
+use alloc::sync::Arc;
 use core::task::Poll;
 
-pub struct UniformBuffer {
-    buffer: wgpu::Buffer,
+pub struct Buffer {
+    buffer: Arc<wgpu::Buffer>,
+    offset: usize,
     size: usize,
 }
 
-impl UniformBuffer {
-    pub fn new(device: &wgpu::Device, size: usize) -> Self {
-        let buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: None,
-            size: size as wgpu::BufferAddress,
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::MAP_WRITE,
-        });
-
-        Self { buffer, size }
+impl Buffer {
+    pub(crate) fn new(buffer: Arc<wgpu::Buffer>, offset: usize, size: usize) -> Self {
+        Self { buffer, offset, size }
     }
 
-    pub async fn write(&mut self, device: &wgpu::Device, data: &[u8]) -> Result<(), wgpu::BufferAsyncErr> {
+    pub async fn write(&self, device: &wgpu::Device, data: &[u8]) -> Result<(), wgpu::BufferAsyncErr> {
         // TODO move poll to event loop
         let mut future = self.buffer.map_write(0, self.size as u64);
 
@@ -37,7 +33,7 @@ impl UniformBuffer {
     pub(crate) fn binding_resource(&self) -> wgpu::BindingResource {
         wgpu::BindingResource::Buffer {
             buffer: &self.buffer,
-            range: 0..self.size as u64,
+            range: self.offset as u64..self.offset as u64 + self.size as u64,
         }
     }
 }
