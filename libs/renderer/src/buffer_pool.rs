@@ -1,12 +1,47 @@
 use alloc::{sync::Arc, vec::Vec};
 
+use spinning_top::Spinlock;
+
 use crate::buffer::Buffer;
 
 const BUFFER_SIZE: usize = 1048576;
 
-pub struct BufferPoolItem {
-    pub(crate) buffer: Arc<wgpu::Buffer>,
+struct BufferPoolAllocation {
     offset: usize,
+    size: usize,
+    allocated: usize,
+}
+
+impl BufferPoolAllocation {
+    pub fn new(size: usize) -> Self {
+        Self {
+            offset: 0,
+            size,
+            allocated: 0,
+        }
+    }
+
+    pub fn alloc(&mut self, size: usize) -> Option<usize> {
+        if self.allocated > self.size {
+            None
+        } else {
+            let offset = self.offset;
+            self.offset += size;
+            self.allocated += size;
+
+            Some(offset)
+        }
+    }
+
+    #[allow(unused_variables)]
+    pub fn free(&mut self, offset: usize) {
+        // TODO
+    }
+}
+
+pub struct BufferPoolItem {
+    buffer: Arc<wgpu::Buffer>,
+    allocation: Spinlock<BufferPoolAllocation>,
 }
 
 impl BufferPoolItem {
@@ -17,23 +52,23 @@ impl BufferPoolItem {
             label: None,
         }));
 
-        Self { buffer, offset: 0 }
+        Self {
+            buffer,
+            allocation: Spinlock::new(BufferPoolAllocation::new(BUFFER_SIZE)),
+        }
     }
 
-    pub fn alloc(&mut self, size: usize) -> Option<Buffer> {
-        if self.offset + size > BUFFER_SIZE {
-            None
-        } else {
-            let result = Buffer::new(self.buffer.clone(), self.offset, size);
-            self.offset += size;
+    pub fn alloc(&self, size: usize) -> Option<(Arc<wgpu::Buffer>, usize)> {
+        Some((self.buffer.clone(), self.allocation.lock().alloc(size)?))
+    }
 
-            Some(result)
-        }
+    pub fn free(&self, offset: usize) {
+        self.allocation.lock().free(offset);
     }
 }
 
 pub struct BufferPool {
-    items: Vec<BufferPoolItem>,
+    items: Vec<Arc<BufferPoolItem>>,
 }
 
 impl BufferPool {
@@ -42,15 +77,19 @@ impl BufferPool {
     }
 
     pub fn alloc(&mut self, device: &wgpu::Device, size: usize) -> Buffer {
-        for item in &mut self.items {
-            let result = item.alloc(size);
+        for item in &self.items {
+            let result = Self::do_alloc(&item, size);
             if let Some(x) = result {
                 return x;
             }
         }
-        self.items.push(BufferPoolItem::new(device));
+        self.items.push(Arc::new(BufferPoolItem::new(device)));
+        Self::do_alloc(self.items.last().unwrap(), size).unwrap()
+    }
 
-        let len = self.items.len();
-        self.items[len - 1].alloc(size).unwrap()
+    fn do_alloc(buffer_item: &Arc<BufferPoolItem>, size: usize) -> Option<Buffer> {
+        let (buffer, offset) = buffer_item.alloc(size)?;
+
+        Some(Buffer::new(buffer_item.clone(), buffer, offset, size))
     }
 }
