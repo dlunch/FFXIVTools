@@ -15,3 +15,4 @@ nalgebra = { version = "^0.21", default-features = false }
 squish = { version = "^1", default-features = false }
 raw-window-handle = { version = "^0.3", default-features = false }
 hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-features = false }
+spinning_top = { version = "^0.1", default-features = false }
