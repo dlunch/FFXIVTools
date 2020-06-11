@@ -39,7 +39,7 @@ impl BufferPoolAllocation {
     }
 }
 
-pub struct BufferPoolItem {
+struct BufferPoolItem {
     buffer: Arc<wgpu::Buffer>,
     allocation: Spinlock<BufferPoolAllocation>,
 }
@@ -90,6 +90,7 @@ impl BufferPool {
     fn do_alloc(buffer_item: &Arc<BufferPoolItem>, size: usize) -> Option<Buffer> {
         let (buffer, offset) = buffer_item.alloc(size)?;
 
-        Some(Buffer::new(buffer_item.clone(), buffer, offset, size))
+        let buffer_item = buffer_item.clone();
+        Some(Buffer::new(buffer, offset, size, move || buffer_item.free(offset)))
     }
 }

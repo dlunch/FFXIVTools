@@ -1,22 +1,23 @@
-use alloc::sync::Arc;
+use alloc::{boxed::Box, sync::Arc};
 use core::{ops::Drop, task::Poll};
 
-use crate::buffer_pool::BufferPoolItem;
-
 pub struct Buffer {
-    buffer_item: Arc<BufferPoolItem>,
     buffer: Arc<wgpu::Buffer>,
     offset: usize,
     size: usize,
+    free: Box<dyn Fn() + Sync + Send + 'static>,
 }
 
 impl Buffer {
-    pub(crate) fn new(buffer_item: Arc<BufferPoolItem>, buffer: Arc<wgpu::Buffer>, offset: usize, size: usize) -> Self {
+    pub(crate) fn new<F>(buffer: Arc<wgpu::Buffer>, offset: usize, size: usize, free: F) -> Self
+    where
+        F: Fn() + Sync + Send + 'static,
+    {
         Self {
-            buffer_item,
             buffer,
             offset,
             size,
+            free: Box::new(free),
         }
     }
 
@@ -48,6 +49,6 @@ impl Buffer {
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        self.buffer_item.free(self.offset)
+        (self.free)()
     }
 }
