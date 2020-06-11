@@ -1,15 +1,23 @@
 use alloc::sync::Arc;
-use core::task::Poll;
+use core::{ops::Drop, task::Poll};
+
+use crate::buffer_pool::BufferPoolItem;
 
 pub struct Buffer {
+    buffer_item: Arc<BufferPoolItem>,
     buffer: Arc<wgpu::Buffer>,
     offset: usize,
     size: usize,
 }
 
 impl Buffer {
-    pub(crate) fn new(buffer: Arc<wgpu::Buffer>, offset: usize, size: usize) -> Self {
-        Self { buffer, offset, size }
+    pub(crate) fn new(buffer_item: Arc<BufferPoolItem>, buffer: Arc<wgpu::Buffer>, offset: usize, size: usize) -> Self {
+        Self {
+            buffer_item,
+            buffer,
+            offset,
+            size,
+        }
     }
 
     pub async fn write(&self, device: &wgpu::Device, data: &[u8]) -> Result<(), wgpu::BufferAsyncErr> {
@@ -35,5 +43,11 @@ impl Buffer {
             buffer: &self.buffer,
             range: self.offset as u64..self.offset as u64 + self.size as u64,
         }
+    }
+}
+
+impl Drop for Buffer {
+    fn drop(&mut self) {
+        self.buffer_item.free(self.offset)
     }
 }
