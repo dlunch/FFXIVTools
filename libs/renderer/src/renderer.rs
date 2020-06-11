@@ -1,7 +1,7 @@
 use alloc::{vec, vec::Vec};
 
-use futures::lock::Mutex;
 use nalgebra::Matrix4;
+use spinning_top::Spinlock;
 use zerocopy::AsBytes;
 
 use crate::{buffer::Buffer, buffer_pool::BufferPool, Camera, RenderContext, RenderTarget, Scene};
@@ -16,7 +16,7 @@ pub struct Renderer {
 
     queue: wgpu::Queue,
 
-    texture_upload_queue: Mutex<Vec<TextureUploadItem>>,
+    texture_upload_queue: Spinlock<Vec<TextureUploadItem>>,
 }
 
 impl Renderer {
@@ -46,7 +46,7 @@ impl Renderer {
         let mut result = Self {
             device,
             queue,
-            texture_upload_queue: Mutex::new(vec![texture_upload_item]),
+            texture_upload_queue: Spinlock::new(vec![texture_upload_item]),
             empty_texture,
             buffer_pool: BufferPool::new(),
             mvp_buf: None,
@@ -104,13 +104,13 @@ impl Renderer {
         target.submit();
     }
 
-    pub(crate) async fn enqueue_texture_upload(&self, buffer: wgpu::Buffer, texture: wgpu::Texture, bytes_per_row: usize, extent: wgpu::Extent3d) {
-        let mut texture_upload_queue = self.texture_upload_queue.lock().await;
+    pub(crate) fn enqueue_texture_upload(&self, buffer: wgpu::Buffer, texture: wgpu::Texture, bytes_per_row: usize, extent: wgpu::Extent3d) {
+        let mut texture_upload_queue = self.texture_upload_queue.lock();
         texture_upload_queue.push((buffer, texture, bytes_per_row, extent));
     }
 
     fn dequeue_texture_uploads(&mut self, command_encoder: &mut wgpu::CommandEncoder) {
-        let mut queue = Mutex::new(Vec::new());
+        let mut queue = Spinlock::new(Vec::new());
         core::mem::swap(&mut self.texture_upload_queue, &mut queue);
 
         for (buffer, texture, bytes_per_row, extent) in queue.into_inner() {
