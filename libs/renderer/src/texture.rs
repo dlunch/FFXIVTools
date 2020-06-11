@@ -61,9 +61,7 @@ impl Texture {
 
         let texture_view = texture.create_default_view();
         let buffer = renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC);
-        renderer
-            .enqueue_texture_upload(buffer, texture, format.bytes_per_row() * extent.width as usize, extent)
-            .await;
+        renderer.enqueue_texture_upload(buffer, texture, format.bytes_per_row() * extent.width as usize, extent);
 
         Self { texture_view }
     }
