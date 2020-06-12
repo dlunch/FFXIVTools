@@ -48,23 +48,27 @@ impl BufferPoolItem {
 }
 
 pub struct BufferPool {
-    items: Vec<Arc<Spinlock<BufferPoolItem>>>,
+    items: Spinlock<Vec<Arc<Spinlock<BufferPoolItem>>>>,
 }
 
 impl BufferPool {
     pub fn new() -> Self {
-        Self { items: Vec::new() }
+        Self {
+            items: Spinlock::new(Vec::new()),
+        }
     }
 
-    pub fn alloc(&mut self, device: &wgpu::Device, size: usize) -> Buffer {
-        for item in &self.items {
+    pub fn alloc(&self, device: &wgpu::Device, size: usize) -> Buffer {
+        let mut items = self.items.lock();
+
+        for item in &*items {
             let result = Self::do_alloc(&item, size);
             if let Some(x) = result {
                 return x;
             }
         }
-        self.items.push(Arc::new(Spinlock::new(BufferPoolItem::new(device))));
-        Self::do_alloc(self.items.last().unwrap(), size).unwrap()
+        items.push(Arc::new(Spinlock::new(BufferPoolItem::new(device))));
+        Self::do_alloc(items.last().unwrap(), size).unwrap()
     }
 
     fn do_alloc(buffer_item: &Arc<Spinlock<BufferPoolItem>>, size: usize) -> Option<Buffer> {
