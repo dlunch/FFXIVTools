@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use crate::{Renderer, VertexFormat};
+use crate::{buffer::Buffer, Renderer, VertexFormat};
 
 pub struct MeshPart {
     pub(crate) begin: u32,
@@ -14,24 +14,28 @@ impl MeshPart {
 }
 
 pub struct Mesh {
-    pub(crate) vertex_buffers: Vec<wgpu::Buffer>,
+    pub(crate) vertex_buffers: Vec<Buffer>,
     pub(crate) strides: Vec<usize>,
-    pub(crate) index: wgpu::Buffer,
+    pub(crate) index_buffer: Buffer,
     pub(crate) vertex_formats: Vec<VertexFormat>,
 }
 
 impl Mesh {
-    pub fn new(renderer: &Renderer, vertex_buffers: &[&[u8]], strides: &[usize], index: &[u8], vertex_formats: Vec<VertexFormat>) -> Self {
-        let vertex_buffers = vertex_buffers
-            .iter()
-            .map(|x| renderer.device.create_buffer_with_data(x, wgpu::BufferUsage::VERTEX))
-            .collect::<Vec<_>>();
-        let index = renderer.device.create_buffer_with_data(index, wgpu::BufferUsage::INDEX);
+    pub async fn new(renderer: &Renderer, vertex_data: &[&[u8]], strides: &[usize], index_data: &[u8], vertex_formats: Vec<VertexFormat>) -> Self {
+        let mut vertex_buffers = Vec::with_capacity(vertex_data.len());
+        for vertex_datum in vertex_data {
+            let buffer = renderer.buffer_pool.alloc(&renderer.device, vertex_datum.len());
+            buffer.write(&renderer.device, vertex_datum).await.unwrap();
+
+            vertex_buffers.push(buffer);
+        }
+        let index_buffer = renderer.buffer_pool.alloc(&renderer.device, index_data.len());
+        index_buffer.write(&renderer.device, index_data).await.unwrap();
 
         Self {
             vertex_buffers,
             strides: Vec::from(strides),
-            index,
+            index_buffer,
             vertex_formats,
         }
     }
