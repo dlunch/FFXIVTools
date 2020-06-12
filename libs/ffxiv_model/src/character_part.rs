@@ -48,7 +48,7 @@ impl CharacterPart {
                 })
                 .collect::<Vec<_>>();
 
-            let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats);
+            let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats).await;
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
             let mut textures = mtrl
