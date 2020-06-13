@@ -59,7 +59,7 @@ impl CharacterPart {
 
             let color_table_data = mtrl.color_table();
             if !color_table_data.is_empty() {
-                let color_table_tex = Texture::new(&renderer, 4, 16, Some(color_table_data), TextureFormat::Rgba16Float).await;
+                let color_table_tex = Texture::new(&renderer, 4, 16, Some(color_table_data), TextureFormat::Rgba16Float);
                 textures.insert("ColorTable", Arc::new(color_table_tex));
             }
 

@@ -45,7 +45,6 @@ impl TextureCache {
                 Some(tex.data(0)),
                 TextureFormat::Bgra8Unorm,
             )
-            .await
         } else {
             Texture::new_compressed(
                 &renderer,
@@ -54,7 +53,6 @@ impl TextureCache {
                 tex.data(0),
                 Self::convert_compressed_texture_format(tex.texture_type()),
             )
-            .await
         }
     }
 
