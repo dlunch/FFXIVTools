@@ -48,7 +48,7 @@ impl Renderer {
         let mvp_buf = buffer_pool.alloc(64);
 
         Self {
-            device: device.clone(),
+            device,
             queue,
             texture_upload_queue: Spinlock::new(vec![texture_upload_item]),
             empty_texture,
