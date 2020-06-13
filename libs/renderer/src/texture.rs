@@ -46,7 +46,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub async fn new(renderer: &Renderer, width: u32, height: u32, texels: &[u8], format: TextureFormat) -> Self {
+    pub async fn new(renderer: &Renderer, width: u32, height: u32, texels: Option<&[u8]>, format: TextureFormat) -> Self {
         let extent = wgpu::Extent3d { width, height, depth: 1 };
         let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
             size: extent,
@@ -60,8 +60,10 @@ impl Texture {
         });
 
         let texture_view = texture.create_default_view();
-        let buffer = renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC);
-        renderer.enqueue_texture_upload(buffer, texture, format.bytes_per_row() * extent.width as usize, extent);
+        if let Some(texels) = texels {
+            let buffer = renderer.device.create_buffer_with_data(texels, wgpu::BufferUsage::COPY_SRC);
+            renderer.enqueue_texture_upload(buffer, texture, format.bytes_per_row() * extent.width as usize, extent);
+        }
 
         Self { texture_view }
     }
@@ -69,7 +71,7 @@ impl Texture {
     pub async fn new_compressed(renderer: &Renderer, width: u32, height: u32, data: &[u8], format: CompressedTextureFormat) -> Self {
         let uncompressed = Self::decode_texture(data, width, height, &format);
 
-        Self::new(renderer, width, height, &uncompressed, format.decoded_format()).await
+        Self::new(renderer, width, height, Some(&uncompressed), format.decoded_format()).await
     }
 
     fn decode_texture(data: &[u8], width: u32, height: u32, format: &CompressedTextureFormat) -> Vec<u8> {
