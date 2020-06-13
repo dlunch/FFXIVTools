@@ -7,6 +7,10 @@ edition = "2018"
 [lib]
 doctest = false
 
+[features]
+# test feature is workaround for cargo unifying feature in dev-dependency and dependency. (https://github.com/rust-lang/cargo/issues/7916)
+test = ["sqpack_reader/std"]
+
 [dependencies]
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
 serde = { version = "^1.0", features = ["derive", "alloc"], default-features = false }
@@ -18,5 +22,3 @@ util = { version = "^0.1", default-features = false, path = "../util" }
 async-std = { version = "^1.6", features = ["attributes"], default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
-
-sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../sqpack_reader" }
