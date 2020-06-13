@@ -6,6 +6,7 @@ pub enum TextureFormat {
     Rgba8Unorm,
     Bgra8Unorm,
     Rgba16Float,
+    Depth32,
 }
 
 impl TextureFormat {
@@ -14,6 +15,7 @@ impl TextureFormat {
             TextureFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
             TextureFormat::Bgra8Unorm => wgpu::TextureFormat::Bgra8Unorm,
             TextureFormat::Rgba16Float => wgpu::TextureFormat::Rgba16Float,
+            TextureFormat::Depth32 => wgpu::TextureFormat::Depth32Float,
         }
     }
     pub(crate) fn bytes_per_row(&self) -> usize {
@@ -21,6 +23,7 @@ impl TextureFormat {
             TextureFormat::Rgba8Unorm => 4,
             TextureFormat::Bgra8Unorm => 4,
             TextureFormat::Rgba16Float => 8,
+            TextureFormat::Depth32 => 4,
         }
     }
 }
@@ -46,7 +49,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub async fn new(renderer: &Renderer, width: u32, height: u32, texels: Option<&[u8]>, format: TextureFormat) -> Self {
+    pub fn new(renderer: &Renderer, width: u32, height: u32, texels: Option<&[u8]>, format: TextureFormat) -> Self {
         let extent = wgpu::Extent3d { width, height, depth: 1 };
         let texture = renderer.device.create_texture(&wgpu::TextureDescriptor {
             size: extent,
@@ -55,7 +58,7 @@ impl Texture {
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
             format: format.wgpu_type(),
-            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             label: None,
         });
 
@@ -68,10 +71,10 @@ impl Texture {
         Self { texture_view }
     }
 
-    pub async fn new_compressed(renderer: &Renderer, width: u32, height: u32, data: &[u8], format: CompressedTextureFormat) -> Self {
+    pub fn new_compressed(renderer: &Renderer, width: u32, height: u32, data: &[u8], format: CompressedTextureFormat) -> Self {
         let uncompressed = Self::decode_texture(data, width, height, &format);
 
-        Self::new(renderer, width, height, Some(&uncompressed), format.decoded_format()).await
+        Self::new(renderer, width, height, Some(&uncompressed), format.decoded_format())
     }
 
     fn decode_texture(data: &[u8], width: u32, height: u32, format: &CompressedTextureFormat) -> Vec<u8> {

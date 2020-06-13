@@ -1,6 +1,6 @@
 use raw_window_handle::HasRawWindowHandle;
 
-use crate::Renderer;
+use crate::{Renderer, Texture, TextureFormat};
 
 pub trait RenderTarget {
     fn size(&self) -> (u32, u32);
@@ -33,24 +33,12 @@ impl WindowRenderTarget {
         );
         let frame = swap_chain.get_next_texture().unwrap();
 
-        let depth_view = renderer
-            .device
-            .create_texture(&wgpu::TextureDescriptor {
-                size: wgpu::Extent3d { width, height, depth: 1 },
-                array_layer_count: 1,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Depth24Plus,
-                usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-                label: None,
-            })
-            .create_default_view();
+        let depth = Texture::new(&renderer, width, height, None, TextureFormat::Depth32);
 
         Self {
             swap_chain,
             frame: Some(frame),
-            depth_view,
+            depth_view: depth.texture_view,
             width,
             height,
         }
