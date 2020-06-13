@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 winit = { version = "^0.22", default-features = false }
-async-std = { version = "^1.6", features = ["attributes"], default-features = false }
+async-std = { version = "^1.6", features = ["default", "attributes"], default-features = false }
 futures = {version = "^0.3", features = ["default"], default-features = false }
 nalgebra = { version = "^0.21", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
