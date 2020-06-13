@@ -21,14 +21,16 @@ impl WindowRenderTarget {
     pub fn new<W: HasRawWindowHandle>(renderer: &Renderer, window: &W, width: u32, height: u32) -> Self {
         let surface = wgpu::Surface::create(window);
 
-        let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8Unorm,
-            width,
-            height,
-            present_mode: wgpu::PresentMode::Mailbox,
-        };
-        let mut swap_chain = renderer.device.create_swap_chain(&surface, &sc_desc);
+        let mut swap_chain = renderer.device.create_swap_chain(
+            &surface,
+            &wgpu::SwapChainDescriptor {
+                usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+                format: wgpu::TextureFormat::Bgra8Unorm,
+                width,
+                height,
+                present_mode: wgpu::PresentMode::Mailbox,
+            },
+        );
         let frame = swap_chain.get_next_texture().unwrap();
 
         let depth_view = renderer
