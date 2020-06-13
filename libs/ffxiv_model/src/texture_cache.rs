@@ -38,7 +38,14 @@ impl TextureCache {
 
     async fn load_texture(renderer: &Renderer, tex: &Tex) -> Texture {
         if tex.texture_type() == TextureType::BGRA {
-            Texture::new(&renderer, tex.width() as u32, tex.height() as u32, tex.data(0), TextureFormat::Bgra8Unorm).await
+            Texture::new(
+                &renderer,
+                tex.width() as u32,
+                tex.height() as u32,
+                Some(tex.data(0)),
+                TextureFormat::Bgra8Unorm,
+            )
+            .await
         } else {
             Texture::new_compressed(
                 &renderer,
