@@ -49,7 +49,7 @@ impl Material {
                             panic!() // TODO
                         }
 
-                        renderer.mvp_buf.as_ref().unwrap().binding_resource()
+                        renderer.mvp_buf.binding_resource()
                     }
                     ShaderBindingType::Texture2D => wgpu::BindingResource::TextureView(match textures.get(binding_name) {
                         Some(x) => &x.texture_view,
