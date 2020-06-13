@@ -1,4 +1,4 @@
-use alloc::{vec, vec::Vec};
+use alloc::{sync::Arc, vec, vec::Vec};
 
 use nalgebra::Matrix4;
 use spinning_top::Spinlock;
@@ -9,9 +9,9 @@ use crate::{buffer::Buffer, buffer_pool::BufferPool, Camera, RenderContext, Rend
 type TextureUploadItem = (wgpu::Buffer, wgpu::Texture, usize, wgpu::Extent3d);
 
 pub struct Renderer {
-    pub(crate) device: wgpu::Device,
+    pub(crate) device: Arc<wgpu::Device>,
     pub(crate) empty_texture: wgpu::TextureView,
-    pub(crate) mvp_buf: Option<Buffer>,
+    pub(crate) mvp_buf: Buffer,
     pub(crate) buffer_pool: BufferPool,
 
     queue: wgpu::Queue,
@@ -40,34 +40,28 @@ impl Renderer {
             })
             .await;
 
+        let device = Arc::new(device);
         let texture_upload_item = Self::create_empty_texture(&device);
         let empty_texture = texture_upload_item.1.create_default_view();
+        let buffer_pool = BufferPool::new(device.clone());
 
-        let mut result = Self {
-            device,
+        let mvp_buf = buffer_pool.alloc(64);
+
+        Self {
+            device: device.clone(),
             queue,
             texture_upload_queue: Spinlock::new(vec![texture_upload_item]),
             empty_texture,
-            buffer_pool: BufferPool::new(),
-            mvp_buf: None,
-        };
-
-        // TODO
-        result.mvp_buf = Some(result.buffer_pool.alloc(&result.device, 64));
-
-        result
+            buffer_pool,
+            mvp_buf,
+        }
     }
 
     pub async fn render(&mut self, scene: &Scene<'_>, target: &mut dyn RenderTarget) {
         let size = target.size();
 
         let mvp = Self::get_mvp(&scene.camera, size.0 as f32 / size.1 as f32);
-        self.mvp_buf
-            .as_mut()
-            .unwrap()
-            .write(&self.device, mvp.as_slice().as_bytes())
-            .await
-            .unwrap();
+        self.mvp_buf.write(mvp.as_slice().as_bytes()).await.unwrap();
 
         let mut command_encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.dequeue_texture_uploads(&mut command_encoder);

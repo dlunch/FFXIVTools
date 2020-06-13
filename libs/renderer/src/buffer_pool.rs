@@ -48,33 +48,37 @@ impl BufferPoolItem {
 }
 
 pub struct BufferPool {
+    device: Arc<wgpu::Device>,
     items: Spinlock<Vec<Arc<Spinlock<BufferPoolItem>>>>,
 }
 
 impl BufferPool {
-    pub fn new() -> Self {
+    pub fn new(device: Arc<wgpu::Device>) -> Self {
         Self {
+            device,
             items: Spinlock::new(Vec::new()),
         }
     }
 
-    pub fn alloc(&self, device: &wgpu::Device, size: usize) -> Buffer {
+    pub fn alloc(&self, size: usize) -> Buffer {
         let mut items = self.items.lock();
 
         for item in &*items {
-            let result = Self::do_alloc(&item, size);
+            let result = self.try_alloc(&item, size);
             if let Some(x) = result {
                 return x;
             }
         }
-        items.push(Arc::new(Spinlock::new(BufferPoolItem::new(device))));
-        Self::do_alloc(items.last().unwrap(), size).unwrap()
+        items.push(Arc::new(Spinlock::new(BufferPoolItem::new(&self.device))));
+        self.try_alloc(items.last().unwrap(), size).unwrap()
     }
 
-    fn do_alloc(buffer_item: &Arc<Spinlock<BufferPoolItem>>, size: usize) -> Option<Buffer> {
+    fn try_alloc(&self, buffer_item: &Arc<Spinlock<BufferPoolItem>>, size: usize) -> Option<Buffer> {
         let (buffer, offset) = buffer_item.lock().alloc(size)?;
 
         let buffer_item = buffer_item.clone();
-        Some(Buffer::new(buffer, offset, size, move || buffer_item.lock().free(offset)))
+        Some(Buffer::new(self.device.clone(), buffer, offset, size, move || {
+            buffer_item.lock().free(offset)
+        }))
     }
 }
