@@ -4,10 +4,6 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
 
-[[bin]]
-name = "model_viewer_standalone"
-path = "src/main.rs"
-
 [features]
 
 [dependencies]
