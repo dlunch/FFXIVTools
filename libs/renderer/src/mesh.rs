@@ -24,13 +24,13 @@ impl Mesh {
     pub async fn new(renderer: &Renderer, vertex_data: &[&[u8]], strides: &[usize], index_data: &[u8], vertex_formats: Vec<VertexFormat>) -> Self {
         let mut vertex_buffers = Vec::with_capacity(vertex_data.len());
         for vertex_datum in vertex_data {
-            let buffer = renderer.buffer_pool.alloc(&renderer.device, vertex_datum.len());
-            buffer.write(&renderer.device, vertex_datum).await.unwrap();
+            let buffer = renderer.buffer_pool.alloc(vertex_datum.len());
+            buffer.write(vertex_datum).await.unwrap();
 
             vertex_buffers.push(buffer);
         }
-        let index_buffer = renderer.buffer_pool.alloc(&renderer.device, index_data.len());
-        index_buffer.write(&renderer.device, index_data).await.unwrap();
+        let index_buffer = renderer.buffer_pool.alloc(index_data.len());
+        index_buffer.write(index_data).await.unwrap();
 
         Self {
             vertex_buffers,

@@ -2,6 +2,7 @@ use alloc::{boxed::Box, sync::Arc};
 use core::{ops::Drop, task::Poll};
 
 pub struct Buffer {
+    device: Arc<wgpu::Device>,
     pub(crate) buffer: Arc<wgpu::Buffer>,
     pub(crate) offset: usize,
     pub(crate) size: usize,
@@ -9,11 +10,12 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub(crate) fn new<F>(buffer: Arc<wgpu::Buffer>, offset: usize, size: usize, free: F) -> Self
+    pub(crate) fn new<F>(device: Arc<wgpu::Device>, buffer: Arc<wgpu::Buffer>, offset: usize, size: usize, free: F) -> Self
     where
         F: Fn() + Sync + Send + 'static,
     {
         Self {
+            device,
             buffer,
             offset,
             size,
@@ -21,7 +23,7 @@ impl Buffer {
         }
     }
 
-    pub async fn write(&self, device: &wgpu::Device, data: &[u8]) -> Result<(), wgpu::BufferAsyncErr> {
+    pub async fn write(&self, data: &[u8]) -> Result<(), wgpu::BufferAsyncErr> {
         // TODO move poll to event loop
         let mut future = self.buffer.map_write(self.offset as u64, self.size as u64);
 
@@ -31,7 +33,7 @@ impl Buffer {
                 mapping = x?;
                 break;
             }
-            device.poll(wgpu::Maintain::Wait);
+            self.device.poll(wgpu::Maintain::Wait);
         }
 
         mapping.as_slice().copy_from_slice(data);
