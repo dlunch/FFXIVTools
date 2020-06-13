@@ -1,6 +1,6 @@
-/target
 **/*.rs.bk
 .env
 node_modules
 /dist
 /data
+/target*
