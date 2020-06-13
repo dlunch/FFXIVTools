@@ -4,7 +4,7 @@ mod tests {
     #[cfg(feature = "test_local")]
     #[async_std::test]
     #[cfg(unix)]
-    async fn read_file_test() -> Result<()> {
+    async fn read_file_test() -> sqpack_reader::Result<()> {
         use std::path::Path;
 
         use sqpack_reader::{ExtractedFileProviderLocal, Package, Result, SqPackReaderExtractedFile};
