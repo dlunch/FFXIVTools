@@ -3,11 +3,13 @@
 import os;
 
 libs = ["ffxiv_parser", "sqpack_reader", "util"]
-profiles = ["wasm32-unknown-unknown/debug", "debug"]
+profiles = ["debug", "release", "wasm32-unknown-unknown/debug", "wasm32-unknown-unknown/release"]
 
 packages = ''.join([' -p {0}'.format(x) for x in libs])
 os.system("cargo build {0} --target-dir target_deploy".format(packages))
+os.system("cargo build --release {0} --target-dir target_deploy".format(packages))
 os.system("cargo build {0} --target wasm32-unknown-unknown --target-dir target_deploy".format(packages))
+os.system("cargo build --release {0} --target wasm32-unknown-unknown --target-dir target_deploy".format(packages))
 
 os.system("rm -rf ../FFXIVTools/libs/prebuilt/")
 for profile in profiles:
