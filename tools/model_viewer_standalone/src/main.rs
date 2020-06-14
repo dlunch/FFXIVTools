@@ -119,7 +119,7 @@ impl<'a> App<'a> {
             renderer,
             context,
             render_target,
-            package: package.clone(),
+            package,
             scene,
         }
     }
