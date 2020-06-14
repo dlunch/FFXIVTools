@@ -25,6 +25,9 @@ jobs:
           key: ${{ runner.os }}-{{ matrix.rust }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+
       - uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
