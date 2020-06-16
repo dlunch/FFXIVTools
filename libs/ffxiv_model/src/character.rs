@@ -13,6 +13,7 @@ use sqpack_reader::{Package, Result, SqPackReaderError};
 use crate::character_part::CharacterPart;
 use crate::constants::{BodyId, ModelPart};
 use crate::context::Context;
+use crate::equipment::Equipment;
 use crate::model_reader::ModelReader;
 
 pub struct Character<'a> {
@@ -33,7 +34,7 @@ impl<'a> Character<'a> {
         body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
-        equipments: HashMap<ModelPart, (u16, u16)>,
+        equipments: HashMap<ModelPart, Equipment>,
     ) -> Result<Character<'a>> {
         let mut result = Self {
             renderer,
@@ -45,16 +46,15 @@ impl<'a> Character<'a> {
             body_variant_id,
         };
 
-        let read_futures = equipments.into_iter().map(|(equipment_part, (equipment_id, equipment_variant_id))| {
+        let read_futures = equipments.into_iter().map(|(equipment_part, equipment)| {
             ModelReader::read_equipment(
                 result.renderer,
                 result.package,
                 result.body_id,
                 result.body_type,
                 result.body_variant_id,
-                equipment_id,
-                equipment_variant_id,
                 equipment_part,
+                equipment,
                 result.context,
             )
         });
