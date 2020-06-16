@@ -16,7 +16,7 @@ use winit::{
     window::Window,
 };
 
-use ffxiv_model::{BodyId, Character, Context, ModelPart};
+use ffxiv_model::{BodyId, Character, Context, Equipment, ModelPart};
 use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
 use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
 
@@ -126,11 +126,11 @@ impl<'a> App<'a> {
 
     pub async fn add_character(&'a mut self) -> Result<()> {
         let mut equipments = HashMap::new();
-        equipments.insert(ModelPart::Met, (6016, 1));
-        equipments.insert(ModelPart::Top, (6016, 1));
-        equipments.insert(ModelPart::Glv, (6016, 1));
-        equipments.insert(ModelPart::Dwn, (6016, 1));
-        equipments.insert(ModelPart::Sho, (6016, 1));
+        equipments.insert(ModelPart::Met, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Top, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Glv, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Dwn, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Sho, Equipment::new(6016, 1, 0));
 
         let character = Character::new(&self.renderer, &*self.package, &self.context, BodyId::MidlanderFemale, 1, 1, equipments).await?;
 

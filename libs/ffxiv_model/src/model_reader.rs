@@ -8,6 +8,7 @@ use sqpack_reader::{Package, Result, SqPackReaderError};
 
 use crate::constants::{BodyId, ModelPart};
 use crate::context::Context;
+use crate::equipment::Equipment;
 
 pub struct ModelData {
     pub mdl: Mdl,
@@ -25,20 +26,26 @@ impl ModelReader {
         body_id: BodyId,
         body_type: u16,
         body_variant_id: u16,
-        equipment_id: u16,
-        equipment_variant_id: u16,
         equipment_part: ModelPart,
+        equipment: Equipment,
         context: &Context,
     ) -> Result<ModelData> {
         let mdl_path = format!(
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
-            equipment_id = equipment_id,
+            equipment_id = equipment.model_id,
             body_id = body_id as u16,
             equipment_part = equipment_part.as_path_str()
         );
 
         Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
-            Self::convert_equipment_material_path(material_path, body_id, body_type, body_variant_id, equipment_id, equipment_variant_id)
+            Self::convert_equipment_material_path(
+                material_path,
+                body_id,
+                body_type,
+                body_variant_id,
+                equipment.model_id,
+                equipment.variant_id,
+            )
         })
         .await?)
     }
@@ -117,7 +124,7 @@ impl ModelReader {
         body_type: u16,
         body_variant_id: u16,
         equipment_id: u16,
-        equipment_variant_id: u16,
+        equipment_variant_id: u8,
     ) -> String {
         if material_path.chars().nth(9).unwrap() == 'b' {
             format!(
