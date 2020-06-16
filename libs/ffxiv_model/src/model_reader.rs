@@ -6,8 +6,9 @@ use ffxiv_parser::{Mdl, Mtrl};
 use renderer::{Renderer, Texture};
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
-use crate::constants::{BodyId, ModelPart};
+use crate::constants::ModelPart;
 use crate::context::Context;
+use crate::customization::Customization;
 use crate::equipment::Equipment;
 
 pub struct ModelData {
@@ -18,14 +19,10 @@ pub struct ModelData {
 pub struct ModelReader {}
 
 impl ModelReader {
-    // TODO use customization and equipment type
-    #[allow(clippy::too_many_arguments)]
     pub async fn read_equipment(
         renderer: &Renderer,
         package: &dyn Package,
-        body_id: BodyId,
-        body_type: u16,
-        body_variant_id: u16,
+        customization: &Customization,
         equipment_part: ModelPart,
         equipment: Equipment,
         context: &Context,
@@ -33,61 +30,47 @@ impl ModelReader {
         let mdl_path = format!(
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
             equipment_id = equipment.model_id,
-            body_id = body_id as u16,
+            body_id = customization.body_id as u16,
             equipment_part = equipment_part.as_path_str()
         );
 
         Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
-            Self::convert_equipment_material_path(
-                material_path,
-                body_id,
-                body_type,
-                body_variant_id,
-                equipment.model_id,
-                equipment.variant_id,
-            )
+            Self::convert_equipment_material_path(material_path, customization, equipment.model_id, equipment.variant_id)
         })
         .await?)
     }
 
-    pub async fn read_face(renderer: &Renderer, package: &dyn Package, body_id: BodyId, face_id: u16, context: &Context) -> Result<ModelData> {
+    pub async fn read_face(renderer: &Renderer, package: &dyn Package, customization: &Customization, context: &Context) -> Result<ModelData> {
         let mdl_path = format!(
             "chara/human/c{body_id:04}/obj/face/f{face_id:04}/model/c{body_id:04}f{face_id:04}_fac.mdl",
-            body_id = body_id as u16,
-            face_id = face_id
+            body_id = customization.body_id as u16,
+            face_id = customization.face_id
         );
 
         Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
             format!(
                 "chara/human/c{body_id:04}/obj/face/f{face_id:04}/material/mt_c{body_id:04}f{face_id:04}{path}",
-                body_id = body_id as u16,
-                face_id = face_id,
+                body_id = customization.body_id as u16,
+                face_id = customization.face_id,
                 path = &material_path[14..]
             )
         })
         .await?)
     }
 
-    pub async fn read_hair(
-        renderer: &Renderer,
-        package: &dyn Package,
-        body_id: BodyId,
-        hair_id: u16,
-        hair_variant_id: u16,
-        context: &Context,
-    ) -> Result<ModelData> {
+    pub async fn read_hair(renderer: &Renderer, package: &dyn Package, customization: &Customization, context: &Context) -> Result<ModelData> {
         let mdl_path = format!(
             "chara/human/c{body_id:04}/obj/hair/h{hair_id:04}/model/c{body_id:04}h{hair_id:04}_hir.mdl",
-            body_id = body_id as u16,
-            hair_id = hair_id
+            body_id = customization.body_id as u16,
+            hair_id = customization.hair_id
         );
 
         Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
             format!(
                 "chara/human/c{body_id:04}/obj/hair/h{hair_id:04}/material/v{hair_variant_id:04}/mt_c{body_id:04}h{hair_id:04}{path}",
-                body_id = body_id as u16,
-                hair_id = hair_id,
-                hair_variant_id = hair_variant_id,
+                body_id = customization.body_id as u16,
+                hair_id = customization.hair_id,
+                hair_variant_id = customization.hair_variant_id,
                 path = &material_path[14..]
             )
         })
@@ -118,20 +101,13 @@ impl ModelReader {
         Ok(ModelData { mdl, mtrls })
     }
 
-    fn convert_equipment_material_path(
-        material_path: &str,
-        body_id: BodyId,
-        body_type: u16,
-        body_variant_id: u16,
-        equipment_id: u16,
-        equipment_variant_id: u8,
-    ) -> String {
+    fn convert_equipment_material_path(material_path: &str, customization: &Customization, equipment_id: u16, equipment_variant_id: u8) -> String {
         if material_path.chars().nth(9).unwrap() == 'b' {
             format!(
                 "chara/human/c{body_id:04}/obj/body/b{body_type:04}/material/v{variant_id:04}/mt_c{body_id:04}b{body_type:04}{path}",
-                body_id = body_id as u16,
-                body_type = body_type,
-                variant_id = body_variant_id,
+                body_id = customization.body_id as u16,
+                body_type = customization.body_type,
+                variant_id = customization.body_variant_id,
                 path = &material_path[14..]
             )
         } else {

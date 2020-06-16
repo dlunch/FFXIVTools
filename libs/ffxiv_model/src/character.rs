@@ -10,20 +10,17 @@ use futures::{
 use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
-use crate::character_part::CharacterPart;
-use crate::constants::{BodyId, ModelPart};
-use crate::context::Context;
-use crate::equipment::Equipment;
-use crate::model_reader::ModelReader;
+use crate::{
+    character_part::CharacterPart, constants::ModelPart, context::Context, customization::Customization, equipment::Equipment,
+    model_reader::ModelReader,
+};
 
 pub struct Character<'a> {
     renderer: &'a Renderer,
     package: &'a dyn Package,
     context: &'a Context,
+    customization: Customization,
     parts: Vec<CharacterPart>,
-    body_id: BodyId,
-    body_type: u16,
-    body_variant_id: u16,
 }
 
 impl<'a> Character<'a> {
@@ -31,28 +28,22 @@ impl<'a> Character<'a> {
         renderer: &'a Renderer,
         package: &'a dyn Package,
         context: &'a Context,
-        body_id: BodyId,
-        body_type: u16,
-        body_variant_id: u16,
+        customization: Customization,
         equipments: HashMap<ModelPart, Equipment>,
     ) -> Result<Character<'a>> {
         let mut result = Self {
             renderer,
             package,
             context,
+            customization,
             parts: Vec::new(),
-            body_id,
-            body_type,
-            body_variant_id,
         };
 
         let read_futures = equipments.into_iter().map(|(equipment_part, equipment)| {
             ModelReader::read_equipment(
                 result.renderer,
                 result.package,
-                result.body_id,
-                result.body_type,
-                result.body_variant_id,
+                &result.customization,
                 equipment_part,
                 equipment,
                 result.context,
@@ -65,11 +56,11 @@ impl<'a> Character<'a> {
             .await?;
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
-        let face_part_model = ModelReader::read_face(result.renderer, result.package, result.body_id, 1, result.context).await?;
+        let face_part_model = ModelReader::read_face(result.renderer, result.package, &result.customization, result.context).await?;
         let face_part = CharacterPart::new(result.renderer, face_part_model, result.context).await;
         result.parts.push(face_part);
 
-        let hair_part_model = ModelReader::read_hair(result.renderer, result.package, result.body_id, 1, 1, result.context).await?;
+        let hair_part_model = ModelReader::read_hair(result.renderer, result.package, &result.customization, result.context).await?;
         let hair_part = CharacterPart::new(result.renderer, hair_part_model, result.context).await;
         result.parts.push(hair_part);
 
