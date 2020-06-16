@@ -16,7 +16,7 @@ use winit::{
     window::Window,
 };
 
-use ffxiv_model::{BodyId, Character, Context, Equipment, ModelPart};
+use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
 use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
 use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
 
@@ -132,7 +132,8 @@ impl<'a> App<'a> {
         equipments.insert(ModelPart::Dwn, Equipment::new(6016, 1, 0));
         equipments.insert(ModelPart::Sho, Equipment::new(6016, 1, 0));
 
-        let character = Character::new(&self.renderer, &*self.package, &self.context, BodyId::MidlanderFemale, 1, 1, equipments).await?;
+        let customization = Customization::new(BodyId::MidlanderFemale, 1, 1, 1, 1, 1);
+        let character = Character::new(&self.renderer, &*self.package, &self.context, customization, equipments).await?;
 
         self.scene.add(character);
         Ok(())
