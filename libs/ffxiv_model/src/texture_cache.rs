@@ -1,5 +1,6 @@
-use alloc::{string::String, sync::Arc};
+use alloc::{string::String, sync::Arc, vec, vec::Vec};
 
+use futures::channel::oneshot;
 use hashbrown::HashMap;
 use spinning_top::Spinlock;
 
@@ -8,12 +9,14 @@ use renderer::{CompressedTextureFormat, Renderer, Texture, TextureFormat};
 use sqpack_reader::{Package, Result};
 
 pub struct TextureCache {
+    waiters: Spinlock<HashMap<String, Vec<oneshot::Sender<bool>>>>,
     textures: Spinlock<HashMap<String, Arc<Texture>>>,
 }
 
 impl TextureCache {
     pub fn new() -> Self {
         Self {
+            waiters: Spinlock::new(HashMap::new()),
             textures: Spinlock::new(HashMap::new()),
         }
     }
@@ -25,15 +28,36 @@ impl TextureCache {
                 return Ok(x.clone());
             }
         }
-        // TODO wait for fetched but incomplete same request.
+        let should_fetch;
+        let (tx, rx) = oneshot::channel();
+        {
+            let mut waiters = self.waiters.lock();
+            if waiters.contains_key(&texture_path) {
+                waiters.get_mut(&texture_path).unwrap().push(tx);
+                should_fetch = false;
+            } else {
+                waiters.insert(texture_path.clone(), vec![tx]);
+                should_fetch = true;
+            }
+        }
+        if should_fetch {
+            let tex = Tex::new(package, &texture_path).await?;
+            let texture = Arc::new(Self::load_texture(renderer, &tex).await);
 
-        let tex = Tex::new(package, &texture_path).await?;
-        let texture = Arc::new(Self::load_texture(renderer, &tex).await);
+            {
+                let mut textures = self.textures.lock();
+                textures.insert(texture_path.clone(), texture.clone());
+            }
 
-        let mut textures = self.textures.lock();
-        textures.insert(texture_path, texture.clone());
+            let waiters = self.waiters.lock().remove(&texture_path).unwrap();
+            for waiter in waiters {
+                waiter.send(true).unwrap();
+            }
+        }
 
-        Ok(texture)
+        let _ = rx.await;
+
+        Ok(self.textures.lock().get(&texture_path).unwrap().clone())
     }
 
     async fn load_texture(renderer: &Renderer, tex: &Tex) -> Texture {
