@@ -64,6 +64,20 @@ impl CharacterPart {
             }
 
             let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
+
+            if !textures.contains_key("Diffuse") {
+                textures.insert("Diffuse", context.empty_texture.clone());
+            }
+            if !textures.contains_key("Normal") {
+                textures.insert("Normal", context.empty_texture.clone());
+            }
+            if !textures.contains_key("Mask") {
+                textures.insert("Mask", context.empty_texture.clone());
+            }
+            if !textures.contains_key("Specular") {
+                textures.insert("Specular", context.empty_texture.clone());
+            }
+
             let material = Material::new(&renderer, textures, shaders.0, shaders.1);
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
