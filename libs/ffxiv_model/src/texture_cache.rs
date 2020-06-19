@@ -46,7 +46,7 @@ impl TextureCache {
 
             {
                 let mut textures = self.textures.lock();
-                textures.insert(texture_path.clone(), texture.clone());
+                textures.insert(texture_path.clone(), texture);
             }
 
             let waiters = self.waiters.lock().remove(&texture_path).unwrap();
