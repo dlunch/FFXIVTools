@@ -27,6 +27,7 @@ fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
         .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
+        .filter(Some("renderer"), log::LevelFilter::Debug)
         .try_init();
 
     let event_loop = EventLoop::new();
@@ -110,7 +111,7 @@ impl<'a> App<'a> {
         let size = window.inner_size();
         let renderer = Renderer::new().await;
         let render_target = WindowRenderTarget::new(&renderer, window, size.width, size.height);
-        let context = Context::new(&renderer);
+        let context = Context::new(&renderer).await;
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);

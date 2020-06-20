@@ -49,7 +49,7 @@ impl CharacterPart {
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
 
-            let material = create_material(renderer, context, mtrl, texs);
+            let material = create_material(renderer, context, mtrl, texs).await;
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
