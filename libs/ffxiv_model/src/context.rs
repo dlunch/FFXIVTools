@@ -12,15 +12,15 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(renderer: &Renderer) -> Self {
+    pub async fn new(renderer: &Renderer) -> Self {
         Self {
             shader_holder: ShaderHolder::new(renderer),
             texture_cache: TextureCache::new(),
-            empty_texture: Self::create_empty_texture(renderer),
+            empty_texture: Self::create_empty_texture(renderer).await,
         }
     }
 
-    fn create_empty_texture(renderer: &Renderer) -> Arc<Texture> {
-        Arc::new(Texture::new(renderer, 1, 1, Some(&[0, 0, 0, 0]), TextureFormat::Rgba8Unorm))
+    async fn create_empty_texture(renderer: &Renderer) -> Arc<Texture> {
+        Arc::new(Texture::with_texels(renderer, 1, 1, &[0, 0, 0, 0], TextureFormat::Rgba8Unorm).await)
     }
 }
