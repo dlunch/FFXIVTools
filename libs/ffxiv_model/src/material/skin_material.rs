@@ -2,17 +2,17 @@ use alloc::sync::Arc;
 
 use hashbrown::HashMap;
 
-use ffxiv_parser::Mtrl;
 use renderer::{Material, Renderer, Texture};
 
-use crate::Context;
+use crate::{shader_holder::ShaderType, Context};
 
 pub struct SkinMaterial {}
 
 impl SkinMaterial {
-    pub fn create(renderer: &Renderer, context: &Context, mtrl: &Mtrl, textures: &mut HashMap<&'static str, Arc<Texture>>) -> Material {
-        let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
+    pub fn create(renderer: &Renderer, context: &Context, textures: &mut HashMap<&'static str, Arc<Texture>>) -> Material {
+        let vertex_shader = context.shader_holder.vertex_shader.clone();
+        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Hair);
 
-        Material::new(&renderer, textures, shaders.0, shaders.1)
+        Material::new(&renderer, textures, vertex_shader, fragment_shader)
     }
 }

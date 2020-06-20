@@ -5,7 +5,7 @@ use hashbrown::HashMap;
 use ffxiv_parser::Mtrl;
 use renderer::{Material, Renderer, Texture, TextureFormat};
 
-use crate::Context;
+use crate::{shader_holder::ShaderType, Context};
 
 pub struct CharacterMaterial {}
 
@@ -23,8 +23,9 @@ impl CharacterMaterial {
             textures.insert("Mask", context.empty_texture.clone());
         }
 
-        let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
+        let vertex_shader = context.shader_holder.vertex_shader.clone();
+        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Hair);
 
-        Material::new(&renderer, &textures, shaders.0, shaders.1)
+        Material::new(&renderer, &textures, vertex_shader, fragment_shader)
     }
 }
