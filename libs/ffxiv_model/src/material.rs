@@ -3,7 +3,7 @@ mod hair_material;
 mod iris_material;
 mod skin_material;
 
-use alloc::{sync::Arc, vec::Vec};
+use alloc::sync::Arc;
 
 use hashbrown::HashMap;
 
@@ -12,7 +12,7 @@ use renderer::{Material, Renderer, Texture};
 
 use crate::Context;
 
-pub fn create_material(renderer: &Renderer, context: &Context, mtrl: &Mtrl, textures: &Vec<Arc<Texture>>) -> Material {
+pub fn create_material(renderer: &Renderer, context: &Context, mtrl: &Mtrl, textures: &[Arc<Texture>]) -> Material {
     let textures = gather_textures(mtrl, textures);
     match mtrl.shader_name() {
         "character.shpk" | "characterglass.shpk" => character_material::CharacterMaterial::create(renderer, context, mtrl, textures),
@@ -23,7 +23,7 @@ pub fn create_material(renderer: &Renderer, context: &Context, mtrl: &Mtrl, text
     }
 }
 
-pub fn gather_textures(mtrl: &Mtrl, textures: &Vec<Arc<Texture>>) -> HashMap<&'static str, Arc<Texture>> {
+pub fn gather_textures(mtrl: &Mtrl, textures: &[Arc<Texture>]) -> HashMap<&'static str, Arc<Texture>> {
     mtrl.parameters()
         .iter()
         .map(|parameter| (parameter.parameter_type.as_str(), textures[parameter.texture_index as usize].clone()))
