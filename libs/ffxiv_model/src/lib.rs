@@ -7,6 +7,7 @@ mod constants;
 mod context;
 mod customization;
 mod equipment;
+mod material;
 mod model_reader;
 mod shader_holder;
 mod texture_cache;
