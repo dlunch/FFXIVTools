@@ -21,10 +21,17 @@ macro_rules! hashmap {
         }
     };
 }
+#[derive(Eq, PartialEq, Hash)]
+pub enum ShaderType {
+    Character,
+    Iris,
+    Hair,
+    Skin,
+}
 
 pub struct ShaderHolder {
-    vertex_shader: Arc<Shader>,
-    fragment_shaders: HashMap<&'static str, Arc<Shader>>,
+    pub vertex_shader: Arc<Shader>,
+    fragment_shaders: HashMap<ShaderType, Arc<Shader>>,
 }
 
 impl ShaderHolder {
@@ -32,19 +39,16 @@ impl ShaderHolder {
         Self {
             vertex_shader: Arc::new(Self::load_vertex_shader(renderer)),
             fragment_shaders: hashmap! {
-                "character.shpk" => Arc::new(Self::load_character_shader(renderer)),
-                "iris.shpk" => Arc::new(Self::load_iris_shader(renderer)),
-                "hair.shpk" => Arc::new(Self::load_hair_shader(renderer)),
-                "skin.shpk" => Arc::new(Self::load_skin_shader(renderer))
+                ShaderType::Character => Arc::new(Self::load_character_shader(renderer)),
+                ShaderType::Iris => Arc::new(Self::load_iris_shader(renderer)),
+                ShaderType::Hair => Arc::new(Self::load_hair_shader(renderer)),
+                ShaderType::Skin => Arc::new(Self::load_skin_shader(renderer))
             },
         }
     }
 
-    pub fn get_shaders<T: AsRef<str>>(&self, shader_name: T) -> (Arc<Shader>, Arc<Shader>) {
-        (
-            self.vertex_shader.clone(),
-            self.fragment_shaders.get(shader_name.as_ref()).unwrap().clone(),
-        )
+    pub fn fragment_shader(&self, shader: ShaderType) -> Arc<Shader> {
+        self.fragment_shaders.get(&shader).unwrap().clone()
     }
 
     fn load_vertex_shader(renderer: &Renderer) -> Shader {
