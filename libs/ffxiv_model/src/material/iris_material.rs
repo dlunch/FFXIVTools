@@ -11,7 +11,7 @@ pub struct IrisMaterial {}
 impl IrisMaterial {
     pub fn create(renderer: &Renderer, context: &Context, textures: &mut HashMap<&'static str, Arc<Texture>>) -> Material {
         let vertex_shader = context.shader_holder.vertex_shader.clone();
-        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Hair);
+        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Iris);
 
         if !textures.contains_key("Diffuse") {
             textures.insert("Diffuse", context.empty_texture.clone());
