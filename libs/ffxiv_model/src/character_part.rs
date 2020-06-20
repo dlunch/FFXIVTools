@@ -1,13 +1,10 @@
-use alloc::{sync::Arc, vec::Vec};
-
-use hashbrown::HashMap;
+use alloc::vec::Vec;
 
 use ffxiv_parser::BufferItemType;
-use renderer::{
-    Material, Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, Texture, TextureFormat, VertexFormat, VertexFormatItem, VertexItemType,
-};
+use renderer::{Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
 
 use crate::context::Context;
+use crate::material::create_material;
 use crate::model_reader::ModelData;
 
 pub struct CharacterPart {
@@ -51,34 +48,8 @@ impl CharacterPart {
             let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats).await;
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
-            let mut textures = mtrl
-                .parameters()
-                .iter()
-                .map(|parameter| (parameter.parameter_type.as_str(), texs[parameter.texture_index as usize].clone()))
-                .collect::<HashMap<_, _>>();
 
-            let color_table_data = mtrl.color_table();
-            if !color_table_data.is_empty() {
-                let color_table_tex = Texture::new(&renderer, 4, 16, Some(color_table_data), TextureFormat::Rgba16Float);
-                textures.insert("ColorTable", Arc::new(color_table_tex));
-            }
-
-            let shaders = context.shader_holder.get_shaders(mtrl.shader_name());
-
-            if !textures.contains_key("Diffuse") {
-                textures.insert("Diffuse", context.empty_texture.clone());
-            }
-            if !textures.contains_key("Normal") {
-                textures.insert("Normal", context.empty_texture.clone());
-            }
-            if !textures.contains_key("Mask") {
-                textures.insert("Mask", context.empty_texture.clone());
-            }
-            if !textures.contains_key("Specular") {
-                textures.insert("Specular", context.empty_texture.clone());
-            }
-
-            let material = Material::new(&renderer, textures, shaders.0, shaders.1);
+            let material = create_material(renderer, context, mtrl, texs);
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
