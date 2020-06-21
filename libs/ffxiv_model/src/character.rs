@@ -15,60 +15,41 @@ use crate::{
     model_reader::ModelReader,
 };
 
-pub struct Character<'a> {
-    renderer: &'a Renderer,
-    package: &'a dyn Package,
-    context: &'a Context,
-    customization: Customization,
+pub struct Character {
     parts: Vec<CharacterPart>,
 }
 
-impl<'a> Character<'a> {
+impl Character {
     pub async fn new(
-        renderer: &'a Renderer,
-        package: &'a dyn Package,
-        context: &'a Context,
+        renderer: &Renderer,
+        package: &dyn Package,
+        context: &Context,
         customization: Customization,
         equipments: HashMap<ModelPart, Equipment>,
-    ) -> Result<Character<'a>> {
-        let mut result = Self {
-            renderer,
-            package,
-            context,
-            customization,
-            parts: Vec::new(),
-        };
-
-        let read_futures = equipments.into_iter().map(|(equipment_part, equipment)| {
-            ModelReader::read_equipment(
-                result.renderer,
-                result.package,
-                &result.customization,
-                equipment_part,
-                equipment,
-                result.context,
-            )
-        });
-        result.parts = read_futures
-            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(result.renderer, data?, result.context).await) }))
+    ) -> Result<Self> {
+        let read_futures = equipments
+            .into_iter()
+            .map(|(equipment_part, equipment)| ModelReader::read_equipment(renderer, package, &customization, equipment_part, equipment, context));
+        let mut parts = read_futures
+            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?, context).await) }))
             .collect::<FuturesUnordered<_>>()
             .try_collect::<Vec<_>>()
             .await?;
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
-        let face_part_model = ModelReader::read_face(result.renderer, result.package, &result.customization, result.context).await?;
-        let face_part = CharacterPart::new(result.renderer, face_part_model, result.context).await;
-        result.parts.push(face_part);
+        let face_part_model = ModelReader::read_face(renderer, package, &customization, context).await?;
+        let face_part = CharacterPart::new(renderer, face_part_model, context).await;
+        parts.push(face_part);
 
-        let hair_part_model = ModelReader::read_hair(result.renderer, result.package, &result.customization, result.context).await?;
-        let hair_part = CharacterPart::new(result.renderer, hair_part_model, result.context).await;
-        result.parts.push(hair_part);
+        let hair_part_model = ModelReader::read_hair(renderer, package, &customization, context).await?;
+        let hair_part = CharacterPart::new(renderer, hair_part_model, context).await;
+        parts.push(hair_part);
 
-        Ok(result)
+        Ok(Self { parts })
     }
 }
 
-impl Renderable for Character<'_> {
+impl Renderable for Character {
     fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
         for part in &self.parts {
             part.render(&mut render_context);
