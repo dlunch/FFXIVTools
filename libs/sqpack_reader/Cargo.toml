@@ -9,7 +9,7 @@ doctest = false
 
 [features]
 default = []
-std = ["crc32fast/std", "async-std", "surf", "util/std"]
+std = ["crc32fast/std", "async-std", "reqwest", "util/std"]
 test_local = ["std"]
 
 [dependencies]
@@ -26,7 +26,7 @@ spinning_top = { version = "^0.1", default-features = false }
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 async-std = { version = "^1.6", optional = true }
-surf = { version = "^2.0.0-alpha.4", optional = true }
+reqwest = { version = "^0.10", features = ["default-tls", "stream"], default-features = false, optional = true }
 
 [dev-dependencies]
 pretty_env_logger = { version = "^0.4", default-features = false }
