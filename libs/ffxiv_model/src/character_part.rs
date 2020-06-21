@@ -1,6 +1,7 @@
 use alloc::vec::Vec;
 
 use hashbrown::HashSet;
+use log::debug;
 
 use ffxiv_parser::BufferItemType;
 use renderer::{Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
@@ -44,6 +45,8 @@ impl CharacterPart {
                 [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
                 .iter()
                 .filter_map(|mesh_part| {
+                    debug!("part attributes {:?} mask {}", mesh_part.attributes, mesh_part.visibility_mask);
+
                     if mesh_part.visibility_mask & visibility_mask != mesh_part.visibility_mask
                         || mesh_part.attributes.intersection(&hidden_attributes).next().is_some()
                     {
