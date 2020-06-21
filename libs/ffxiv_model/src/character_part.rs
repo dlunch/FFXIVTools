@@ -40,8 +40,8 @@ impl CharacterPart {
                 [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
                 .iter()
                 .map(|mesh_part| {
-                    let begin = mesh_part.index_offset - mesh_data.mesh_info.index_offset;
-                    MeshPart::new(begin, mesh_part.index_count)
+                    let begin = mesh_part.index_range.start - mesh_data.mesh_info.index_offset;
+                    MeshPart::new(begin, mesh_part.index_range.end - mesh_part.index_range.start)
                 })
                 .collect::<Vec<_>>();
 
