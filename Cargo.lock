@@ -2588,6 +2588,7 @@ dependencies = [
  "scoped-tls 1.0.0",
  "slab",
  "socket2",
+ "tokio",
  "wepoll-binding",
 ]
 
@@ -2794,6 +2795,7 @@ dependencies = [
  "memchr",
  "mio",
  "mio-uds",
+ "num_cpus",
  "pin-project-lite",
  "signal-hook-registry",
  "slab",
