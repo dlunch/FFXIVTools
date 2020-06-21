@@ -1,5 +1,6 @@
-use alloc::vec::Vec;
+use alloc::{string::String, vec::Vec};
 use core::mem::size_of;
+use core::ops::Range;
 
 use sqpack_reader::{Package, Result};
 use util::{cast, cast_array, SliceByteOrderExt, StrExt};
@@ -26,12 +27,19 @@ struct MdlHeader {
 }
 
 #[repr(C)]
-pub struct MeshPart {
+struct MeshPart {
     pub index_offset: u32,
     pub index_count: u32,
     pub attributes: u32,
     pub bone_offset: u16,
     pub bone_count: u16,
+}
+
+pub struct MeshPartInfo {
+    pub index_range: Range<u32>,
+    pub bone_range: Range<u32>,
+    pub visibility_mask: usize,
+    pub attributes: Vec<String>,
 }
 
 #[repr(C)]
@@ -232,9 +240,19 @@ impl Mdl {
         })
     }
 
-    pub fn parts(&self) -> &[MeshPart] {
+    pub fn parts(&self) -> Vec<MeshPartInfo> {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
-        &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize]
+        let raw_parts = &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize];
+
+        raw_parts
+            .into_iter()
+            .map(|x| MeshPartInfo {
+                index_range: x.index_offset..x.index_offset + x.index_count,
+                bone_range: x.bone_offset as u32..x.bone_offset as u32 + x.bone_count as u32,
+                visibility_mask: 0,
+                attributes: Vec::new(),
+            })
+            .collect()
     }
 }
