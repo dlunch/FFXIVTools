@@ -28,6 +28,7 @@ fn main() {
         .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
         .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
         .filter(Some("renderer"), log::LevelFilter::Debug)
+        .filter(Some("ffxiv_model"), log::LevelFilter::Debug)
         .try_init();
 
     let event_loop = EventLoop::new();
