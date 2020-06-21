@@ -16,7 +16,6 @@ mod tests {
             let mtrl = Mtrl::new(&pack, "chara/equipment/e6016/material/v0001/mt_c0201e6016_top_a.mtrl").await?;
             assert!(mtrl
                 .texture_paths()
-                .into_iter()
                 .any(|x| x == "chara/equipment/e6016/texture/v01_c0201e6016_top_n.tex"));
 
             let color_table = mtrl.color_table();
@@ -33,7 +32,6 @@ mod tests {
             let mtrl = Mtrl::new(&pack, "chara/human/c0201/obj/body/b0001/material/v0001/mt_c0201b0001_a.mtrl").await?;
             assert!(mtrl
                 .texture_paths()
-                .into_iter()
                 .any(|x| x == "chara/human/c0201/obj/body/b0001/texture/--c0201b0001_d.tex"));
         }
 

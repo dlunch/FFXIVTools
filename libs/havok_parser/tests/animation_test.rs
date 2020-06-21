@@ -4,6 +4,7 @@ mod tests {
     use havok_parser::{HavokAnimationContainer, HavokBinaryTagFileReader};
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
+    #[allow(clippy::float_cmp)]
     #[async_std::test]
     async fn pap_test() -> Result<()> {
         let _ = pretty_env_logger::formatted_timed_builder()
