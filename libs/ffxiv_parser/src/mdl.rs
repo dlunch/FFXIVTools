@@ -1,6 +1,7 @@
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 use core::mem::size_of;
 use core::ops::Range;
+use phf::phf_map;
 
 use sqpack_reader::{Package, Result};
 use util::{cast, cast_array, SliceByteOrderExt, StrExt};
@@ -35,11 +36,11 @@ struct MeshPart {
     pub bone_count: u16,
 }
 
-pub struct MeshPartInfo {
+pub struct MeshPartInfo<'a> {
     pub index_range: Range<u32>,
     pub bone_range: Range<u32>,
     pub visibility_mask: usize,
-    pub attributes: Vec<String>,
+    pub attributes: Vec<&'a str>,
 }
 
 #[repr(C)]
@@ -140,12 +141,86 @@ pub struct Mesh<'a> {
     pub indices: &'a [u8],
 }
 
+static ATTRIBUTES: phf::Map<&'static str, usize> = phf_map! {
+    "atr_tv_a" => 1 << 0,
+    "atr_tv_b" => 1 << 1,
+    "atr_tv_c" => 1 << 2,
+    "atr_tv_d" => 1 << 3,
+    "atr_tv_e" => 1 << 4,
+    "atr_tv_f" => 1 << 5,
+    "atr_tv_g" => 1 << 6,
+    "atr_tv_h" => 1 << 7,
+    "atr_tv_i" => 1 << 8,
+    "atr_tv_j" => 1 << 9,
+    "atr_mv_a" => 1 << 0,
+    "atr_mv_b" => 1 << 1,
+    "atr_mv_c" => 1 << 2,
+    "atr_mv_d" => 1 << 3,
+    "atr_mv_e" => 1 << 4,
+    "atr_mv_f" => 1 << 5,
+    "atr_mv_g" => 1 << 6,
+    "atr_mv_h" => 1 << 7,
+    "atr_mv_i" => 1 << 8,
+    "atr_mv_j" => 1 << 9,
+    "atr_bv_a" => 1 << 0,
+    "atr_bv_b" => 1 << 1,
+    "atr_bv_c" => 1 << 2,
+    "atr_bv_d" => 1 << 3,
+    "atr_bv_e" => 1 << 4,
+    "atr_bv_f" => 1 << 5,
+    "atr_bv_g" => 1 << 6,
+    "atr_bv_h" => 1 << 7,
+    "atr_bv_i" => 1 << 8,
+    "atr_bv_j" => 1 << 9,
+    "atr_gv_a" => 1 << 0,
+    "atr_gv_b" => 1 << 1,
+    "atr_gv_c" => 1 << 2,
+    "atr_gv_d" => 1 << 3,
+    "atr_gv_e" => 1 << 4,
+    "atr_gv_f" => 1 << 5,
+    "atr_gv_g" => 1 << 6,
+    "atr_gv_h" => 1 << 7,
+    "atr_gv_i" => 1 << 8,
+    "atr_gv_j" => 1 << 9,
+    "atr_dv_a" => 1 << 0,
+    "atr_dv_b" => 1 << 1,
+    "atr_dv_c" => 1 << 2,
+    "atr_dv_d" => 1 << 3,
+    "atr_dv_e" => 1 << 4,
+    "atr_dv_f" => 1 << 5,
+    "atr_dv_g" => 1 << 6,
+    "atr_dv_h" => 1 << 7,
+    "atr_dv_i" => 1 << 8,
+    "atr_dv_j" => 1 << 9,
+    "atr_sv_a" => 1 << 0,
+    "atr_sv_b" => 1 << 1,
+    "atr_sv_c" => 1 << 2,
+    "atr_sv_d" => 1 << 3,
+    "atr_sv_e" => 1 << 4,
+    "atr_sv_f" => 1 << 5,
+    "atr_sv_g" => 1 << 6,
+    "atr_sv_h" => 1 << 7,
+    "atr_sv_i" => 1 << 8,
+    "atr_sv_j" => 1 << 9,
+    "atr_fv_a" => 1 << 0,
+    "atr_fv_b" => 1 << 1,
+    "atr_fv_c" => 1 << 2,
+    "atr_fv_d" => 1 << 3,
+    "atr_fv_e" => 1 << 4,
+    "atr_fv_f" => 1 << 5,
+    "atr_fv_g" => 1 << 6,
+    "atr_fv_h" => 1 << 7,
+    "atr_fv_i" => 1 << 8,
+    "atr_fv_j" => 1 << 9,
+};
+
 pub struct Mdl {
     data: Vec<u8>,
     string_block_offset: usize,
     mdl_header_offset: usize,
     model_header_offset: usize,
     mesh_info_offset: usize,
+    attributes_offset: usize,
     parts_offset: usize,
 }
 
@@ -158,23 +233,26 @@ impl Mdl {
         let mesh_count = (&data[..]).to_int_le::<u16>() as usize;
         let mut cursor = 0x44 + size_of::<BufferItemChunk>() * mesh_count;
 
-        let string_block_size = (&data[cursor + 4..]).to_int_le::<u32>() as usize;
         let string_block_offset = cursor + 8;
+        let string_block_size = (&data[cursor + 4..]).to_int_le::<u32>() as usize;
         cursor += string_block_size + 8;
-        let mdl_header_offset = cursor;
 
+        let mdl_header_offset = cursor;
         let mdl_header = cast::<MdlHeader>(&data[cursor..]);
         cursor += size_of::<MdlHeader>() + mdl_header.unk_count3 as usize * 0x20;
-        let model_header_offset = cursor;
 
+        let model_header_offset = cursor;
         let model_headers = &cast_array::<ModelHeader>(&data[cursor..])[..Self::LOD_COUNT];
         cursor += size_of::<ModelHeader>() * Self::LOD_COUNT;
-        let mesh_info_offset = cursor;
 
+        let mesh_info_offset = cursor;
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&data[cursor..])[..mesh_info_count];
         cursor += mesh_infos.len() * size_of::<MeshInfo>();
+
+        let attributes_offset = cursor;
         cursor += (mdl_header.attribute_count as usize) * size_of::<u32>();
+
         cursor += (mdl_header.unk_count4 as usize) * 20;
         let parts_offset = cursor;
 
@@ -184,6 +262,7 @@ impl Mdl {
             mdl_header_offset,
             model_header_offset,
             mesh_info_offset,
+            attributes_offset,
             parts_offset,
         })
     }
@@ -243,16 +322,41 @@ impl Mdl {
     pub fn parts(&self) -> Vec<MeshPartInfo> {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
-        let raw_parts = &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize];
+        let raw_attributes = &cast_array::<u32>(&self.data[self.attributes_offset..])[..mdl_header.attribute_count as usize];
 
+        let all_attributes = raw_attributes
+            .into_iter()
+            .map(|&x| str::from_null_terminated_utf8(&self.data[self.string_block_offset + x as usize..]).unwrap())
+            .collect::<Vec<_>>();
+
+        let raw_parts = &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize];
         raw_parts
             .into_iter()
-            .map(|x| MeshPartInfo {
-                index_range: x.index_offset..x.index_offset + x.index_count,
-                bone_range: x.bone_offset as u32..x.bone_offset as u32 + x.bone_count as u32,
-                visibility_mask: 0,
-                attributes: Vec::new(),
+            .map(|x| {
+                let mut visibility_mask = 0;
+                let mut attributes = Vec::new();
+                for (i, &attribute) in all_attributes.iter().enumerate() {
+                    if ((x.attributes >> i) & 1) == 1 {
+                        visibility_mask |= Self::get_attribute_mask(attribute);
+                        attributes.push(attribute);
+                    }
+                }
+                MeshPartInfo {
+                    index_range: x.index_offset..x.index_offset + x.index_count,
+                    bone_range: x.bone_offset as u32..x.bone_offset as u32 + x.bone_count as u32,
+                    visibility_mask,
+                    attributes,
+                }
             })
             .collect()
+    }
+
+    fn get_attribute_mask(attribute: &str) -> usize {
+        let item = ATTRIBUTES.get(attribute);
+        if let Some(x) = item {
+            *x
+        } else {
+            0
+        }
     }
 }
