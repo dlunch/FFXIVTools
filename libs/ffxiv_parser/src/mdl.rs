@@ -312,11 +312,10 @@ impl Mdl {
         cursor += (mdl_header.part_count as usize) * size_of::<MeshPart>();
         cursor += (mdl_header.unk_count5 as usize) * 12;
 
-        (0..mdl_header.material_count).map(move |x| {
-            let string_offset = (&self.data[cursor + (x as usize) * size_of::<u32>()..]).to_int_le::<u32>() as usize;
-
-            str::from_null_terminated_utf8(&self.data[self.string_block_offset + string_offset..]).unwrap()
-        })
+        let raw_materials = &cast_array::<u32>(&self.data[cursor..])[..mdl_header.material_count as usize];
+        raw_materials
+            .iter()
+            .map(move |&x| str::from_null_terminated_utf8(&self.data[self.string_block_offset + x as usize..]).unwrap())
     }
 
     pub fn parts(&self) -> Vec<MeshPartInfo> {
