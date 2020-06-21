@@ -326,13 +326,13 @@ impl Mdl {
         let raw_attributes = &cast_array::<u32>(&self.data[self.attributes_offset..])[..mdl_header.attribute_count as usize];
 
         let all_attributes = raw_attributes
-            .into_iter()
+            .iter()
             .map(|&x| str::from_null_terminated_utf8(&self.data[self.string_block_offset + x as usize..]).unwrap())
             .collect::<Vec<_>>();
 
         let raw_parts = &cast_array::<MeshPart>(&self.data[self.parts_offset..])[..mdl_header.part_count as usize];
         raw_parts
-            .into_iter()
+            .iter()
             .map(|x| {
                 let mut visibility_mask = 0;
                 let mut attributes = HashSet::new();
