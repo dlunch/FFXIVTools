@@ -1,6 +1,8 @@
 use alloc::vec::Vec;
 use core::mem::size_of;
 use core::ops::Range;
+
+use hashbrown::HashSet;
 use phf::phf_map;
 
 use sqpack_reader::{Package, Result};
@@ -40,7 +42,7 @@ pub struct MeshPartInfo<'a> {
     pub index_range: Range<u32>,
     pub bone_range: Range<u32>,
     pub visibility_mask: usize,
-    pub attributes: Vec<&'a str>,
+    pub attributes: HashSet<&'a str>,
 }
 
 #[repr(C)]
@@ -333,11 +335,11 @@ impl Mdl {
             .into_iter()
             .map(|x| {
                 let mut visibility_mask = 0;
-                let mut attributes = Vec::new();
+                let mut attributes = HashSet::new();
                 for (i, &attribute) in all_attributes.iter().enumerate() {
                     if ((x.attributes >> i) & 1) == 1 {
                         visibility_mask |= Self::get_attribute_mask(attribute);
-                        attributes.push(attribute);
+                        attributes.insert(attribute);
                     }
                 }
                 MeshPartInfo {

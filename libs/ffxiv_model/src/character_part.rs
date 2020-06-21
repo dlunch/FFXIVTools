@@ -1,5 +1,7 @@
 use alloc::vec::Vec;
 
+use hashbrown::HashSet;
+
 use ffxiv_parser::BufferItemType;
 use renderer::{Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
 
@@ -15,6 +17,8 @@ impl CharacterPart {
     pub async fn new(renderer: &Renderer, model_data: ModelData, context: &Context) -> Self {
         let mdl = model_data.mdl;
 
+        let visibility_mask = 0;
+        let hidden_attributes = HashSet::new();
         let lod = 0;
         let meshes = mdl.meshes(lod);
         let buffer_items = mdl.buffer_items(lod);
@@ -39,9 +43,15 @@ impl CharacterPart {
             let mesh_parts = mdl.parts()
                 [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
                 .iter()
-                .map(|mesh_part| {
-                    let begin = mesh_part.index_range.start - mesh_data.mesh_info.index_offset;
-                    MeshPart::new(begin, mesh_part.index_range.end - mesh_part.index_range.start)
+                .filter_map(|mesh_part| {
+                    if mesh_part.visibility_mask & visibility_mask != mesh_part.visibility_mask
+                        || mesh_part.attributes.intersection(&hidden_attributes).next().is_some()
+                    {
+                        None
+                    } else {
+                        let begin = mesh_part.index_range.start - mesh_data.mesh_info.index_offset;
+                        Some(MeshPart::new(begin, mesh_part.index_range.end - mesh_part.index_range.start))
+                    }
                 })
                 .collect::<Vec<_>>();
 
