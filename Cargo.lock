@@ -809,6 +809,7 @@ dependencies = [
  "ffxiv_parser",
  "futures",
  "hashbrown",
+ "log",
  "raw-window-handle",
  "renderer",
  "shaderc",
