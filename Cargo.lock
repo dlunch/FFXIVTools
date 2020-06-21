@@ -822,6 +822,7 @@ version = "0.1.0"
 dependencies = [
  "async-std",
  "futures",
+ "hashbrown",
  "log",
  "phf",
  "pretty_env_logger",
