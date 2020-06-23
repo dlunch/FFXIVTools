@@ -4,7 +4,7 @@ use hashbrown::HashSet;
 use log::debug;
 
 use ffxiv_parser::BufferItemType;
-use renderer::{Mesh, MeshPart, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
+use renderer::{Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
 
 use crate::context::Context;
 use crate::material::create_material;
@@ -53,7 +53,8 @@ impl CharacterPart {
                         None
                     } else {
                         let begin = mesh_part.index_range.start - mesh_data.mesh_info.index_offset;
-                        Some(MeshPart::new(begin, mesh_part.index_range.end - mesh_part.index_range.start))
+                        let end = mesh_part.index_range.end - mesh_data.mesh_info.index_offset;
+                        Some(begin..end)
                     }
                 })
                 .collect::<Vec<_>>();
