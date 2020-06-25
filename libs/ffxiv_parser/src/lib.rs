@@ -5,6 +5,7 @@ compile_error!("Not supported on big endian");
 
 extern crate alloc;
 
+mod eqdp;
 mod ex;
 mod ffxiv_string;
 mod lgb;
@@ -30,6 +31,7 @@ pub enum Language {
     Korean = 7,
 }
 
+pub use eqdp::Eqdp;
 pub use ex::{Ex, ExList, ExRowType};
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
