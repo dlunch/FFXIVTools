@@ -17,8 +17,8 @@ pub struct Eqdp {
 }
 
 impl Eqdp {
-    pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
-        let data = package.read_file(path).await?;
+    pub async fn new<T: AsRef<str>>(package: &dyn Package, path: T) -> Result<Self> {
+        let data = package.read_file(path.as_ref()).await?;
 
         Ok(Self { data })
     }
