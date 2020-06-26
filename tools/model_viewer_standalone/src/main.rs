@@ -112,7 +112,7 @@ impl<'a> App<'a> {
         let size = window.inner_size();
         let renderer = Renderer::new().await;
         let render_target = WindowRenderTarget::new(&renderer, window, size.width, size.height);
-        let context = Context::new(&renderer).await;
+        let context = Context::new(&renderer, &*package).await.unwrap();
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let scene = Scene::new(camera);
