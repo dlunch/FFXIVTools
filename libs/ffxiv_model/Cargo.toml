@@ -15,6 +15,7 @@ futures = { version = "^0.3", features = ["alloc"], default-features = false }
 hashbrown = { version = "^0.7", features = ["ahash", "inline-more"], default-features = false }
 spinning_top = { version = "^0.1", default-features = false }
 log = { version = "^0.4", default-features = false }
+enum-iterator = { version = "^0.6", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }

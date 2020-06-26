@@ -1,3 +1,5 @@
+use enum_iterator::IntoEnumIterator;
+
 #[derive(Eq, PartialEq, Hash)]
 #[repr(u8)]
 pub enum ModelPart {
@@ -34,7 +36,7 @@ impl ModelPart {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, IntoEnumIterator, Eq, PartialEq, Hash)]
 #[repr(u16)]
 pub enum BodyId {
     MidlanderMale = 101,
