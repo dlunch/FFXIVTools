@@ -11,7 +11,7 @@ use ffxiv_parser::Eqdp;
 use renderer::{Renderer, Texture, TextureFormat};
 use sqpack_reader::{Package, Result};
 
-use crate::constants::BodyId;
+use crate::constants::{BodyId, ModelPart};
 use crate::shader_holder::ShaderHolder;
 use crate::texture_cache::TextureCache;
 
@@ -19,7 +19,6 @@ pub struct Context {
     pub(crate) shader_holder: ShaderHolder,
     pub(crate) texture_cache: TextureCache,
     pub(crate) empty_texture: Arc<Texture>,
-    #[allow(dead_code)]
     equipment_deformer_parameters: HashMap<BodyId, Eqdp>,
 }
 
@@ -34,6 +33,40 @@ impl Context {
             empty_texture,
             equipment_deformer_parameters,
         })
+    }
+
+    #[allow(dead_code)]
+    pub fn get_deformed_body_id(&self, body_id: BodyId, model_id: u16, model_part: ModelPart) -> BodyId {
+        if body_id == BodyId::MidlanderMale {
+            return BodyId::MidlanderMale;
+        }
+
+        let eqdp = self.equipment_deformer_parameters.get(&body_id).unwrap();
+        if eqdp.has_model(model_id, model_part as u8) {
+            body_id
+        } else {
+            if body_id == BodyId::MidlanderFemale {
+                return BodyId::MidlanderMale;
+            }
+
+            let search_id = if body_id == BodyId::LalafellFemale {
+                BodyId::LalafellMale
+            } else if body_id.is_child() {
+                BodyId::ChildHyurMale
+            } else if body_id == BodyId::HrothgarMale {
+                BodyId::RoegadynMale
+            } else if body_id.is_male() {
+                BodyId::MidlanderMale
+            } else {
+                BodyId::MidlanderFemale
+            };
+
+            let eqdp = self.equipment_deformer_parameters.get(&search_id).unwrap();
+            if eqdp.has_model(model_id, model_part as u8) {
+                return search_id;
+            }
+            BodyId::MidlanderMale
+        }
     }
 
     async fn create_empty_texture(renderer: &Renderer) -> Arc<Texture> {
