@@ -1,6 +1,6 @@
 use enum_iterator::IntoEnumIterator;
 
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone)]
 #[repr(u8)]
 pub enum ModelPart {
     Met,
@@ -68,4 +68,14 @@ pub enum BodyId {
     ChildAuRaFemale = 1404,
     Unk9104 = 9104,
     Unk9204 = 9204,
+}
+
+impl BodyId {
+    pub fn is_male(self) -> bool {
+        (self as u16 % 100) == 1
+    }
+
+    pub fn is_child(self) -> bool {
+        (self as u16 % 100) == 4
+    }
 }
