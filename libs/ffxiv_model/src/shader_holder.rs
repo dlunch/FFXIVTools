@@ -58,7 +58,7 @@ impl ShaderHolder {
             &renderer,
             &vs_bytes[..],
             "main",
-            hashmap! {"Locals" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
+            hashmap! {"Mvp" => ShaderBinding::new(0, ShaderBindingType::UniformBuffer)},
             hashmap! {
                 "Position" => 0,
                 "BoneWeight" => 1,
