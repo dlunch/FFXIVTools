@@ -17,6 +17,6 @@ impl IrisMaterial {
             textures.insert("Diffuse", context.empty_texture.clone());
         }
 
-        Material::new(&renderer, textures, vertex_shader, fragment_shader)
+        Material::new(&renderer, textures, &HashMap::new(), vertex_shader, fragment_shader)
     }
 }

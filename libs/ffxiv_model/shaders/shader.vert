@@ -13,7 +13,7 @@ layout(location = 1) out vec4 FragmentNormal;
 layout(location = 2) out vec4 FragmentPosition;
 layout(location = 3) out mat4 FragmentTBN;
 
-layout(set = 0, binding = 0) uniform Locals {
+layout(set = 0, binding = 0) uniform Mvp {
     mat4 u_Transform;
 };
 
