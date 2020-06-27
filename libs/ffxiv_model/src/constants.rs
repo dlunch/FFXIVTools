@@ -54,8 +54,8 @@ pub enum BodyId {
     AuRaMale = 1301,
     AuRaFemale = 1401,
     HrothgarMale = 1501,
-    HrothgarFemale = 1601,
-    VieraMale = 1701,
+    // HrothgarFemale = 1601,
+    // VieraMale = 1701,
     VieraFemale = 1801,
 
     ChildHyurMale = 104,
