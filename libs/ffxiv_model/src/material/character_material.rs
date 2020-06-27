@@ -26,6 +26,6 @@ impl CharacterMaterial {
         let vertex_shader = context.shader_holder.vertex_shader.clone();
         let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Character);
 
-        Material::new(&renderer, &textures, vertex_shader, fragment_shader)
+        Material::new(&renderer, &textures, &HashMap::new(), vertex_shader, fragment_shader)
     }
 }
