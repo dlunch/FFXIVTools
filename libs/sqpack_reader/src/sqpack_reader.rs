@@ -59,7 +59,14 @@ impl Package for SqPackReader {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let archive = self.archive(reference.archive_id).await?;
 
-        archive.read_file(reference.hash.folder, reference.hash.file).await
+        let result = archive.read_file(reference.hash.folder, reference.hash.file).await;
+
+        #[cfg(debug_assertions)]
+        if result.is_err() {
+            debug!("No such file {}", reference.path);
+        }
+
+        result
     }
 }
 
