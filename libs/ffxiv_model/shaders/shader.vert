@@ -1,4 +1,5 @@
 #version 450
+#extension GL_EXT_control_flow_attributes : enable
 
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec4 BoneWeight;
@@ -16,21 +17,42 @@ layout(location = 3) out mat4 FragmentTBN;
 layout(set = 0, binding = 0) uniform Mvp {
     mat4 u_Transform;
 };
+layout(set = 0, binding = 1) uniform BoneTransform {
+	vec4 BoneTransforms[64 * 3];
+};
+
+void getPosition(out vec4 position, out vec4 normal) {
+	position = vec4(0.0);
+	normal = vec4(0.0);
+
+	[[unroll]]
+	for(int i = 0; i < 4; i ++)	{
+		int index = int(BoneIndex[i]);
+		float weight = BoneWeight[i];
+		mat4 boneTransform = mat4(BoneTransforms[index * 3], BoneTransforms[index * 3 + 1], BoneTransforms[index * 3 + 2], vec4(0, 0, 0, 1));
+		position += Position * boneTransform * (weight / 255.0);
+		normal += Normal * boneTransform * (weight / 255.0);
+	}
+}
 
 void main() {
+	vec4 normal, position;
+
+	getPosition(position, normal);
+
     FragmentTexCoord = TexCoord.xy;
-    FragmentNormal = Normal;
-    FragmentPosition = Position;
+    FragmentNormal = normal;
+    FragmentPosition = position;
 
 	vec4 biTangent = normalize((BiTangent * 2.0 / 255.0) - 1.0);
-	vec3 tangent = biTangent.a * cross(biTangent.xyz, Normal.xyz);
+	vec3 tangent = biTangent.a * cross(biTangent.xyz, normal.xyz);
 
     FragmentTBN = mat4(
-		vec4(tangent.x, biTangent.x, Normal.x, 0.0),
-		vec4(tangent.y, biTangent.y, Normal.y, 0.0),
-		vec4(tangent.z, biTangent.z, Normal.z, 0.0),
+		vec4(tangent.x, biTangent.x, normal.x, 0.0),
+		vec4(tangent.y, biTangent.y, normal.y, 0.0),
+		vec4(tangent.z, biTangent.z, normal.z, 0.0),
 		vec4(0.0, 0.0, 0.0, 1.0)
 	);
 
-    gl_Position = u_Transform * Position;
+    gl_Position = u_Transform * position;
 }
