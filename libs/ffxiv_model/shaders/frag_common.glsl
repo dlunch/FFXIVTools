@@ -1,5 +1,4 @@
-struct PointLight
-{
+struct PointLight {
 	vec4 Position;
 	vec4 Ambient;
 	vec4 Diffuse;
@@ -13,8 +12,7 @@ struct PointLight
 // lighting codes are from https://learnopengl.com/Lighting/Multiple-lights (CC BY-NC 4.0)
 
 // calculates the color when using a point light.
-vec3 CalcPointLight(in PointLight light, in vec3 fragPos, in vec3 viewDir, in vec3 diffuse, in vec3 normal, in vec3 specular, in float shininess)
-{
+vec3 CalcPointLight(in PointLight light, in vec3 fragPos, in vec3 viewDir, in vec3 diffuse, in vec3 normal, in vec3 specular, in float shininess) {
 	vec3 lightDir = normalize(light.Position.xyz - fragPos);
 	// diffuse shading
 	float diff = max(dot(normal, lightDir), 0.0);
@@ -34,8 +32,7 @@ vec3 CalcPointLight(in PointLight light, in vec3 fragPos, in vec3 viewDir, in ve
 	return (resultAmbient + resultDiffuse + resultSpecular);
 }
 
-vec3 calculateLight(in vec4 fragmentPosition, in mat4 fragmentTBN, in vec4 diffuseMap, in vec4 normalMap, in vec4 specularMap, in float shininess)
-{
+vec3 calculateLight(in vec4 fragmentPosition, in mat4 fragmentTBN, in vec4 diffuseMap, in vec4 normalMap, in vec4 specularMap, in float shininess) {
     // TODO WIP hardcode
     PointLight keyLight = PointLight(vec4(-4, 4, 4, 1), vec4(0.1, 0.1, 0.1, 1), vec4(1, 1, 1, 1), vec4(0, 0, 0, 1), 1.0f, 0.026f, 0.028f);
     PointLight fillLight = PointLight(vec4(2, 2, 3, 1), vec4(0, 0, 0, 1), vec4(1, 1, 1, 1), vec4(0, 0, 0, 1), 1.0f, 0.14f, 0.07f);
@@ -54,8 +51,7 @@ vec3 calculateLight(in vec4 fragmentPosition, in mat4 fragmentTBN, in vec4 diffu
 	return result;
 }
 
-vec4 calculateGamma(in vec3 color)
-{
+vec4 calculateGamma(in vec3 color) {
 #define GAMMA 2.2
     return vec4(pow(abs(color), vec3(1.0 / GAMMA)), 1.0);
 }
