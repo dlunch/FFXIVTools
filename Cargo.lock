@@ -836,6 +836,7 @@ dependencies = [
  "shaderc",
  "spinning_top",
  "sqpack_reader",
+ "zerocopy",
 ]
 
 [[package]]
