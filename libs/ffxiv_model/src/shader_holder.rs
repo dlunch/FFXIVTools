@@ -82,10 +82,10 @@ impl ShaderHolder {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
-                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
-                "ColorTable" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
-                "Mask" => ShaderBinding::new(4, ShaderBindingType::Texture2D),
+                "Sampler" => ShaderBinding::new(10, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(11, ShaderBindingType::Texture2D),
+                "ColorTable" => ShaderBinding::new(12, ShaderBindingType::Texture2D),
+                "Mask" => ShaderBinding::new(13, ShaderBindingType::Texture2D),
             },
             HashMap::new(),
         )
@@ -99,9 +99,9 @@ impl ShaderHolder {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
-                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
-                "Diffuse" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+                "Sampler" => ShaderBinding::new(10, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(11, ShaderBindingType::Texture2D),
+                "Diffuse" => ShaderBinding::new(12, ShaderBindingType::Texture2D),
             },
             HashMap::new(),
         )
@@ -115,9 +115,9 @@ impl ShaderHolder {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
-                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
-                "Diffuse" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+                "Sampler" => ShaderBinding::new(10, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(11, ShaderBindingType::Texture2D),
+                "Diffuse" => ShaderBinding::new(12, ShaderBindingType::Texture2D),
             },
             HashMap::new(),
         )
@@ -131,9 +131,9 @@ impl ShaderHolder {
             &fs_bytes[..],
             "main",
             hashmap! {
-                "Sampler" => ShaderBinding::new(1, ShaderBindingType::Sampler),
-                "Normal" => ShaderBinding::new(2, ShaderBindingType::Texture2D),
-                "Diffuse" => ShaderBinding::new(3, ShaderBindingType::Texture2D),
+                "Sampler" => ShaderBinding::new(10, ShaderBindingType::Sampler),
+                "Normal" => ShaderBinding::new(11, ShaderBindingType::Texture2D),
+                "Diffuse" => ShaderBinding::new(12, ShaderBindingType::Texture2D),
             },
             HashMap::new(),
         )

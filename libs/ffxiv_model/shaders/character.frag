@@ -9,11 +9,11 @@ layout(location = 3) in mat4 FragmentTBN;
 
 layout(location = 0) out vec4 OutColor;
 
-layout(set = 0, binding = 1) uniform sampler Sampler;
-layout(set = 0, binding = 2) uniform texture2D Normal;
-layout(set = 0, binding = 3) uniform texture2D ColorTable;
-layout(set = 0, binding = 4) uniform texture2D Mask;
-layout(set = 0, binding = 5) uniform texture2D Specular;
+layout(set = 0, binding = 10) uniform sampler Sampler;
+layout(set = 0, binding = 11) uniform texture2D Normal;
+layout(set = 0, binding = 12) uniform texture2D ColorTable;
+layout(set = 0, binding = 13) uniform texture2D Mask;
+layout(set = 0, binding = 14) uniform texture2D Specular;
 
 void main() {
     vec4 normalMap = texture(sampler2D(Normal, Sampler), FragmentTexCoord);
