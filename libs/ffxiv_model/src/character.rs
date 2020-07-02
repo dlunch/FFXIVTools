@@ -1,4 +1,5 @@
-use alloc::vec::Vec;
+use alloc::{sync::Arc, vec, vec::Vec};
+use zerocopy::AsBytes;
 
 use hashbrown::HashMap;
 
@@ -7,7 +8,7 @@ use futures::{
     FutureExt,
 };
 
-use renderer::{RenderContext, Renderable, Renderer};
+use renderer::{Buffer, RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
 use crate::{
@@ -17,6 +18,8 @@ use crate::{
 
 pub struct Character {
     parts: Vec<CharacterPart>,
+    #[allow(dead_code)]
+    bone_transform: Arc<Buffer>,
 }
 
 impl Character {
@@ -27,25 +30,34 @@ impl Character {
         customization: Customization,
         equipments: HashMap<ModelPart, Equipment>,
     ) -> Result<Self> {
+        // TODO temp
+        let bone_transforms = vec![1.0f32, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.]
+            .into_iter()
+            .cycle()
+            .take(4 * 3 * 64)
+            .collect::<Vec<_>>();
+        let bone_transform = Arc::new(renderer.buffer_pool.alloc(bone_transforms.len() * core::mem::size_of::<f32>()));
+        bone_transform.write(bone_transforms.as_bytes()).await.unwrap();
+
         let read_futures = equipments
             .into_iter()
             .map(|(equipment_part, equipment)| ModelReader::read_equipment(renderer, package, &customization, equipment_part, equipment, context));
         let mut parts = read_futures
-            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?, context).await) }))
+            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?, bone_transform.clone(), context).await) }))
             .collect::<FuturesUnordered<_>>()
             .try_collect::<Vec<_>>()
             .await?;
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
         let face_part_model = ModelReader::read_face(renderer, package, &customization, context).await?;
-        let face_part = CharacterPart::new(renderer, face_part_model, context).await;
+        let face_part = CharacterPart::new(renderer, face_part_model, bone_transform.clone(), context).await;
         parts.push(face_part);
 
         let hair_part_model = ModelReader::read_hair(renderer, package, &customization, context).await?;
-        let hair_part = CharacterPart::new(renderer, hair_part_model, context).await;
+        let hair_part = CharacterPart::new(renderer, hair_part_model, bone_transform.clone(), context).await;
         parts.push(hair_part);
 
-        Ok(Self { parts })
+        Ok(Self { parts, bone_transform })
     }
 }
 
