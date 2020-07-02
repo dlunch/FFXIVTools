@@ -15,7 +15,7 @@ impl CharacterMaterial {
         context: &Context,
         mtrl: &Mtrl,
         textures: &mut HashMap<&'static str, Arc<Texture>>,
-        uniforms: &HashMap<&'static str, Buffer>,
+        uniforms: &HashMap<&'static str, Arc<Buffer>>,
     ) -> Material {
         let color_table_data = mtrl.color_table();
         if !color_table_data.is_empty() {
