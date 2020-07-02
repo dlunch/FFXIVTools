@@ -3,28 +3,24 @@ mod hair_material;
 mod iris_material;
 mod skin_material;
 
-use alloc::{sync::Arc, vec, vec::Vec};
-use zerocopy::AsBytes;
+use alloc::sync::Arc;
 
 use hashbrown::HashMap;
 
 use ffxiv_parser::Mtrl;
-use renderer::{Material, Renderer, Texture};
+use renderer::{Buffer, Material, Renderer, Texture};
 
 use crate::Context;
 
-pub async fn create_material(renderer: &Renderer, context: &Context, mtrl: &Mtrl, textures: &[Arc<Texture>]) -> Material {
-    // TODO temp
-    let bone_transforms = vec![1.0f32, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.]
-        .into_iter()
-        .cycle()
-        .take(4 * 3 * 64)
-        .collect::<Vec<_>>();
-    let bone_transform_buffer = renderer.buffer_pool.alloc(bone_transforms.len() * core::mem::size_of::<f32>());
-    bone_transform_buffer.write(bone_transforms.as_bytes()).await.unwrap();
-
+pub async fn create_material(
+    renderer: &Renderer,
+    context: &Context,
+    mtrl: &Mtrl,
+    textures: &[Arc<Texture>],
+    bone_transform: Arc<Buffer>,
+) -> Material {
     let mut uniforms = HashMap::new();
-    uniforms.insert("BoneTransformsUniform", bone_transform_buffer);
+    uniforms.insert("BoneTransformsUniform", bone_transform);
 
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
     let mut textures = gather_textures(mtrl, textures);
