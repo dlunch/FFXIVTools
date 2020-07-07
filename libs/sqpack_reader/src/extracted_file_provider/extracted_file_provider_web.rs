@@ -1,5 +1,6 @@
+use alloc::{vec::Vec, boxed::Box, string::String, format, borrow::ToOwned};
+
 use async_trait::async_trait;
-use futures::stream::StreamExt;
 use log::debug;
 
 use util::cast;
@@ -14,6 +15,31 @@ struct BulkItemHeader {
     file_hash: u32,
     path_hash: u32,
     compressed_size: u32,
+}
+
+#[cfg(feature = "std")]
+async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> reqwest::Result<Vec<u8>> {
+    use futures::stream::StreamExt;
+
+    let response = reqwest::get(uri).await?.error_for_status()?;
+    let total_length = response.content_length().unwrap() as usize;
+    let mut result = Vec::with_capacity(total_length);
+
+    let mut stream = response.bytes_stream();
+    while let Some(item) = stream.next().await {
+        if let Some(progress_callback) = progress_callback {
+            progress_callback(result.len(), total_length)
+        }
+        result.extend_from_slice(&item?[..]);
+    }
+
+    Ok(result)
+}
+
+#[cfg(not(feature = "std"))]
+#[allow(unused_variables)]
+async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> Result<Vec<u8>> {
+    Ok(Vec::new())
 }
 
 pub struct ExtractedFileProviderWeb {
@@ -39,30 +65,25 @@ impl ExtractedFileProviderWeb {
         }
     }
 
-    async fn download(&self, uri: &str) -> reqwest::Result<Vec<u8>> {
+    async fn download(&self, uri: &str) -> Result<Vec<u8>> {
         debug!("Fetching {}", uri);
 
-        let response = reqwest::get(uri).await?.error_for_status()?;
-        let total_length = response.content_length().unwrap() as usize;
-        let mut result = Vec::with_capacity(total_length);
-        let mut stream = response.bytes_stream();
-        while let Some(item) = stream.next().await {
-            if let Some(progress_callback) = &self.progress_callback {
-                progress_callback(result.len(), total_length)
-            }
-            result.extend_from_slice(&item?[..]);
-        }
+        let result = do_download(uri, &self.progress_callback).await.map_err(|x| {
+            debug!("Error downloading file, {}", x);
+
+            SqPackReaderError::NoSuchFile
+        })?;
 
         Ok(result)
     }
 
-    async fn fetch(&self, hash: &SqPackFileHash) -> reqwest::Result<Vec<u8>> {
+    async fn fetch(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         let uri = format!("{}{}/{}/{}", self.base_uri, hash.folder, hash.file, hash.path);
 
         self.download(&uri).await
     }
 
-    async fn fetch_many(&self, references: &[&SqPackFileReference]) -> reqwest::Result<Vec<(SqPackFileHash, Vec<u8>)>> {
+    async fn fetch_many(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
         let uri = format!(
             "{}bulk/{}",
             self.base_uri,
@@ -94,19 +115,11 @@ impl ExtractedFileProviderWeb {
 #[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderWeb {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
-        self.fetch(hash).await.map_err(|x| {
-            debug!("Error downloading file, {}", x);
-
-            SqPackReaderError::NoSuchFile
-        })
+        self.fetch(hash).await
     }
 
     async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {
-        self.fetch_many(references).await.map_err(|x| {
-            debug!("Error downloading file, {}", x);
-
-            SqPackReaderError::NoSuchFile
-        })
+        self.fetch_many(references).await
     }
 
     async fn read_file_size(&self, _: &SqPackFileHash) -> Option<u64> {
