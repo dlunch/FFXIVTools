@@ -17,7 +17,7 @@ struct BulkItemHeader {
     compressed_size: u32,
 }
 
-#[cfg(feature = "std")]
+#[cfg(not(target_arch = "wasm32"))]
 async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> reqwest::Result<Vec<u8>> {
     use futures::stream::StreamExt;
 
@@ -36,10 +36,31 @@ async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usi
     Ok(result)
 }
 
-#[cfg(not(feature = "std"))]
-#[allow(unused_variables)]
-async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> Result<Vec<u8>> {
-    Ok(Vec::new())
+#[cfg(target_arch = "wasm32")]
+async fn do_download(uri: &str, _progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> core::result::Result<Vec<u8>, wasm_bindgen::JsValue> {
+    use wasm_bindgen_futures::JsFuture;
+    use wasm_bindgen::JsCast;
+    use web_sys::{Request, RequestInit, RequestMode, Response};
+    use js_sys::Uint8Array;
+    use alloc::vec;
+
+    let mut opts = RequestInit::new();
+    opts.method("GET");
+    opts.mode(RequestMode::Cors);
+
+    let request = Request::new_with_str_and_init(&uri, &opts)?;
+
+    let window = web_sys::window().unwrap();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+
+    let resp: Response = resp_value.dyn_into().unwrap();
+    let buf = JsFuture::from(resp.array_buffer()?).await?;
+    let u8_array = Uint8Array::new(&buf);
+
+    let mut result = vec![0u8; u8_array.length() as usize];
+    u8_array.copy_to(&mut result);
+
+    Ok(result)
 }
 
 pub struct ExtractedFileProviderWeb {
@@ -69,7 +90,7 @@ impl ExtractedFileProviderWeb {
         debug!("Fetching {}", uri);
 
         let result = do_download(uri, &self.progress_callback).await.map_err(|x| {
-            debug!("Error downloading file, {}", x);
+            debug!("Error downloading file, {:?}", x);
 
             SqPackReaderError::NoSuchFile
         })?;
@@ -112,7 +133,7 @@ impl ExtractedFileProviderWeb {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl ExtractedFileProvider for ExtractedFileProviderWeb {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         self.fetch(hash).await
