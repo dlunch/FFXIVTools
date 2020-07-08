@@ -1,4 +1,4 @@
-use alloc::{vec::Vec, boxed::Box, string::String, format, borrow::ToOwned};
+use alloc::{borrow::ToOwned, boxed::Box, format, string::String, vec::Vec};
 
 use async_trait::async_trait;
 use log::debug;
@@ -37,12 +37,15 @@ async fn do_download(uri: &str, progress_callback: &Option<Box<dyn Fn(usize, usi
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn do_download(uri: &str, _progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>) -> core::result::Result<Vec<u8>, wasm_bindgen::JsValue> {
-    use wasm_bindgen_futures::JsFuture;
-    use wasm_bindgen::JsCast;
-    use web_sys::{Request, RequestInit, RequestMode, Response};
-    use js_sys::Uint8Array;
+async fn do_download(
+    uri: &str,
+    _progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>,
+) -> core::result::Result<Vec<u8>, wasm_bindgen::JsValue> {
     use alloc::vec;
+    use js_sys::Uint8Array;
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen_futures::JsFuture;
+    use web_sys::{Request, RequestInit, RequestMode, Response};
 
     let mut opts = RequestInit::new();
     opts.method("GET");
