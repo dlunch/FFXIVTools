@@ -2719,12 +2719,16 @@ dependencies = [
  "crc32fast",
  "futures",
  "hashbrown",
+ "js-sys",
  "log",
  "miniz_oxide",
  "pretty_env_logger",
  "reqwest",
  "spinning_top",
  "util",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

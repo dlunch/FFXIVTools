@@ -43,7 +43,7 @@ impl ExtractedFileProviderLocal {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl ExtractedFileProvider for ExtractedFileProviderLocal {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         let path = self.find_path(hash)?;
