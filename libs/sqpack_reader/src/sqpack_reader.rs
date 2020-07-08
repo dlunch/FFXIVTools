@@ -54,7 +54,7 @@ impl SqPackReader {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl Package for SqPackReader {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let archive = self.archive(reference.archive_id).await?;
@@ -70,7 +70,7 @@ impl Package for SqPackReader {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl BatchablePackage for SqPackReader {
     async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
         references
