@@ -7,16 +7,11 @@ use std::sync::Arc;
 use actix_web::{dev::Payload, web, FromRequest, HttpRequest};
 use futures::future::{ok, Ready};
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use log::info;
 
 use sqpack_reader::{ExtractedFileProviderLocal, SqPackReaderExtractedFile};
 
 const REGIONS: [&str; 3] = ["kor", "chn", "global"];
-
-lazy_static! {
-    static ref CONTEXT: Context = Context::new().unwrap();
-}
 
 pub struct ContextImpl {
     pub all_package: SqPackReaderExtractedFile,
@@ -64,6 +59,9 @@ impl ContextImpl {
 pub struct Context {
     context: Arc<ContextImpl>,
 }
+
+unsafe impl Send for Context {}
+unsafe impl Sync for Context {}
 
 impl Context {
     pub fn new() -> Result<Self, io::Error> {
