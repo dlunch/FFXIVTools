@@ -1,0 +1,14 @@
+[[redirects]]
+  from = "/Model.html"
+  to = "/model_viewer.html"
+  status = 302
+
+[[redirects]]
+  from = "/model.html"
+  to = "/model_viewer.html"
+  status = 302
+
+[[redirects]]
+  from = "/translationCompare.html"
+  to = "/translation_compare.html"
+  status = 302
