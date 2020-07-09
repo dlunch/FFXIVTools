@@ -56,10 +56,6 @@ jobs:
         run: npm install
 
       - name: npm run build:prod
-        continue-on-error: true
-        run: npm run build:prod
-
-      - name: npm run build:prod
         run: npm run build:prod
 
       - name: Deploy to Github Pages
