@@ -9,7 +9,7 @@ jobs:
     continue-on-error: ${{ matrix.rust == 'nightly' }}
     strategy:
       matrix:
-        os: ["ubuntu-latest"] #[macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         rust: [stable, beta, nightly]
 
     steps:
