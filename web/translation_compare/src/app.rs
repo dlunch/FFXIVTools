@@ -16,7 +16,7 @@ impl Component for App {
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
         spawn_local(async {
-            let provider = ExtractedFileProviderWeb::new("https://ffxiv-data3.dlunch.net");
+            let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
             let package = SqPackReaderExtractedFile::new(provider);
 
             let exl = package.read_file("exd/root.exl").await.unwrap();
