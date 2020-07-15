@@ -32,7 +32,8 @@ pub enum Language {
 }
 
 pub use eqdp::Eqdp;
-pub use ex::{Ex, ExList, ExRowType};
+pub use ex::{Ex, ExList, ExRow, ExRowType};
+pub use ffxiv_string::FFXIVString;
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemType, BufferItemUsage, Mdl};

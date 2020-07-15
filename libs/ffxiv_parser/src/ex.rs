@@ -6,6 +6,7 @@ mod exh;
 mod exl;
 
 pub use definition::ExRowType;
+pub use ex_row::ExRow;
 pub use exl::ExList;
 
 use alloc::collections::BTreeMap;
@@ -15,7 +16,6 @@ use sqpack_reader::{Package, Result};
 use util::cast;
 
 use definition::{ExdDataHeader, ExdMultiRowDataHeader, ExdMultiRowDataItemHeader};
-use ex_row::ExRow;
 use exd_map::ExdMap;
 use exh::ExHeader;
 
