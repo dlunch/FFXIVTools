@@ -5,6 +5,7 @@ mod classjob;
 
 pub use classjob::ClassJob;
 
+use alloc::string::String;
 use core::marker::PhantomData;
 
 use ffxiv_parser::{Ex, ExRow, Language};
@@ -13,6 +14,10 @@ use sqpack_reader::{Package, Result};
 pub trait WrappedExRow<'a> {
     fn new(raw: ExRow<'a>) -> Self;
     fn ex_name() -> &'static str;
+}
+
+pub trait NamedExRow {
+    fn name(&self) -> String;
 }
 
 pub struct WrappedEx<'a, T: WrappedExRow<'a>> {
