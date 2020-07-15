@@ -1,3 +1,5 @@
+use alloc::string::String;
+
 use ffxiv_parser::ExRow;
 
 use crate::WrappedExRow;

@@ -1,3 +1,6 @@
+#![no_std]
+extern crate alloc;
+
 mod classjob;
 
 pub use classjob::ClassJob;
