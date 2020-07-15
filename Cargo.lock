@@ -866,6 +866,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36a9cb09840f81cd211e435d00a4e487edd263dc3c8ff815c32dd76ad668ebed"
 
 [[package]]
+name = "ffxiv_exd"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "ffxiv_parser",
+ "log",
+ "pretty_env_logger",
+ "sqpack_reader",
+]
+
+[[package]]
 name = "ffxiv_model"
 version = "0.1.0"
 dependencies = [
