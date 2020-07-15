@@ -18,4 +18,8 @@ impl<'a> WrappedExRow<'a> for ClassJob<'a> {
     fn new(raw: ExRow<'a>) -> Self {
         Self { raw }
     }
+
+    fn ex_name() -> &'static str {
+        "classjob"
+    }
 }
