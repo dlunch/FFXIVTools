@@ -2,14 +2,14 @@ use alloc::string::String;
 
 use ffxiv_parser::ExRow;
 
-use crate::WrappedExRow;
+use crate::{NamedExRow, WrappedExRow};
 
 pub struct ClassJob<'a> {
     raw: ExRow<'a>,
 }
 
-impl<'a> ClassJob<'a> {
-    pub fn name(&self) -> String {
+impl<'a> NamedExRow for ClassJob<'a> {
+    fn name(&self) -> String {
         self.raw.string(0).decode()
     }
 }
