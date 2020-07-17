@@ -1,15 +1,20 @@
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-use ffxiv_parser::ExList;
+use ffxiv_exd::{ClassJob, NamedExRow, WrappedEx};
+use ffxiv_parser::Language;
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
+pub struct Exs {
+    class_job: WrappedEx<'static, ClassJob<'static>>,
+}
+
 pub struct App {
-    exl: Option<ExList>,
+    exs: Option<Exs>,
 }
 
 pub enum Msg {
-    ExlReady(ExList),
+    ExsReady(Exs),
 }
 
 impl Component for App {
@@ -17,24 +22,24 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let callback = link.callback(Msg::ExlReady);
+        let callback = link.callback(Msg::ExsReady);
 
         spawn_local(async move {
             let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
             let package = SqPackReaderExtractedFile::new(provider);
 
-            let exl = ExList::new(&package).await.unwrap();
+            let class_job = WrappedEx::<ClassJob>::new(&package).await.unwrap();
 
-            callback.emit(exl);
+            callback.emit(Exs { class_job });
         });
 
-        App { exl: None }
+        App { exs: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::ExlReady(x) => {
-                self.exl = Some(x);
+            Msg::ExsReady(x) => {
+                self.exs = Some(x);
                 true
             }
         }
@@ -45,15 +50,21 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let exds = if let Some(x) = &self.exl {
-            x.ex_names.iter().map(|x| html! { <li>{ x }</li> }).collect::<Html>()
+        if let Some(x) = &self.exs {
+            let items = x
+                .class_job
+                .all(Language::English)
+                .unwrap()
+                .iter()
+                .map(|(_, value)| html! { <li>{ value.name() }</li> })
+                .collect::<Html>();
+            html! {
+                <ul>
+                    { items }
+                </ul>
+            }
         } else {
             html! {}
-        };
-        html! {
-            <ul>
-                { exds }
-            </ul>
         }
     }
 }
