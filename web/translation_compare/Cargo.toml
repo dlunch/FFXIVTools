@@ -21,6 +21,7 @@ log = { version = "0.4" }
 
 sqpack_reader = { version = "^0.1", path = "../../libs/sqpack_reader" }
 ffxiv_parser = { version = "^0.1", path = "../../libs/ffxiv_parser" }
+ffxiv_exd = { version = "^0.1", path = "../../libs/ffxiv_exd" }
 util = { version = "^0.1", path = "../../libs/util" }
 
 [dev-dependencies]
