@@ -46,12 +46,23 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
     };
 
     if ex.row_type() == ExRowType::Single {
-        let result = languages.into_iter().map(|x| (x as u32, ex.all(x).unwrap())).collect::<BTreeMap<_, _>>();
+        let result = languages
+            .into_iter()
+            .map(|x| (x as u32, ex.all(x).unwrap().collect::<BTreeMap<_, _>>()))
+            .collect::<BTreeMap<_, _>>();
         Ok(serde_json::to_string(&result)?)
     } else {
         let result = languages
             .into_iter()
-            .map(|x| (x as u32, ex.all_multi(x).unwrap()))
+            .map(|x| {
+                (
+                    x as u32,
+                    ex.all_multi(x)
+                        .unwrap()
+                        .map(|(k, v)| (k, v.collect::<BTreeMap<_, _>>()))
+                        .collect::<BTreeMap<_, _>>(),
+                )
+            })
             .collect::<BTreeMap<_, _>>();
         Ok(serde_json::to_string(&result)?)
     }

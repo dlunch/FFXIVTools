@@ -9,7 +9,6 @@ pub use definition::ExRowType;
 pub use ex_row::ExRow;
 pub use exl::ExList;
 
-use alloc::collections::BTreeMap;
 use core::mem::size_of;
 
 use sqpack_reader::{Package, Result};
@@ -51,18 +50,13 @@ impl Ex {
         Some(self.to_row(row_data))
     }
 
-    pub fn all(&self, language: Language) -> Option<BTreeMap<u32, ExRow>> {
+    pub fn all(&self, language: Language) -> Option<impl Iterator<Item = (u32, ExRow)>> {
         debug_assert!(self.header.row_type == ExRowType::Single);
 
-        Some(
-            self.data
-                .all(language)?
-                .map(|(row_id, row_data)| {
-                    let data = &row_data[size_of::<ExdDataHeader>()..];
-                    (row_id, self.to_row(data))
-                })
-                .collect::<BTreeMap<u32, ExRow>>(),
-        )
+        Some(self.data.all(language)?.map(move |(row_id, row_data)| {
+            let data = &row_data[size_of::<ExdDataHeader>()..];
+            (row_id, self.to_row(data))
+        }))
     }
 
     pub fn index_multi(&self, index: u32, sub_index: u16, language: Language) -> Option<ExRow> {
@@ -75,23 +69,17 @@ impl Ex {
         Some(row)
     }
 
-    pub fn all_multi(&self, language: Language) -> Option<BTreeMap<u32, BTreeMap<u16, ExRow>>> {
+    pub fn all_multi(&self, language: Language) -> Option<impl Iterator<Item = (u32, impl Iterator<Item = (u16, ExRow)>)>> {
         debug_assert!(self.header.row_type == ExRowType::Multi);
 
-        Some(
-            self.data
-                .all(language)?
-                .map(|(row_id, row_data)| {
-                    let header = cast::<ExdMultiRowDataHeader>(&row_data);
-                    let multi_row_data = &row_data[size_of::<ExdMultiRowDataHeader>()..];
+        Some(self.data.all(language)?.map(move |(row_id, row_data)| {
+            let header = cast::<ExdMultiRowDataHeader>(&row_data);
+            let multi_row_data = &row_data[size_of::<ExdMultiRowDataHeader>()..];
 
-                    let rows = (0..header.count.get())
-                        .map(|x| self.to_multi_row_item(multi_row_data, x))
-                        .collect::<BTreeMap<_, _>>();
-                    (row_id, rows)
-                })
-                .collect::<BTreeMap<u32, BTreeMap<u16, ExRow>>>(),
-        )
+            let rows = (0..header.count.get()).map(move |x| self.to_multi_row_item(multi_row_data, x));
+
+            (row_id, rows)
+        }))
     }
 
     fn to_multi_row_item<'a>(&'a self, multi_row_data: &'a [u8], sub_index: u16) -> (u16, ExRow<'a>) {
