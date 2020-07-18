@@ -57,7 +57,7 @@ impl Component for App {
                 <span>
                     { buttons }
                 </span>
-                <List>
+                <List data = &self.data>
                 </List>
             </div>
         }
