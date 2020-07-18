@@ -5,7 +5,7 @@ mod classjob;
 
 pub use classjob::ClassJob;
 
-use alloc::{collections::BTreeMap, string::String};
+use alloc::string::String;
 use core::marker::PhantomData;
 
 use ffxiv_parser::{Ex, ExRow, Language};
@@ -36,13 +36,7 @@ impl<'a, T: WrappedExRow<'a> + 'a> WrappedEx<'a, T> {
         Some(T::new(self.raw.index(index, language)?))
     }
 
-    pub fn all(&'a self, language: Language) -> Option<BTreeMap<u32, T>> {
-        Some(
-            self.raw
-                .all(language)?
-                .into_iter()
-                .map(|(key, value)| (key, T::new(value)))
-                .collect::<BTreeMap<_, _>>(),
-        )
+    pub fn all(&'a self, language: Language) -> Option<impl Iterator<Item = (u32, T)> + 'a> {
+        Some(self.raw.all(language)?.map(|(key, value)| (key, T::new(value))))
     }
 }
