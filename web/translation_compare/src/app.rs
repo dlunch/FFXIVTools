@@ -57,7 +57,6 @@ impl Component for App {
                 .class_job
                 .all(Language::English)
                 .unwrap()
-                .iter()
                 .map(|(_, value)| html! { <li>{ value.name() }</li> })
                 .collect::<Html>();
             html! {
