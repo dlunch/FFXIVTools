@@ -1,6 +1,7 @@
 extern crate alloc;
 
 mod app;
+mod list;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
