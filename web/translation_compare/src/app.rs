@@ -5,6 +5,8 @@ use ffxiv_exd::{ClassJob, NamedExRow, WrappedEx};
 use ffxiv_parser::Language;
 use sqpack_reader::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
+use crate::list::List;
+
 pub struct Exs {
     class_job: WrappedEx<'static, ClassJob<'static>>,
 }
@@ -33,7 +35,7 @@ impl Component for App {
             callback.emit(Exs { class_job });
         });
 
-        App { exs: None }
+        Self { exs: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -64,7 +66,22 @@ impl Component for App {
                 </ul>
             }
         } else {
-            html! {}
+            html! {
+                <div>
+                    <span>
+                        <button>{ "classjob" }</button>
+                        <button>{ "item" }</button>
+                        <button>{ "action" }</button>
+                        <button>{ "craftaction" }</button>
+                        <button>{ "enemy" }</button>
+                        <button>{ "npc" }</button>
+                        <button>{ "quest" }</button>
+                        <button>{ "place" }</button>
+                    </span>
+                    <List>
+                    </List>
+                </div>
+            }
         }
     }
 }
