@@ -16,7 +16,7 @@ pub trait WrappedExRow<'a> {
     fn ex_name() -> &'static str;
 }
 
-pub trait NamedExRow {
+pub trait NamedExRow<'a>: WrappedExRow<'a> {
     fn name(&self) -> String;
 }
 

@@ -8,7 +8,7 @@ pub struct ClassJob<'a> {
     raw: ExRow<'a>,
 }
 
-impl<'a> NamedExRow for ClassJob<'a> {
+impl<'a> NamedExRow<'a> for ClassJob<'a> {
     fn name(&self) -> String {
         self.raw.string(0).decode()
     }
