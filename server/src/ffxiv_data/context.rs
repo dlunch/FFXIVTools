@@ -14,7 +14,6 @@ use sqpack_reader::{ExtractedFileProviderLocal, SqPackReaderExtractedFile};
 const REGIONS: [&str; 3] = ["kor", "chn", "global"];
 
 pub struct ContextImpl {
-    pub all_package: SqPackReaderExtractedFile,
     pub packages: HashMap<String, SqPackReaderExtractedFile>,
 }
 
@@ -38,7 +37,7 @@ impl ContextImpl {
 
         info!("mounting {:?}", packs.iter().map(|(_, key)| key).collect::<Vec<_>>());
 
-        let packages = packs
+        let mut packages = packs
             .iter()
             .map(|(path, key)| {
                 (
@@ -50,8 +49,9 @@ impl ContextImpl {
 
         let all_paths = packs.into_iter().map(|(path, _)| path).collect::<Vec<_>>();
         let all_package = SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_paths(all_paths));
+        packages.insert("all".to_owned(), all_package);
 
-        Ok(Self { all_package, packages })
+        Ok(Self { packages })
     }
 }
 
