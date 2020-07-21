@@ -10,7 +10,7 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
         let pack = SqPackReaderExtractedFile::new(provider);
 
         let sklb = Sklb::new(&pack, "chara/human/c0101/skeleton/base/b0001/skl_c0101b0001.sklb").await?;

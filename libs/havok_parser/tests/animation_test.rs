@@ -12,7 +12,7 @@ mod tests {
             .filter(Some("havok_parser"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
         let pack = SqPackReaderExtractedFile::new(provider);
 
         let pap = Pap::new(&pack, "chara/human/c1101/animation/a0001/bt_common/resident/idle.pap").await?;

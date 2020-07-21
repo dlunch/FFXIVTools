@@ -69,7 +69,7 @@ impl App {
         let callback = self.link.callback(Msg::OnDataReady);
 
         spawn_local(async move {
-            let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+            let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
             let package = SqPackReaderExtractedFile::new(provider);
 
             let names = match name {
