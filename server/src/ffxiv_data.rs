@@ -14,7 +14,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
 use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
-use sqpack_reader::{Package, SqPackFileHash};
+use sqpack_reader::{Package, SqPackFileHash, SqPackReaderExtractedFile};
 
 use context::Context;
 
@@ -68,14 +68,17 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
     }
 }
 
-fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a impl Package> {
+fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackReaderExtractedFile> {
     Ok(context.packages.get(version).ok_or_else(|| error::ErrorNotFound("No such package"))?)
 }
 
 /// routes
 
-async fn get_exl(context: Context) -> Result<impl Responder> {
-    let exl = ExList::new(&context.all_package).await.map_err(|_| error::ErrorNotFound("Not found"))?;
+async fn get_exl(context: Context, param: web::Path<(String,)>) -> Result<impl Responder> {
+    let (version,) = param.into_inner();
+
+    let package = find_package(&context, &version)?;
+    let exl = ExList::new(package).await.map_err(|_| error::ErrorNotFound("Not found"))?;
 
     Ok(web::Json(exl.ex_names))
 }
@@ -114,11 +117,11 @@ async fn get_ex_bulk(context: Context, param: web::Path<(String, Language, Strin
     Ok(HttpResponse::Ok().content_type("application/json").streaming(stream))
 }
 
-async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> Result<impl Responder> {
-    let (folder_hash, file_hash, path_hash) = param.into_inner();
+async fn get_compressed(context: Context, param: web::Path<(String, u32, u32, u32)>) -> Result<impl Responder> {
+    let (version, folder_hash, file_hash, path_hash) = param.into_inner();
+    let package = find_package(&context, &version)?;
 
-    let result = context
-        .all_package
+    let result = package
         .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
         .await
         .map_err(|_| error::ErrorNotFound("Not found"))?;
@@ -126,8 +129,9 @@ async fn get_compressed(context: Context, param: web::Path<(u32, u32, u32)>) -> 
     Ok(HttpResponse::Ok().content_type("application/octet-stream").body(result))
 }
 
-async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> Result<impl Responder> {
-    let (paths,) = param.into_inner();
+async fn get_compressed_bulk(context: Context, param: web::Path<(String, String)>) -> Result<impl Responder> {
+    let (version, paths) = param.into_inner();
+    let package = find_package(&context, &version)?;
 
     let hashes = paths
         .split('.')
@@ -149,7 +153,7 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
     let total_size = hashes
         .iter()
         .map(|hash| {
-            context.all_package.read_compressed_size_by_hash(&hash).map(|x| match x {
+            package.read_compressed_size_by_hash(&hash).map(|x| match x {
                 Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
                 None => Err(error::ErrorNotFound("No such file")),
             })
@@ -161,8 +165,9 @@ async fn get_compressed_bulk(context: Context, param: web::Path<(String,)>) -> R
         .sum::<u64>();
 
     let stream = gen!({
+        let package = find_package(&context, &version).unwrap();
         for hash in hashes {
-            let data = context.all_package.read_as_compressed_by_hash(&hash).await.unwrap();
+            let data = package.read_as_compressed_by_hash(&hash).await.unwrap();
 
             let mut header = Vec::with_capacity(BULK_ITEM_HEADER_SIZE);
             header.extend(hash.folder.to_le_bytes().iter());
@@ -187,7 +192,7 @@ async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result
 
     let lvb = Lvb::new(package, &path).await.map_err(|_| error::ErrorNotFound("Not found"))?;
 
-    let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(&context.all_package, lgb_path)))
+    let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(package, lgb_path)))
         .await
         .map_err(|_| error::ErrorNotFound("Not found"))?
         .into_iter()
@@ -206,11 +211,11 @@ async fn get_lvb(context: Context, param: web::Path<(String, String)>) -> Result
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.data(CONTEXT.clone())
-        .service(web::resource("/parsed/exl").route(web::get().to(get_exl)))
+        .service(web::resource("/parsed/exl/{version}").route(web::get().to(get_exl)))
         .service(web::resource("/parsed/ex/{version}/{ex_name}").route(web::get().to(get_ex)))
         .service(web::resource("/parsed/ex/{version}/{language}/{ex_name}").route(web::get().to(get_ex)))
         .service(web::resource("/parsed/ex/bulk/{version}/{language}/{ex_names}").route(web::get().to(get_ex_bulk)))
         .service(web::resource("/parsed/lvb/{version}/{path:.*}").route(web::get().to(get_lvb)))
-        .service(web::resource("/compressed/{folder_hash}/{file_hash}/{full_hash}").route(web::get().to(get_compressed)))
-        .service(web::resource("/compressed/bulk/{paths}").route(web::get().to(get_compressed_bulk)));
+        .service(web::resource("/compressed/{version}/{folder_hash}/{file_hash}/{full_hash}").route(web::get().to(get_compressed)))
+        .service(web::resource("/compressed/bulk/{version}/{paths}").route(web::get().to(get_compressed_bulk)));
 }
