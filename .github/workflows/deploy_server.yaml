@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - "/server"
+      - "server/**"
 
 name: Server deploy
 
