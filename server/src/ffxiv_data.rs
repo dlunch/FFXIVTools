@@ -217,5 +217,5 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(web::resource("/parsed/ex/bulk/{version}/{language}/{ex_names}").route(web::get().to(get_ex_bulk)))
         .service(web::resource("/parsed/lvb/{version}/{path:.*}").route(web::get().to(get_lvb)))
         .service(web::resource("/compressed/{version}/{folder_hash}/{file_hash}/{full_hash}").route(web::get().to(get_compressed)))
-        .service(web::resource("/compressed/bulk/{version}/{paths}").route(web::get().to(get_compressed_bulk)));
+        .service(web::resource("/compressed/{version}/bulk/{paths}").route(web::get().to(get_compressed_bulk)));
 }
