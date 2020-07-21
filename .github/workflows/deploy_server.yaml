@@ -36,7 +36,7 @@ jobs:
         run: |
           docker buildx build \
             --cache-from "type=local,src=/tmp/.buildx-cache" \
-            --cache-to "type=local,dest=/tmp/.buildx-cache" \
+            --cache-to "type=local,dest=/tmp/.buildx-cache,mode=max" \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
             --push \
             --tag dlunch/ffxivtools_server:latest \
