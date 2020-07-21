@@ -9,7 +9,7 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/");
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
         let pack = SqPackReaderExtractedFile::new(provider);
 
         let lgb = Lgb::new(&pack, "bg/ffxiv/sea_s1/twn/s1t1/level/planner.lgb").await?;

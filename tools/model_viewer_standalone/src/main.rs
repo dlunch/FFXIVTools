@@ -93,7 +93,7 @@ impl<'a> App<'a> {
         let package = if fs::metadata(path).await.is_ok() {
             BatchedPackage::new(SqPackReader::new(&Path::new(path)).unwrap())
         } else {
-            let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/", |current, total| {
+            let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/all/", |current, total| {
                 debug!("{}/{}", current, total)
             });
             BatchedPackage::new(SqPackReaderExtractedFile::new(provider))
