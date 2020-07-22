@@ -16,8 +16,8 @@ wasm-bindgen-futures = { version = "^0.4", default-features = false }
 web-sys = { version = "^0.3", default-features = false }
 wee_alloc = { version = "^0.4", default-features = false }
 console_error_panic_hook = { version = "^0.1", default-features = false }
-console_log = { version = "0.2", features = ["color"] }
-log = { version = "0.4" }
+console_log = { version = "0.2", features = ["color"], default-features = false }
+log = { version = "0.4", default-features = false }
 
 sqpack_reader = { version = "^0.1", path = "../../libs/sqpack_reader" }
 ffxiv_parser = { version = "^0.1", path = "../../libs/ffxiv_parser" }

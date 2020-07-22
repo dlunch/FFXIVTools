@@ -1,20 +1,22 @@
+use std::collections::HashMap;
+
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use ffxiv_exd::{ClassJob, NamedExRow, WrappedEx};
 use ffxiv_parser::Language;
-use sqpack_reader::{ExtractedFileProviderWeb, Package, Result, SqPackReaderExtractedFile};
+use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
 use crate::list::List;
 
 pub struct App {
     link: ComponentLink<Self>,
-    data: Option<Vec<(u32, String)>>,
+    data: Option<HashMap<u32, Vec<String>>>,
 }
 
 pub enum Msg {
     OnDisplay(&'static str),
-    OnDataReady(Vec<(u32, String)>),
+    OnDataReady(HashMap<u32, Vec<String>>),
 }
 
 impl Component for App {
@@ -69,25 +71,52 @@ impl App {
         let callback = self.link.callback(Msg::OnDataReady);
 
         spawn_local(async move {
-            let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
-            let package = SqPackReaderExtractedFile::new(provider);
+            let regions = vec![
+                (
+                    "global_525",
+                    vec![Language::Japanese, Language::English, Language::Deutsch, Language::French],
+                ),
+                ("chn_510", vec![Language::ChineseSimplified]),
+                ("kor_510", vec![Language::Korean]),
+            ];
 
-            let names = match name {
-                "classjob" => Self::read_names::<ClassJob>(&package, Language::English).await.unwrap(),
-                _ => panic!(),
-            };
+            let mut result = HashMap::new();
 
-            callback.emit(names);
+            for (uri, languages) in regions {
+                let names = match name {
+                    "classjob" => Self::read_names::<ClassJob>(uri, &languages),
+                    _ => panic!(),
+                }
+                .await
+                .unwrap();
+
+                for (k, mut v) in names {
+                    result.entry(k).or_insert_with(Vec::new).append(&mut v);
+                }
+            }
+
+            callback.emit(result);
         });
     }
 
-    async fn read_names<'a, T: NamedExRow<'static> + 'static>(package: &dyn Package, language: Language) -> Result<Vec<(u32, String)>> {
-        let wrapped_ex = WrappedEx::<T>::new(package).await?;
+    async fn read_names<'a, T: NamedExRow<'static> + 'static>(uri: &str, languages: &[Language]) -> Result<HashMap<u32, Vec<String>>> {
+        let provider = ExtractedFileProviderWeb::new(&format!("https://ffxiv-data.dlunch.net/compressed/{}/", uri));
+        let package = SqPackReaderExtractedFile::new(provider);
 
+        let wrapped_ex = WrappedEx::<T>::new(&package).await?;
         // TODO do we really require unsafe here??
         let wrapped_ex_ref: &WrappedEx<T> = unsafe { core::mem::transmute(&wrapped_ex) };
-        let all = wrapped_ex_ref.all(language).unwrap();
 
-        Ok(all.map(|(k, v)| (k, v.name())).collect::<Vec<_>>())
+        let mut result = HashMap::<u32, Vec<_>>::new();
+
+        for language in languages {
+            let all = wrapped_ex_ref.all(*language).unwrap();
+
+            for (k, v) in all {
+                result.entry(k).or_insert_with(Vec::new).push(v.name());
+            }
+        }
+
+        Ok(result)
     }
 }
