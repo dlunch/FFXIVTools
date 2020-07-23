@@ -100,7 +100,7 @@ impl Ex {
             Language::Japanese => &[Language::Japanese, Language::English, Language::Deutsch, Language::French],
             Language::Korean => &[Language::Korean],
             Language::ChineseSimplified => &[Language::ChineseSimplified],
-            _ => panic!()
+            _ => panic!(),
         }
     }
 }
