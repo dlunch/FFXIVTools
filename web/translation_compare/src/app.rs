@@ -76,7 +76,7 @@ impl App {
                     "global_525",
                     vec![Language::Japanese, Language::English, Language::Deutsch, Language::French],
                 ),
-                ("chn_510", vec![Language::ChineseSimplified]),
+                ("chn_511", vec![Language::ChineseSimplified]),
                 ("kor_510", vec![Language::Korean]),
             ];
 
