@@ -57,13 +57,17 @@ async fn do_download(
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
 
     let resp: Response = resp_value.dyn_into().unwrap();
-    let buf = JsFuture::from(resp.array_buffer()?).await?;
-    let u8_array = Uint8Array::new(&buf);
+    if resp.ok() {
+        let buf = JsFuture::from(resp.array_buffer()?).await?;
+        let u8_array = Uint8Array::new(&buf);
 
-    let mut result = vec![0u8; u8_array.length() as usize];
-    u8_array.copy_to(&mut result);
+        let mut result = vec![0u8; u8_array.length() as usize];
+        u8_array.copy_to(&mut result);
 
-    Ok(result)
+        Ok(result)
+    } else {
+        Err(wasm_bindgen::JsValue::from_str(&resp.status_text()))
+    }
 }
 
 pub struct ExtractedFileProviderWeb {
