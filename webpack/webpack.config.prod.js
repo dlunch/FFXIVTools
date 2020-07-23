@@ -1,7 +1,7 @@
-const merge = require("webpack-merge");
+const { merge } = require("webpack-merge");
 const common = require("./webpack.config.common.js");
 
-module.exports = merge.smart(common, {
+module.exports = merge(common, {
   mode: "production",
   devtool: "",
 });
