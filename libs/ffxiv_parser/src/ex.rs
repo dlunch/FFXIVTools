@@ -28,13 +28,13 @@ pub struct Ex {
 impl Ex {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
         let header = ExHeader::new(package, name).await?;
-        let data = ExdMap::new(package, name, &header.pages, &header.languages).await?;
+        let data = ExdMap::new(package, name, &header.pages, Self::filter_languages(&header.languages)).await?;
 
         Ok(Self { header, data })
     }
 
     pub fn languages(&self) -> &[Language] {
-        &self.header.languages
+        Self::filter_languages(&self.header.languages)
     }
 
     pub fn row_type(&self) -> ExRowType {
@@ -92,5 +92,15 @@ impl Ex {
 
     fn to_row<'a>(&'a self, row_data: &'a [u8]) -> ExRow<'a> {
         ExRow::new(row_data, self.header.row_size, &self.header.columns)
+    }
+
+    fn filter_languages(raw_languages: &[Language]) -> &[Language] {
+        match raw_languages[0] {
+            Language::None => &[Language::None],
+            Language::Japanese => &[Language::Japanese, Language::English, Language::Deutsch, Language::French],
+            Language::Korean => &[Language::Korean],
+            Language::ChineseSimplified => &[Language::ChineseSimplified],
+            _ => panic!()
+        }
     }
 }
