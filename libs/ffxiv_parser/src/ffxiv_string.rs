@@ -12,7 +12,9 @@ pub struct FFXIVString<'a> {
 impl<'a> FFXIVString<'a> {
     const MARKUP_START: u8 = b'\x02';
     pub fn new(data: &'a [u8]) -> Self {
-        Self { data }
+        let end = data.iter().position(|&x| x == b'\0').unwrap() + 1;
+
+        Self { data: &data[0..end] }
     }
 
     pub fn decode(&self) -> String {
