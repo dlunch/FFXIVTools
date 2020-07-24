@@ -51,7 +51,7 @@ impl Component for App {
             "action",
             "craftaction",
             "bnpcname",
-            "enpcrsident",
+            "enpcresident",
             "quest",
             "placename",
         ]
