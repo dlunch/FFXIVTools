@@ -3195,18 +3195,17 @@ dependencies = [
 name = "translation_compare"
 version = "0.1.0"
 dependencies = [
+ "async-std",
  "console_error_panic_hook",
  "console_log",
  "ffxiv_ex",
  "ffxiv_parser",
- "futures",
- "js-sys",
  "log",
+ "pretty_env_logger",
  "sqpack_reader",
  "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "wasm-bindgen-test",
  "web-sys",
  "wee_alloc",
  "yew",
