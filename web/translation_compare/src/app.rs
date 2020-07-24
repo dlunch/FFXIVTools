@@ -146,7 +146,11 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let _ = App::read_names::<Item>("global_525", &[Language::Japanese, Language::English, Language::Deutsch, Language::French]).await?;
+        let _ = App::read_names::<Item>(
+            "global_525",
+            &[Language::Japanese, Language::English, Language::Deutsch, Language::French],
+        )
+        .await?;
 
         Ok(())
     }
