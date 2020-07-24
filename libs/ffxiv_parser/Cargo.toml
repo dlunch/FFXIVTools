@@ -17,6 +17,7 @@ serde = { version = "^1.0", features = ["derive", "alloc"], default-features = f
 serde_repr = { version = "^0.1", default-features = false }
 hashbrown = { version = "^0.8", features = ["ahash", "inline-more"], default-features = false }
 phf = { version = "^0.8", features = ["macros"], default-features = false }
+log = { version = "^0.4", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 util = { version = "^0.1", default-features = false, path = "../util" }
