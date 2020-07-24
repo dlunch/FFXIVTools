@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use ffxiv_exd::{ClassJob, NamedExRow, WrappedEx};
+    use ffxiv_ex::{ClassJob, NamedExRow, WrappedEx};
     use ffxiv_parser::Language;
     use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
