@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 
 use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
 
@@ -10,7 +10,7 @@ pub enum Msg {}
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub data: Option<HashMap<u32, Vec<String>>>,
+    pub data: Option<BTreeMap<u32, Vec<String>>>,
 }
 
 impl Component for List {

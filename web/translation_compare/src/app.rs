@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
@@ -11,12 +11,12 @@ use crate::list::List;
 
 pub struct App {
     link: ComponentLink<Self>,
-    data: Option<HashMap<u32, Vec<String>>>,
+    data: Option<BTreeMap<u32, Vec<String>>>,
 }
 
 pub enum Msg {
     OnDisplay(&'static str),
-    OnDataReady(HashMap<u32, Vec<String>>),
+    OnDataReady(BTreeMap<u32, Vec<String>>),
 }
 
 impl Component for App {
@@ -89,7 +89,7 @@ impl App {
                 ("kor_510", vec![Language::Korean]),
             ];
 
-            let mut result = HashMap::new();
+            let mut result = BTreeMap::new();
 
             for (uri, languages) in regions {
                 let names = match name {
@@ -114,7 +114,7 @@ impl App {
         });
     }
 
-    async fn read_names<'a, T: NamedExRow<'static> + 'static>(uri: &str, languages: &[Language]) -> Result<HashMap<u32, Vec<String>>> {
+    async fn read_names<'a, T: NamedExRow<'static> + 'static>(uri: &str, languages: &[Language]) -> Result<BTreeMap<u32, Vec<String>>> {
         let provider = ExtractedFileProviderWeb::new(&format!("https://ffxiv-data.dlunch.net/compressed/{}/", uri));
         let package = SqPackReaderExtractedFile::new(provider);
 
@@ -122,7 +122,7 @@ impl App {
         // TODO do we really require unsafe here??
         let wrapped_ex_ref: &WrappedEx<T> = unsafe { core::mem::transmute(&wrapped_ex) };
 
-        let mut result = HashMap::<u32, Vec<_>>::new();
+        let mut result = BTreeMap::<u32, Vec<_>>::new();
 
         for language in languages {
             let all = wrapped_ex_ref.all(*language).unwrap();
