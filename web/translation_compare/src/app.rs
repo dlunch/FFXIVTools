@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-use ffxiv_exd::{ClassJob, NamedExRow, WrappedEx};
+use ffxiv_ex::{ClassJob, NamedExRow, WrappedEx};
 use ffxiv_parser::Language;
 use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 

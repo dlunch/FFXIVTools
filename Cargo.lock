@@ -942,7 +942,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36a9cb09840f81cd211e435d00a4e487edd263dc3c8ff815c32dd76ad668ebed"
 
 [[package]]
-name = "ffxiv_exd"
+name = "ffxiv_ex"
 version = "0.1.0"
 dependencies = [
  "async-std",
@@ -3197,7 +3197,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
- "ffxiv_exd",
+ "ffxiv_ex",
  "ffxiv_parser",
  "futures",
  "js-sys",

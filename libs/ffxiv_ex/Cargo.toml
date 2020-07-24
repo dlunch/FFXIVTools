@@ -1,5 +1,5 @@
 [package]
-name = "ffxiv_exd"
+name = "ffxiv_ex"
 version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2018"
