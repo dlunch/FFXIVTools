@@ -25,7 +25,5 @@ ffxiv_ex = { version = "^0.1", path = "../../libs/ffxiv_ex" }
 util = { version = "^0.1", path = "../../libs/util" }
 
 [dev-dependencies]
-wasm-bindgen-test = { version = "^0.3", default-features = false }
-futures = { version = "^0.3", default-features = false }
-js-sys = { version = "^0.3", default-features = false }
-wasm-bindgen-futures = { version = "^0.4", default-features = false }
+pretty_env_logger = { version = "^0.4", default-features = false }
+async-std = { version = "^1.6", features = ["attributes", "tokio02"] }
