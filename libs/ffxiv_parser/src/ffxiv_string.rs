@@ -85,10 +85,7 @@ impl<'a> FFXIVString<'a> {
             }
             _ => {
                 let payload = &self.data[*cursor..*cursor + markup_size];
-                format!(
-                    "<Unknown payload=\"{}\" />",
-                    payload.iter().map(|x| format!("{:x}", x)).collect::<String>()
-                )
+                format!("<Unknown type=\"{}\" payload=\"{:?}\" />", markup_type, payload)
             }
         };
 
