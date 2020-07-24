@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-use ffxiv_ex::{ClassJob, NamedExRow, WrappedEx};
+use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
 use ffxiv_parser::Language;
 use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
 
@@ -45,14 +45,23 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let buttons = ["classjob", "item", "action", "craftaction", "enemy", "npc", "quest", "place"]
-            .iter()
-            .map(|x| {
-                html! {
-                    <button onclick=self.link.callback(move |_| Msg::OnDisplay(x))>{ x }</button>
-                }
-            })
-            .collect::<Html>();
+        let buttons = [
+            "classjob",
+            "item",
+            "action",
+            "craftaction",
+            "bnpcname",
+            "enpcrsident",
+            "quest",
+            "placename",
+        ]
+        .iter()
+        .map(|x| {
+            html! {
+                <button onclick=self.link.callback(move |_| Msg::OnDisplay(x))>{ x }</button>
+            }
+        })
+        .collect::<Html>();
 
         html! {
             <div>
@@ -84,10 +93,16 @@ impl App {
 
             for (uri, languages) in regions {
                 let names = match name {
-                    "classjob" => Self::read_names::<ClassJob>(uri, &languages),
+                    "classjob" => Self::read_names::<ClassJob>(uri, &languages).await,
+                    "item" => Self::read_names::<Item>(uri, &languages).await,
+                    "action" => Self::read_names::<Action>(uri, &languages).await,
+                    "craftaction" => Self::read_names::<CraftAction>(uri, &languages).await,
+                    "bnpcname" => Self::read_names::<BNpcName>(uri, &languages).await,
+                    "enpcresident" => Self::read_names::<ENpcResident>(uri, &languages).await,
+                    "quest" => Self::read_names::<Quest>(uri, &languages).await,
+                    "placename" => Self::read_names::<PlaceName>(uri, &languages).await,
                     _ => panic!(),
                 }
-                .await
                 .unwrap();
 
                 for (k, mut v) in names {
