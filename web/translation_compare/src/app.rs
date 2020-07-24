@@ -135,3 +135,19 @@ impl App {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[async_std::test]
+    async fn test_read_name() -> Result<()> {
+        let _ = pretty_env_logger::formatted_timed_builder()
+            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .try_init();
+
+        let _ = App::read_names::<Item>("global_525", &[Language::Japanese, Language::English, Language::Deutsch, Language::French]).await?;
+
+        Ok(())
+    }
+}
