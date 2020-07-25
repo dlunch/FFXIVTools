@@ -36,7 +36,9 @@ impl Component for List {
 
     fn view(&self) -> Html {
         let data = if let Some(x) = &self.props.data {
-            x.iter().map(|(_, v)| html! { <li>{ v.join(", ") }</li> }).collect::<Html>()
+            x.iter()
+                .map(|(k, v)| html! { <li>{ format!("{}: {}", k, v.join(", ")) }</li> })
+                .collect::<Html>()
         } else {
             html! {}
         };
