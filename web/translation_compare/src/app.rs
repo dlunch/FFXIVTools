@@ -12,9 +12,11 @@ use crate::list::List;
 pub struct App {
     link: ComponentLink<Self>,
     data: Option<BTreeMap<u32, Vec<String>>>,
+    progress: (usize, usize),
 }
 
 pub enum Msg {
+    Progress((usize, usize)),
     Load(&'static str),
     OnDataReady(BTreeMap<u32, Vec<String>>),
 }
@@ -24,7 +26,11 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, data: None }
+        Self {
+            link,
+            data: None,
+            progress: (0, 0),
+        }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -35,6 +41,10 @@ impl Component for App {
             }
             Msg::OnDataReady(x) => {
                 self.data = Some(x);
+                true
+            }
+            Msg::Progress(x) => {
+                self.progress = x;
                 true
             }
         }
@@ -65,9 +75,19 @@ impl Component for App {
 
         html! {
             <div>
-                <span>
+                <div>
                     { buttons }
-                </span>
+                </div>
+                <p>
+                {
+                    if self.progress.0 != self.progress.1 {
+                        html! { format!("Loading... {}/{}", self.progress.0, self.progress.1) }
+                    }
+                    else {
+                        html! {}
+                    }
+                }
+                </p>
                 <List data = &self.data>
                 </List>
             </div>
@@ -77,7 +97,8 @@ impl Component for App {
 
 impl App {
     fn load(&self, name: &'static str) {
-        let callback = self.link.callback(Msg::OnDataReady);
+        let progress_callback = self.link.callback(Msg::Progress);
+        let ready_callback = self.link.callback(Msg::OnDataReady);
 
         spawn_local(async move {
             let regions = vec![
@@ -91,7 +112,9 @@ impl App {
 
             let mut result = BTreeMap::new();
 
-            for (uri, languages) in regions {
+            progress_callback.emit((0, regions.len()));
+            for (i, (uri, languages)) in regions.iter().enumerate() {
+                progress_callback.emit((i, regions.len()));
                 let names = match name {
                     "classjob" => Self::read_names::<ClassJob>(uri, &languages).await,
                     "item" => Self::read_names::<Item>(uri, &languages).await,
@@ -109,8 +132,9 @@ impl App {
                     result.entry(k).or_insert_with(Vec::new).append(&mut v);
                 }
             }
+            progress_callback.emit((regions.len(), regions.len()));
 
-            callback.emit(result);
+            ready_callback.emit(result);
         });
     }
 
