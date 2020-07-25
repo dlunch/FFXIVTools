@@ -152,7 +152,10 @@ impl App {
             let all = wrapped_ex_ref.all(*language).unwrap();
 
             for (k, v) in all {
-                result.entry(k).or_insert_with(Vec::new).push(v.name());
+                let name = v.name();
+                if !name.is_empty() {
+                    result.entry(k).or_insert_with(Vec::new).push(name);
+                }
             }
         }
 
