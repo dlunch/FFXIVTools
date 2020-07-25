@@ -15,7 +15,7 @@ pub struct App {
 }
 
 pub enum Msg {
-    OnDisplay(&'static str),
+    Load(&'static str),
     OnDataReady(BTreeMap<u32, Vec<String>>),
 }
 
@@ -29,8 +29,8 @@ impl Component for App {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::OnDisplay(x) => {
-                self.display_result(x);
+            Msg::Load(x) => {
+                self.load(x);
                 true
             }
             Msg::OnDataReady(x) => {
@@ -58,7 +58,7 @@ impl Component for App {
         .iter()
         .map(|x| {
             html! {
-                <button onclick=self.link.callback(move |_| Msg::OnDisplay(x))>{ x }</button>
+                <button onclick=self.link.callback(move |_| Msg::Load(x))>{ x }</button>
             }
         })
         .collect::<Html>();
@@ -76,7 +76,7 @@ impl Component for App {
 }
 
 impl App {
-    fn display_result(&self, name: &'static str) {
+    fn load(&self, name: &'static str) {
         let callback = self.link.callback(Msg::OnDataReady);
 
         spawn_local(async move {
