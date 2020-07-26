@@ -977,6 +977,7 @@ dependencies = [
  "futures",
  "hashbrown",
  "log",
+ "nalgebra",
  "phf",
  "pretty_env_logger",
  "serde",
