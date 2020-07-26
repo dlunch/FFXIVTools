@@ -1,0 +1,99 @@
+use alloc::{vec::Vec, string::String, borrow::ToOwned};
+use core::{mem::size_of};
+
+use hashbrown::HashMap;
+use nalgebra::Matrix4;
+
+use sqpack_reader::{Package, Result};
+use util::{cast, cast_array, StrExt};
+
+#[repr(C)]
+struct PreBoneDeformerItem
+{
+    body_id: u16,
+    link_offset: u16,
+    data_offset: u32,
+    _unk: u32,
+}
+
+#[repr(C)]
+struct PreBoneDeformerHeader {
+    count: u32,
+}
+
+#[repr(C)]
+struct PreBoneDeformerLink {
+    next_offset: i16,
+    _unk: u32,
+    next_item_offset: u16,
+}
+
+// PreBoneDeformer
+pub struct Pbd {
+    data: Vec<u8>,
+}
+
+impl Pbd {
+    pub async fn new(package: &dyn Package) -> Result<Self> {
+        let data = package.read_file("chara/xls/bonedeformer/human.pbd").await?;
+
+        Ok(Self { data })
+    }
+
+    pub fn get_deformer_bone(&self, from_id: u16, to_id: u16) -> HashMap<String, Matrix4<f32>> {
+        let header = cast::<PreBoneDeformerHeader>(&self.data);
+        let items = &cast_array::<PreBoneDeformerItem>(&self.data[size_of::<PreBoneDeformerHeader>()..])[..header.count as usize];
+
+        let item = items.iter().find(|x| x.body_id == from_id);
+        if item.is_none() {
+            return HashMap::new();
+        }
+        let mut item = item.unwrap();
+
+        let base_offset = size_of::<PreBoneDeformerHeader>();
+        let link_base_offset = base_offset + size_of::<PreBoneDeformerItem>() * header.count as usize;
+        let links = cast_array::<PreBoneDeformerLink>(&self.data[link_base_offset..]);
+
+        let mut next = &links[item.link_offset as usize];
+
+        if next.next_offset == -1 {
+            return HashMap::new()
+        }
+
+        let mut result = HashMap::new();
+        loop {
+            let current_base_offset = base_offset + item.data_offset as usize;
+            let string_offsets_base = current_base_offset + size_of::<u32>();
+
+            let bone_name_count = *cast::<u32>(&self.data[current_base_offset..]) as usize;
+            let matrices_base = string_offsets_base + (bone_name_count + bone_name_count % 2) * 2;
+
+            let strings_offset = cast_array::<u16>(&self.data[string_offsets_base..]);
+            let matrices = cast_array::<[f32; 12]>(&self.data[matrices_base..]);
+
+            for i in 0..bone_name_count {
+                let string_offset = strings_offset[i] as usize;
+                let bone_name = str::from_null_terminated_utf8(&self.data[string_offset..]).unwrap();
+                let matrix = matrices[i];
+
+                let entry = result.entry(bone_name.to_owned()).or_insert_with(Matrix4::identity);
+
+                *entry *= Matrix4::new(
+                    matrix[0], matrix[1], matrix[2], matrix[3],
+                    matrix[4], matrix[5], matrix[6], matrix[7],
+                    matrix[8], matrix[9], matrix[10], matrix[11],
+                    0., 0., 0.1, 1.,
+                );
+            }
+
+            next = &links[next.next_offset as usize];
+            item = &items[next.next_item_offset as usize];
+
+            if item.body_id == to_id {
+                break;
+            }
+        }
+
+        result
+    }
+}
