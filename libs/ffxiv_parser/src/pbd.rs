@@ -1,5 +1,5 @@
-use alloc::{vec::Vec, string::String, borrow::ToOwned};
-use core::{mem::size_of};
+use alloc::{borrow::ToOwned, string::String, vec::Vec};
+use core::mem::size_of;
 
 use hashbrown::HashMap;
 use nalgebra::Matrix4;
@@ -8,10 +8,9 @@ use sqpack_reader::{Package, Result};
 use util::{cast, cast_array, StrExt};
 
 #[repr(C)]
-struct PreBoneDeformerItem
-{
+struct PreBoneDeformerItem {
     body_id: u16,
-    link_offset: u16,
+    link_index: u16,
     data_offset: u32,
     _unk: u32,
 }
@@ -23,9 +22,10 @@ struct PreBoneDeformerHeader {
 
 #[repr(C)]
 struct PreBoneDeformerLink {
-    next_offset: i16,
-    _unk: u32,
-    next_item_offset: u16,
+    next_index: i16,
+    _unk1: u16,
+    _unk2: u16,
+    next_item_index: u16,
 }
 
 // PreBoneDeformer
@@ -40,7 +40,11 @@ impl Pbd {
         Ok(Self { data })
     }
 
-    pub fn get_deformer_bone(&self, from_id: u16, to_id: u16) -> HashMap<String, Matrix4<f32>> {
+    pub fn get_deform_matrices(&self, from_id: u16, to_id: u16) -> HashMap<String, Matrix4<f32>> {
+        if from_id == to_id {
+            return HashMap::new();
+        }
+
         let header = cast::<PreBoneDeformerHeader>(&self.data);
         let items = &cast_array::<PreBoneDeformerItem>(&self.data[size_of::<PreBoneDeformerHeader>()..])[..header.count as usize];
 
@@ -54,40 +58,37 @@ impl Pbd {
         let link_base_offset = base_offset + size_of::<PreBoneDeformerItem>() * header.count as usize;
         let links = cast_array::<PreBoneDeformerLink>(&self.data[link_base_offset..]);
 
-        let mut next = &links[item.link_offset as usize];
+        let mut next = &links[item.link_index as usize];
 
-        if next.next_offset == -1 {
-            return HashMap::new()
+        if next.next_index == -1 {
+            return HashMap::new();
         }
 
         let mut result = HashMap::new();
         loop {
-            let current_base_offset = base_offset + item.data_offset as usize;
-            let string_offsets_base = current_base_offset + size_of::<u32>();
+            let string_offsets_base = item.data_offset as usize + size_of::<u32>();
 
-            let bone_name_count = *cast::<u32>(&self.data[current_base_offset..]) as usize;
+            let bone_name_count = *cast::<u32>(&self.data[item.data_offset as usize..]) as usize;
             let matrices_base = string_offsets_base + (bone_name_count + bone_name_count % 2) * 2;
 
             let strings_offset = cast_array::<u16>(&self.data[string_offsets_base..]);
             let matrices = cast_array::<[f32; 12]>(&self.data[matrices_base..]);
 
             for i in 0..bone_name_count {
-                let string_offset = strings_offset[i] as usize;
+                let string_offset = item.data_offset as usize + strings_offset[i] as usize;
                 let bone_name = str::from_null_terminated_utf8(&self.data[string_offset..]).unwrap();
                 let matrix = matrices[i];
 
                 let entry = result.entry(bone_name.to_owned()).or_insert_with(Matrix4::identity);
 
                 *entry *= Matrix4::new(
-                    matrix[0], matrix[1], matrix[2], matrix[3],
-                    matrix[4], matrix[5], matrix[6], matrix[7],
-                    matrix[8], matrix[9], matrix[10], matrix[11],
-                    0., 0., 0.1, 1.,
+                    matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6], matrix[7], matrix[8], matrix[9], matrix[10],
+                    matrix[11], 0., 0., 0.1, 1.,
                 );
             }
 
-            next = &links[next.next_offset as usize];
-            item = &items[next.next_item_offset as usize];
+            next = &links[next.next_index as usize];
+            item = &items[next.next_item_index as usize];
 
             if item.body_id == to_id {
                 break;
