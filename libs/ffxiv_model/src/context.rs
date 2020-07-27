@@ -35,7 +35,6 @@ impl Context {
         })
     }
 
-    #[allow(dead_code)]
     pub fn get_deformed_body_id(&self, body_id: BodyId, model_id: u16, model_part: ModelPart) -> BodyId {
         if body_id == BodyId::MidlanderMale {
             return BodyId::MidlanderMale;

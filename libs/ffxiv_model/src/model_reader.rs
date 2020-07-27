@@ -27,10 +27,12 @@ impl ModelReader {
         equipment: Equipment,
         context: &Context,
     ) -> Result<ModelData> {
+        let deformed_body_id = context.get_deformed_body_id(customization.body_id, equipment.model_id, equipment_part);
+
         let mdl_path = format!(
             "chara/equipment/e{equipment_id:04}/model/c{body_id:04}e{equipment_id:04}_{equipment_part}.mdl",
             equipment_id = equipment.model_id,
-            body_id = customization.body_id as u16,
+            body_id = deformed_body_id as u16,
             equipment_part = equipment_part.as_path_str()
         );
 
