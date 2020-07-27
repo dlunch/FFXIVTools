@@ -175,6 +175,25 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug integration test 'pbd_test'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=pbd_test",
+          "--package=ffxiv_parser"
+        ],
+        "filter": {
+          "name": "pbd_test",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug integration test 'animation_test'",
       "cargo": {
         "args": [
