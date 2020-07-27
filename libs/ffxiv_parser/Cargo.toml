@@ -24,6 +24,6 @@ sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 [dev-dependencies]
-async-std = { version = "^1.6", features = ["attributes"], default-features = false }
+async-std = { version = "^1.6", features = ["attributes", "tokio02"] }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
