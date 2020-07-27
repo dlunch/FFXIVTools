@@ -134,7 +134,7 @@ impl<'a> App<'a> {
         equipments.insert(ModelPart::Dwn, Equipment::new(6016, 1, 0));
         equipments.insert(ModelPart::Sho, Equipment::new(6016, 1, 0));
 
-        let customization = Customization::new(BodyId::MidlanderFemale, 1, 1, 1, 1, 1);
+        let customization = Customization::new(BodyId::AuRaFemale, 1, 1, 1, 1, 1);
         let character = Character::new(&self.renderer, &*self.package, &self.context, customization, equipments).await?;
 
         self.scene.add(character);
