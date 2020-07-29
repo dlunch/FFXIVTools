@@ -961,6 +961,7 @@ dependencies = [
  "futures",
  "hashbrown",
  "log",
+ "nalgebra",
  "raw-window-handle",
  "renderer",
  "shaderc",
