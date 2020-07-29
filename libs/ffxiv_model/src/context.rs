@@ -1,4 +1,4 @@
-use alloc::{format, sync::Arc};
+use alloc::{format, string::String, sync::Arc};
 
 use enum_iterator::IntoEnumIterator;
 use futures::{
@@ -6,8 +6,9 @@ use futures::{
     FutureExt,
 };
 use hashbrown::HashMap;
+use nalgebra::Matrix4;
 
-use ffxiv_parser::Eqdp;
+use ffxiv_parser::{Eqdp, Pbd};
 use renderer::{Renderer, Texture, TextureFormat};
 use sqpack_reader::{Package, Result};
 
@@ -20,19 +21,26 @@ pub struct Context {
     pub(crate) texture_cache: TextureCache,
     pub(crate) empty_texture: Arc<Texture>,
     equipment_deformer_parameters: HashMap<BodyId, Eqdp>,
+    prebone_deformer: Pbd,
 }
 
 impl Context {
     pub async fn new(renderer: &Renderer, package: &dyn Package) -> Result<Self> {
         let empty_texture = Self::create_empty_texture(renderer).await;
         let equipment_deformer_parameters = Self::create_equipment_deformer_parameters(package).await?;
+        let prebone_deformer = Pbd::new(package).await?;
 
         Ok(Self {
             shader_holder: ShaderHolder::new(renderer),
             texture_cache: TextureCache::new(),
             empty_texture,
             equipment_deformer_parameters,
+            prebone_deformer,
         })
+    }
+
+    pub fn get_body_deform_matrices(&self, from_id: BodyId, to_id: BodyId) -> HashMap<String, Matrix4<f32>> {
+        self.prebone_deformer.get_deform_matrices(from_id as u16, to_id as u16)
     }
 
     pub fn get_deformed_body_id(&self, body_id: BodyId, model_id: u16, model_part: ModelPart) -> BodyId {

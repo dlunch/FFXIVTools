@@ -17,6 +17,7 @@ spinning_top = { version = "^0.2", default-features = false }
 log = { version = "^0.4", default-features = false }
 enum-iterator = { version = "^0.6", default-features = false }
 zerocopy = { version = "^0.3", default-features = false }
+nalgebra = { version = "^0.21", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
