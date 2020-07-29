@@ -43,7 +43,11 @@ impl Character {
             .into_iter()
             .map(|(equipment_part, equipment)| ModelReader::read_equipment(renderer, package, &customization, equipment_part, equipment, context));
         let mut parts = read_futures
-            .map(|x| x.then(|data| async { Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?, bone_transform.clone(), context).await) }))
+            .map(|x| {
+                x.then(|data| async {
+                    Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?.model_data, bone_transform.clone(), context).await)
+                })
+            })
             .collect::<FuturesUnordered<_>>()
             .try_collect::<Vec<_>>()
             .await?;
