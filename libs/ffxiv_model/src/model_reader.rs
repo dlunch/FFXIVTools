@@ -6,7 +6,7 @@ use ffxiv_parser::{Mdl, Mtrl};
 use renderer::{Renderer, Texture};
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
-use crate::constants::ModelPart;
+use crate::constants::{BodyId, ModelPart};
 use crate::context::Context;
 use crate::customization::Customization;
 use crate::equipment::Equipment;
@@ -14,6 +14,12 @@ use crate::equipment::Equipment;
 pub struct ModelData {
     pub mdl: Mdl,
     pub mtrls: Vec<(Mtrl, Vec<Arc<Texture>>)>,
+}
+
+pub struct EquipmentModelData {
+    pub model_data: ModelData,
+    pub original_body_id: BodyId,
+    pub deformed_body_id: BodyId,
 }
 
 pub struct ModelReader {}
@@ -26,7 +32,7 @@ impl ModelReader {
         equipment_part: ModelPart,
         equipment: Equipment,
         context: &Context,
-    ) -> Result<ModelData> {
+    ) -> Result<EquipmentModelData> {
         let deformed_body_id = context.get_deformed_body_id(customization.body_id, equipment.model_id, equipment_part);
 
         let mdl_path = format!(
@@ -36,10 +42,16 @@ impl ModelReader {
             equipment_part = equipment_part.as_path_str()
         );
 
-        Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
+        let model_data = Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
             Self::convert_equipment_material_path(material_path, customization, equipment.model_id, equipment.variant_id)
         })
-        .await?)
+        .await?;
+
+        Ok(EquipmentModelData {
+            model_data,
+            original_body_id: customization.body_id,
+            deformed_body_id,
+        })
     }
 
     pub async fn read_face(renderer: &Renderer, package: &dyn Package, customization: &Customization, context: &Context) -> Result<ModelData> {
