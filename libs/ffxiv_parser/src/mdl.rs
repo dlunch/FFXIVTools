@@ -16,7 +16,7 @@ struct MdlHeader {
     part_count: u16,
     material_count: u16,
     bone_count: u16,
-    bone_list_count: u16,
+    bone_info_count: u16,
     shp_count: u16,
     _unk_count1: u16,
     _unk_count2: u16,
@@ -54,6 +54,12 @@ struct ModelHeader {
     index_buffer_size: u32,
     buffer_data_offset: u32,
     index_data_offset: u32,
+}
+
+#[repr(C)]
+struct BoneInfo {
+    bone_index: [u16; 64],
+    count: u32,
 }
 
 #[repr(u8)]
@@ -224,6 +230,8 @@ pub struct Mdl {
     mesh_info_offset: usize,
     attributes_offset: usize,
     parts_offset: usize,
+    materials_offset: usize,
+    bone_names_offset: usize,
 }
 
 impl Mdl {
@@ -258,6 +266,13 @@ impl Mdl {
         cursor += (mdl_header.unk_count4 as usize) * 20;
         let parts_offset = cursor;
 
+        cursor += (mdl_header.part_count as usize) * size_of::<MeshPart>();
+        cursor += (mdl_header.unk_count5 as usize) * 12;
+        let materials_offset = cursor;
+
+        cursor += (mdl_header.material_count as usize) * 4;
+        let bone_names_offset = cursor;
+
         Ok(Self {
             data,
             string_block_offset,
@@ -266,6 +281,8 @@ impl Mdl {
             mesh_info_offset,
             attributes_offset,
             parts_offset,
+            materials_offset,
+            bone_names_offset,
         })
     }
 
@@ -309,12 +326,8 @@ impl Mdl {
 
     pub fn material_paths<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
-        let mut cursor = self.parts_offset;
 
-        cursor += (mdl_header.part_count as usize) * size_of::<MeshPart>();
-        cursor += (mdl_header.unk_count5 as usize) * 12;
-
-        let raw_materials = &cast_array::<u32>(&self.data[cursor..])[..mdl_header.material_count as usize];
+        let raw_materials = &cast_array::<u32>(&self.data[self.materials_offset..])[..mdl_header.material_count as usize];
         raw_materials
             .iter()
             .map(move |&x| str::from_null_terminated_utf8(&self.data[self.string_block_offset + x as usize..]).unwrap())
@@ -350,6 +363,21 @@ impl Mdl {
                 }
             })
             .collect()
+    }
+
+    pub fn bone_names(&self, index: usize) -> impl Iterator<Item = &str> {
+        let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
+
+        let bone_info_offset = self.bone_names_offset + (mdl_header.bone_count as usize) * 4;
+        let bone_name_offsets = cast_array::<u32>(&self.data[self.bone_names_offset..]);
+
+        let bone_infos = cast_array::<BoneInfo>(&self.data[bone_info_offset..]);
+        let bone_info = &bone_infos[index];
+
+        (0..bone_info.count as usize).map(move |x| {
+            str::from_null_terminated_utf8(&self.data[self.string_block_offset + bone_name_offsets[bone_info.bone_index[x] as usize] as usize..])
+                .unwrap()
+        })
     }
 
     fn get_attribute_mask(attribute: &str) -> usize {
