@@ -2,6 +2,7 @@
 extern crate alloc;
 
 mod character;
+mod character_equipment_part;
 mod character_part;
 mod constants;
 mod context;
