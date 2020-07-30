@@ -46,7 +46,7 @@ impl Character {
             .map(|x| {
                 x.then(|data| async {
                     Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(
-                        CharacterEquipmentPart::new(renderer, data?.model_data, bone_transform.clone(), context).await,
+                        CharacterEquipmentPart::new(renderer, data?, bone_transform.clone(), context).await,
                     ))
                 })
             })
