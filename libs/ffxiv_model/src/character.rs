@@ -1,4 +1,4 @@
-use alloc::{sync::Arc, vec, vec::Vec};
+use alloc::{boxed::Box, sync::Arc, vec, vec::Vec};
 use zerocopy::AsBytes;
 
 use hashbrown::HashMap;
@@ -12,12 +12,12 @@ use renderer::{Buffer, RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result, SqPackReaderError};
 
 use crate::{
-    character_part::CharacterPart, constants::ModelPart, context::Context, customization::Customization, equipment::Equipment,
-    model_reader::ModelReader,
+    character_equipment_part::CharacterEquipmentPart, character_part::CharacterPart, constants::ModelPart, context::Context,
+    customization::Customization, equipment::Equipment, model_reader::ModelReader,
 };
 
 pub struct Character {
-    parts: Vec<CharacterPart>,
+    parts: Vec<Box<dyn Renderable>>,
     #[allow(dead_code)]
     bone_transform: Arc<Buffer>,
 }
@@ -45,7 +45,9 @@ impl Character {
         let mut parts = read_futures
             .map(|x| {
                 x.then(|data| async {
-                    Ok::<_, SqPackReaderError>(CharacterPart::new(renderer, data?.model_data, bone_transform.clone(), context).await)
+                    Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(
+                        CharacterEquipmentPart::new(renderer, data?.model_data, bone_transform.clone(), context).await,
+                    ))
                 })
             })
             .collect::<FuturesUnordered<_>>()
@@ -54,11 +56,11 @@ impl Character {
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
         let face_part_model = ModelReader::read_face(renderer, package, &customization, context).await?;
-        let face_part = CharacterPart::new(renderer, face_part_model, bone_transform.clone(), context).await;
+        let face_part = Box::new(CharacterPart::new(renderer, face_part_model, bone_transform.clone(), context).await);
         parts.push(face_part);
 
         let hair_part_model = ModelReader::read_hair(renderer, package, &customization, context).await?;
-        let hair_part = CharacterPart::new(renderer, hair_part_model, bone_transform.clone(), context).await;
+        let hair_part = Box::new(CharacterPart::new(renderer, hair_part_model, bone_transform.clone(), context).await);
         parts.push(hair_part);
 
         Ok(Self { parts, bone_transform })
