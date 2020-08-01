@@ -69,7 +69,7 @@ impl CharacterPart {
             let mut bone_transform_data = Vec::<u8>::with_capacity(bone_names.len() * 4 * 3 * core::mem::size_of::<f32>());
             for bone_name in bone_names {
                 if let Some(x) = bone_transforms.get(bone_name) {
-                    debug!("{:} {:?}", bone_name, x.as_slice());
+                    debug!("{:} {:?}", bone_name, x);
                     bone_transform_data.extend(x.as_slice()[..12].as_bytes());
                 } else {
                     let identity = [1.0f32, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.];

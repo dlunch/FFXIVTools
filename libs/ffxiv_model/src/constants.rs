@@ -72,7 +72,7 @@ pub enum BodyId {
 
 impl BodyId {
     pub fn is_male(self) -> bool {
-        (self as u16 % 100) == 1
+        (self as u16 / 100) == 1
     }
 
     pub fn is_child(self) -> bool {
