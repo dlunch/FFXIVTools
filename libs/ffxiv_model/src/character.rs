@@ -1,11 +1,10 @@
 use alloc::{boxed::Box, vec::Vec};
 
-use hashbrown::HashMap;
-
 use futures::{
     stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
 };
+use hashbrown::HashMap;
 
 use renderer::{RenderContext, Renderable, Renderer};
 use sqpack_reader::{Package, Result, SqPackReaderError};
