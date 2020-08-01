@@ -23,14 +23,12 @@ pub async fn create_material(
     uniforms.insert("BoneTransformsUniform", bone_transform);
 
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
-    let mut textures = gather_textures(mtrl, textures);
+    let textures = gather_textures(mtrl, textures);
     match mtrl.shader_name() {
-        "character.shpk" | "characterglass.shpk" => {
-            character_material::CharacterMaterial::create(renderer, context, mtrl, &mut textures, &uniforms).await
-        }
-        "hair.shpk" => hair_material::HairMaterial::create(renderer, context, &mut textures, &uniforms),
-        "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, &mut textures, &uniforms),
-        "skin.shpk" => skin_material::SkinMaterial::create(renderer, context, &mut textures, &uniforms),
+        "character.shpk" | "characterglass.shpk" => character_material::CharacterMaterial::create(renderer, context, mtrl, textures, uniforms).await,
+        "hair.shpk" => hair_material::HairMaterial::create(renderer, context, textures, uniforms),
+        "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, textures, uniforms),
+        "skin.shpk" => skin_material::SkinMaterial::create(renderer, context, textures, uniforms),
         _ => panic!(),
     }
 }
