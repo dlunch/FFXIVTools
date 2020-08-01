@@ -365,14 +365,14 @@ impl Mdl {
             .collect()
     }
 
-    pub fn bone_names(&self, index: usize) -> impl Iterator<Item = &str> {
+    pub fn bone_names(&self, index: u16) -> impl Iterator<Item = &str> {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
         let bone_info_offset = self.bone_names_offset + (mdl_header.bone_count as usize) * 4;
         let bone_name_offsets = cast_array::<u32>(&self.data[self.bone_names_offset..]);
 
         let bone_infos = cast_array::<BoneInfo>(&self.data[bone_info_offset..]);
-        let bone_info = &bone_infos[index];
+        let bone_info = &bone_infos[index as usize];
 
         (0..bone_info.count as usize).map(move |x| {
             str::from_null_terminated_utf8(&self.data[self.string_block_offset + bone_name_offsets[bone_info.bone_index[x] as usize] as usize..])
