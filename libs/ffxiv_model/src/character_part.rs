@@ -66,7 +66,7 @@ impl CharacterPart {
             let mut bone_transform_data = Vec::<u8>::with_capacity(bone_names.len() * 4 * 3 * core::mem::size_of::<f32>());
             for bone_name in bone_names {
                 if let Some(x) = bone_transforms.get(bone_name) {
-                    // nalgebra's as_slice returns column_major, so we have to transpose it
+                    // nalgebra's as_slice uses column_major, so we have to transpose it
                     bone_transform_data.extend(x.transpose().as_slice()[..12].as_bytes());
                 } else {
                     let identity = [1.0f32, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.];
