@@ -18,6 +18,11 @@ impl CharacterEquipmentPart {
         _bone_transforms: &HashMap<String, Matrix4<f32>>,
         context: &Context,
     ) -> Self {
+        log::debug!(
+            "original {:?} deformed {:?}",
+            model_data.original_body_id as u16,
+            model_data.deformed_body_id as u16
+        );
         let prebone_deformer = context.get_body_deform_matrices(model_data.original_body_id, model_data.deformed_body_id);
         let part = CharacterPart::new(renderer, model_data.model_data, &prebone_deformer, context).await;
 
