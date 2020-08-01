@@ -1,7 +1,6 @@
 use alloc::{string::String, sync::Arc, vec::Vec};
 
 use hashbrown::{HashMap, HashSet};
-use log::debug;
 use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
@@ -47,8 +46,6 @@ impl CharacterPart {
                 [mesh_data.mesh_info.part_offset as usize..mesh_data.mesh_info.part_offset as usize + mesh_data.mesh_info.part_count as usize]
                 .iter()
                 .filter_map(|mesh_part| {
-                    debug!("part attributes {:?} mask {}", mesh_part.attributes, mesh_part.visibility_mask);
-
                     if mesh_part.visibility_mask & visibility_mask != mesh_part.visibility_mask
                         || mesh_part.attributes.intersection(&hidden_attributes).next().is_some()
                     {
