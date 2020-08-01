@@ -63,7 +63,7 @@ impl CharacterPart {
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
 
             let bone_names = mdl.bone_names(mesh_data.mesh_info.bone_index).collect::<Vec<_>>();
-            let mut bone_transform_data = Vec::<u8>::with_capacity(bone_names.len() * 4 * 3 * core::mem::size_of::<f32>());
+            let mut bone_transform_data = Vec::with_capacity(bone_names.len() * 4 * 3 * core::mem::size_of::<f32>());
             for bone_name in bone_names {
                 if let Some(x) = bone_transforms.get(bone_name) {
                     // nalgebra's as_slice uses column_major, so we have to transpose it
