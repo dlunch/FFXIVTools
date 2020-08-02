@@ -1,0 +1,14 @@
+[package]
+name = "web_common"
+version = "0.1.0"
+authors = ["Inseok Lee <dlunch@gmail.com>"]
+edition = "2018"
+
+[lib]
+doctest = false
+
+[features]
+
+[dependencies]
+sqpack_reader = { version = "^0.1", path = "../../libs/sqpack_reader" }
+ffxiv_parser = { version = "^0.1", path = "../../libs/ffxiv_parser" }

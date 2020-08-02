@@ -3207,6 +3207,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+ "web_common",
  "wee_alloc",
  "yew",
 ]
@@ -3550,6 +3551,14 @@ checksum = "dda38f4e5ca63eda02c059d243aa25b5f35ab98451e518c51612cd0f1bd19a47"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "web_common"
+version = "0.1.0"
+dependencies = [
+ "ffxiv_parser",
+ "sqpack_reader",
 ]
 
 [[package]]

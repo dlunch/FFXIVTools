@@ -4,8 +4,8 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
-use ffxiv_parser::Language;
-use sqpack_reader::{ExtractedFileProviderWeb, Result, SqPackReaderExtractedFile};
+use sqpack_reader::Result;
+use web_common::{regions, Region};
 
 use crate::list::List;
 
@@ -101,29 +101,21 @@ impl App {
         let ready_callback = self.link.callback(Msg::OnDataReady);
 
         spawn_local(async move {
-            let regions = vec![
-                (
-                    "global_525",
-                    vec![Language::Japanese, Language::English, Language::Deutsch, Language::French],
-                ),
-                ("chn_511", vec![Language::ChineseSimplified]),
-                ("kor_510", vec![Language::Korean]),
-            ];
-
+            let regions = regions();
             let mut result = BTreeMap::new();
 
             progress_callback.emit((0, regions.len()));
-            for (i, (uri, languages)) in regions.iter().enumerate() {
+            for (i, region) in regions.iter().enumerate() {
                 progress_callback.emit((i, regions.len()));
                 let names = match name {
-                    "classjob" => Self::read_names::<ClassJob>(uri, &languages).await,
-                    "item" => Self::read_names::<Item>(uri, &languages).await,
-                    "action" => Self::read_names::<Action>(uri, &languages).await,
-                    "craftaction" => Self::read_names::<CraftAction>(uri, &languages).await,
-                    "bnpcname" => Self::read_names::<BNpcName>(uri, &languages).await,
-                    "enpcresident" => Self::read_names::<ENpcResident>(uri, &languages).await,
-                    "quest" => Self::read_names::<Quest>(uri, &languages).await,
-                    "placename" => Self::read_names::<PlaceName>(uri, &languages).await,
+                    "classjob" => Self::read_names::<ClassJob>(region).await,
+                    "item" => Self::read_names::<Item>(region).await,
+                    "action" => Self::read_names::<Action>(region).await,
+                    "craftaction" => Self::read_names::<CraftAction>(region).await,
+                    "bnpcname" => Self::read_names::<BNpcName>(region).await,
+                    "enpcresident" => Self::read_names::<ENpcResident>(region).await,
+                    "quest" => Self::read_names::<Quest>(region).await,
+                    "placename" => Self::read_names::<PlaceName>(region).await,
                     _ => panic!(),
                 }
                 .unwrap();
@@ -138,9 +130,8 @@ impl App {
         });
     }
 
-    async fn read_names<'a, T: NamedExRow<'static> + 'static>(uri: &str, languages: &[Language]) -> Result<BTreeMap<u32, Vec<String>>> {
-        let provider = ExtractedFileProviderWeb::new(&format!("https://ffxiv-data.dlunch.net/compressed/{}/", uri));
-        let package = SqPackReaderExtractedFile::new(provider);
+    async fn read_names<'a, T: NamedExRow<'static> + 'static>(region: &Region) -> Result<BTreeMap<u32, Vec<String>>> {
+        let package = region.package();
 
         let wrapped_ex = WrappedEx::<T>::new(&package).await?;
         // TODO do we really require unsafe here??
@@ -148,7 +139,7 @@ impl App {
 
         let mut result = BTreeMap::<u32, Vec<_>>::new();
 
-        for language in languages {
+        for language in &region.languages {
             let all = wrapped_ex_ref.all(*language).unwrap();
 
             for (k, v) in all {
@@ -173,11 +164,8 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let _ = App::read_names::<Item>(
-            "global_525",
-            &[Language::Japanese, Language::English, Language::Deutsch, Language::French],
-        )
-        .await?;
+        let region = &regions()[0];
+        let _ = App::read_names::<Item>(region).await?;
 
         Ok(())
     }

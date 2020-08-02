@@ -11,6 +11,7 @@ members = [
     "tools/model_viewer_standalone",
     "web/model_viewer",
     "web/translation_compare",
+    "web/web_common",
     "server",
 ]
 
