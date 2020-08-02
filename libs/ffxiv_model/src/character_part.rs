@@ -25,7 +25,7 @@ impl CharacterPart {
         let meshes = mdl.meshes(lod);
         let buffer_items = mdl.buffer_items(lod);
 
-        let mut models = Vec::new();
+        let mut models = Vec::with_capacity(meshes.size_hint().0);
         for (mesh_index, (mesh_data, buffer_item)) in meshes.zip(buffer_items).enumerate() {
             let vertex_formats = (0..mesh_data.mesh_info.buffer_count as usize)
                 .map(|buffer_index| {
@@ -58,12 +58,12 @@ impl CharacterPart {
                 })
                 .collect::<Vec<_>>();
 
-            let mesh = Mesh::new(&renderer, mesh_data.buffers.as_ref(), &strides, mesh_data.indices, vertex_formats).await;
+            let mesh = Mesh::new(&renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats).await;
 
             let (mtrl, texs) = &model_data.mtrls[mesh_index];
 
-            let bone_names = mdl.bone_names(mesh_data.mesh_info.bone_index).collect::<Vec<_>>();
-            let mut bone_transform_data = Vec::with_capacity(bone_names.len() * 4 * 3 * core::mem::size_of::<f32>());
+            let bone_names = mdl.bone_names(mesh_data.mesh_info.bone_index);
+            let mut bone_transform_data = Vec::with_capacity(bone_names.size_hint().0 * 4 * 3 * core::mem::size_of::<f32>());
             for bone_name in bone_names {
                 if let Some(x) = bone_transforms.get(bone_name) {
                     // nalgebra's as_slice uses column_major, so we have to transpose it
