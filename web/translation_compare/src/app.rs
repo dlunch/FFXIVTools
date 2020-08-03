@@ -155,18 +155,17 @@ impl App {
 }
 
 #[cfg(test)]
+#[cfg(target_arch = "wasm32")]
 mod tests {
     use super::*;
 
-    #[async_std::test]
-    async fn test_read_name() -> Result<()> {
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    async fn test_read_name() {
         let _ = pretty_env_logger::formatted_timed_builder()
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
         let region = &regions()[0];
-        let _ = App::read_names::<Item>(region).await?;
-
-        Ok(())
+        let _ = App::read_names::<Item>(region).await.unwrap();
     }
 }
