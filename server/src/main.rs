@@ -44,7 +44,7 @@ fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
     };
 
     Response::build()
-        .raw_header("Cache-Control", "max-age=31536000") // TODO
+        .raw_header("Cache-Control", "max-age=31536000")
         .sized_body(response.len(), Cursor::new(response))
         .finalize()
 }
