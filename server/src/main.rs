@@ -2,8 +2,12 @@
 
 use std::io::Cursor;
 
+use futures::future::BoxFuture;
 use rocket::{
-    get, launch,
+    fairing::AdHoc,
+    get,
+    http::Header,
+    launch,
     request::{FromRequest, Outcome},
     routes, Request, Response,
 };
@@ -45,32 +49,41 @@ fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
         .finalize()
 }
 
-/*
-fn get_allowed_origin(source_origin: Option<&HeaderValue>) -> HeaderValue {
+fn get_allowed_origin(source_origin: Option<&str>) -> &str {
     const ALLOWD_ORIGINS: [&str; 2] = ["https://ffxiv-dev.dlunch.net", "http://localhost:8080"];
 
     if let Some(origin) = source_origin {
-        if ALLOWD_ORIGINS.iter().any(|x| x == origin) {
-            origin.to_owned()
+        if ALLOWD_ORIGINS.iter().any(|&x| x == origin) {
+            &origin
         } else {
-            HeaderValue::from_static("https://ffxiv.dlunch.net")
+            "https://ffxiv.dlunch.net"
         }
     } else {
-        HeaderValue::from_static("https://ffxiv.dlunch.net")
+        "https://ffxiv.dlunch.net"
     }
 }
 
-fn insert_headers(header_map: &mut HeaderMap, allowed_origin: HeaderValue) {
-    header_map.insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, allowed_origin);
-    header_map.insert(header::ACCESS_CONTROL_ALLOW_METHODS, HeaderValue::from_static("GET"));
-    header_map.insert(header::ACCESS_CONTROL_ALLOW_HEADERS, HeaderValue::from_static("Content-Type"));
-    header_map.insert(header::VARY, HeaderValue::from_static("Origin, Accept-Encoding"));
+fn insert_headers<'a>(response: &'a mut Response, allowed_origin: &'a str) {
+    response.set_header(Header::new("Access-Control-Allow-Origin", allowed_origin.to_owned()));
+    response.set_header(Header::new("Access-Control-Allow-Methods", "GET"));
+    response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
+    response.set_header(Header::new("Vary", "Origin, Accept-Encoding"));
 }
-*/
+
+fn attach_cors<'a, 'r, 's>(req: &'a Request<'r>, mut res: &'a mut Response<'s>) -> BoxFuture<'a, ()> {
+    Box::pin(async move {
+        let source_origin = req.headers().get_one("Origin");
+        let allowed_origin = get_allowed_origin(source_origin);
+
+        insert_headers(&mut res, allowed_origin);
+    })
+}
 
 #[launch]
 fn rocket() -> rocket::Rocket {
     pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Debug).init();
 
-    rocket::ignite().mount("/", routes![probe])
+    rocket::ignite()
+        .attach(AdHoc::on_response("CORS", attach_cors))
+        .mount("/", routes![probe])
 }
