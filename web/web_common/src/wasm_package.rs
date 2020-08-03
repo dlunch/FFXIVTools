@@ -9,12 +9,12 @@ use wasm_timer::Delay;
 
 use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Package, SqPackReaderExtractedFile, SqPackFileReference, Result};
 
-pub struct WebPackage<'a> {
+pub struct WasmPackage<'a> {
     package: Arc<BatchedPackage<'a>>,
     phantom: PhantomData<&'a u8>
 }
 
-impl<'a> WebPackage<'a> {
+impl<'a> WasmPackage<'a> {
     pub fn new(region: &Region) -> Self {
         let uri = format!("{}_{}", region.name, region.version);
         let provider = ExtractedFileProviderWeb::new(&format!("https://ffxiv-data.dlunch.net/compressed/{}/", uri));
@@ -38,7 +38,7 @@ impl<'a> WebPackage<'a> {
 }
 
 #[async_trait(?Send)]
-impl Package for WebPackage<'_> {
+impl Package for WasmPackage<'_> {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         self.package.read_file_by_reference(reference).await
     }
