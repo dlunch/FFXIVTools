@@ -28,4 +28,4 @@ util = { version = "^0.1", path = "../../libs/util" }
 
 [dev-dependencies]
 pretty_env_logger = { version = "^0.4", default-features = false }
-async-std = { version = "^1.6", features = ["attributes", "tokio02"] }
+wasm-bindgen-test = { version = "^0.3", default-features = false }
