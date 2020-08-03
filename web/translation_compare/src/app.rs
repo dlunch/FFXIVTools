@@ -5,7 +5,7 @@ use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
 use sqpack_reader::Result;
-use web_common::{regions, Region};
+use web_common::{regions, Region, WasmPackage};
 
 use crate::list::List;
 
@@ -131,7 +131,7 @@ impl App {
     }
 
     async fn read_names<'a, T: NamedExRow<'static> + 'static>(region: &Region) -> Result<BTreeMap<u32, Vec<String>>> {
-        let package = region.package();
+        let package = WasmPackage::new(region);
 
         let wrapped_ex = WrappedEx::<T>::new(&package).await?;
         // TODO do we really require unsafe here??

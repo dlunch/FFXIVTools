@@ -1,23 +1,18 @@
 #![no_std]
 extern crate alloc;
 
-mod web_package;
+mod wasm_package;
+
+pub use wasm_package::WasmPackage;
 
 use alloc::{vec, vec::Vec};
 
 use ffxiv_parser::Language;
-use sqpack_reader::Package;
 
 pub struct Region {
     pub name: &'static str,
     pub version: &'static str,
     pub languages: Vec<Language>,
-}
-
-impl Region {
-    pub fn package(&self) -> impl Package {
-        web_package::WebPackage::new(self)
-    }
 }
 
 pub fn regions() -> [Region; 3] {
