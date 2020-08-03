@@ -81,7 +81,11 @@ fn attach_cors<'a, 'r, 's>(req: &'a Request<'r>, mut res: &'a mut Response<'s>) 
 
 #[launch]
 fn rocket() -> rocket::Rocket {
-    pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Debug).init();
+    pretty_env_logger::formatted_timed_builder()
+        .filter(None, log::LevelFilter::Debug)
+        .filter(Some("rocket"), log::LevelFilter::Debug)
+        .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+        .init();
 
     rocket::ignite()
         .attach(AdHoc::on_response("CORS", attach_cors))
