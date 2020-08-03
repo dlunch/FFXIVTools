@@ -10,5 +10,9 @@ doctest = false
 [features]
 
 [dependencies]
+async-trait = { version = "^0.1.24", default-features = false }
+wasm-bindgen-futures = { version = "^0.4", default-features = false }
+wasm-timer = { version = "^0.2", default-features = false }
+
 sqpack_reader = { version = "^0.1", path = "../../libs/sqpack_reader" }
 ffxiv_parser = { version = "^0.1", path = "../../libs/ffxiv_parser" }

@@ -1,5 +1,12 @@
+#![no_std]
+extern crate alloc;
+
+mod web_package;
+
+use alloc::{vec, vec::Vec};
+
 use ffxiv_parser::Language;
-use sqpack_reader::{ExtractedFileProviderWeb, Package, SqPackReaderExtractedFile};
+use sqpack_reader::Package;
 
 pub struct Region {
     pub name: &'static str,
@@ -9,10 +16,7 @@ pub struct Region {
 
 impl Region {
     pub fn package(&self) -> impl Package {
-        let uri = format!("{}_{}", self.name, self.version);
-        let provider = ExtractedFileProviderWeb::new(&format!("https://ffxiv-data.dlunch.net/compressed/{}/", uri));
-
-        SqPackReaderExtractedFile::new(provider)
+        web_package::WebPackage::new(self)
     }
 }
 
