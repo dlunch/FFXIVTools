@@ -1,25 +1,37 @@
-mod ffxiv_data;
+// mod ffxiv_data;
 
-use actix_web::{
-    dev::Service,
-    http::{header, HeaderMap, HeaderValue},
-    web, App, HttpRequest, HttpResponse, HttpServer, Result,
+use std::io::Cursor;
+
+use rocket::{
+    get, launch,
+    request::{FromRequest, Outcome},
+    routes, Request, Response,
 };
-use futures::FutureExt;
 
-fn probe(req: HttpRequest) -> HttpResponse {
-    let ray = req.headers().get("CF_RAY");
-    let ipcountry = req.headers().get("CF_IPCOUNTRY");
+struct CloudFlareHeader {
+    dc: Option<String>,
+    ip_country: Option<String>,
+}
 
-    let mut enable_cf = true;
+#[rocket::async_trait]
+impl<'a, 'r> FromRequest<'a, 'r> for CloudFlareHeader {
+    type Error = ();
 
-    if let (Some(ray), Some(ipcountry)) = (ray, ipcountry) {
-        let dc = ray.to_str().unwrap().split('-').nth(1).unwrap();
+    async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        let dc = request.headers().get_one("CF_RAY").map(|x| x.split('-').nth(1).unwrap().to_owned());
+        let ip_country = request.headers().get_one("CF_IPCOUNTRY").map(|x| x.to_owned());
 
-        if ipcountry == "KR" && dc != "ICN" {
-            enable_cf = false;
-        }
+        Outcome::Success(Self { dc, ip_country })
     }
+}
+
+#[get("/probe")]
+fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
+    let enable_cf = if let (Some(dc), Some(ip_country)) = (header.dc, header.ip_country) {
+        !(ip_country == "KR" && dc != "ICN")
+    } else {
+        true
+    };
 
     let response = if enable_cf {
         "https://ffxiv-data.dlunch.net"
@@ -27,11 +39,13 @@ fn probe(req: HttpRequest) -> HttpResponse {
         "https://ffxiv-data3.dlunch.net"
     };
 
-    HttpResponse::Ok()
-        .set(header::CacheControl(vec![header::CacheDirective::MaxAge(31_536_000)]))
-        .body(response)
+    Response::build()
+        .raw_header("Cache-Control", "max-age=31536000") // TODO
+        .sized_body(response.len(), Cursor::new(response))
+        .finalize()
 }
 
+/*
 fn get_allowed_origin(source_origin: Option<&HeaderValue>) -> HeaderValue {
     const ALLOWD_ORIGINS: [&str; 2] = ["https://ffxiv-dev.dlunch.net", "http://localhost:8080"];
 
@@ -52,28 +66,11 @@ fn insert_headers(header_map: &mut HeaderMap, allowed_origin: HeaderValue) {
     header_map.insert(header::ACCESS_CONTROL_ALLOW_HEADERS, HeaderValue::from_static("Content-Type"));
     header_map.insert(header::VARY, HeaderValue::from_static("Origin, Accept-Encoding"));
 }
+*/
 
-#[actix_rt::main]
-async fn main() -> Result<()> {
+#[launch]
+fn rocket() -> rocket::Rocket {
     pretty_env_logger::formatted_timed_builder().filter_level(log::LevelFilter::Debug).init();
-    HttpServer::new(move || {
-        App::new()
-            .wrap_fn(|req, srv| {
-                let allowed_origin = get_allowed_origin(req.headers().get(header::ORIGIN));
 
-                srv.call(req).map(|res| {
-                    let mut res = res?;
-                    insert_headers(res.headers_mut(), allowed_origin);
-
-                    Ok(res)
-                })
-            })
-            .configure(ffxiv_data::config)
-            .service(web::resource("/probe").route(web::get().to(probe)))
-    })
-    .bind("0.0.0.0:8080")?
-    .run()
-    .await?;
-
-    Ok(())
+    rocket::ignite().mount("/", routes![probe])
 }
