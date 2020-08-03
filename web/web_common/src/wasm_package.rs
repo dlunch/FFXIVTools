@@ -1,17 +1,17 @@
 use crate::Region;
 
-use alloc::{format, sync::Arc, boxed::Box, vec::Vec};
-use core::{time::Duration, marker::PhantomData};
+use alloc::{boxed::Box, format, sync::Arc, vec::Vec};
+use core::{marker::PhantomData, time::Duration};
 
 use async_trait::async_trait;
 use wasm_bindgen_futures::spawn_local;
 use wasm_timer::Delay;
 
-use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Package, SqPackReaderExtractedFile, SqPackFileReference, Result};
+use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Package, Result, SqPackFileReference, SqPackReaderExtractedFile};
 
 pub struct WasmPackage<'a> {
     package: Arc<BatchedPackage<'a>>,
-    phantom: PhantomData<&'a u8>
+    phantom: PhantomData<&'a u8>,
 }
 
 impl<'a> WasmPackage<'a> {
@@ -33,7 +33,10 @@ impl<'a> WasmPackage<'a> {
             }
         });
 
-        Self { package: result, phantom: PhantomData }
+        Self {
+            package: result,
+            phantom: PhantomData,
+        }
     }
 }
 
