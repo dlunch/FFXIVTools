@@ -2,8 +2,6 @@ use core::mem::size_of;
 
 use util::SliceByteOrderExt;
 
-use crate::Language;
-
 #[derive(Clone)]
 #[repr(C)]
 pub struct U16BE {
@@ -119,22 +117,6 @@ pub struct ExdMultiRowDataHeader {
 pub struct ExdDataHeader {
     pub length: U32BE,
     _unk: u16,
-}
-
-impl Language {
-    pub fn from_raw(raw: &[u8]) -> Self {
-        match (&raw[..]).to_int_le::<u16>() {
-            0 => Language::None,
-            1 => Language::Japanese,
-            2 => Language::English,
-            3 => Language::Deutsch,
-            4 => Language::French,
-            5 => Language::ChineseSimplified,
-            6 => Language::ChineseTraditional,
-            7 => Language::Korean,
-            _ => panic!(),
-        }
-    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone)]
