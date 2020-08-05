@@ -2,7 +2,7 @@ use alloc::{format, vec::Vec};
 use core::mem::size_of;
 
 use sqpack_reader::{Package, Result};
-use util::cast;
+use util::{cast, SliceByteOrderExt};
 
 use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;
@@ -34,7 +34,7 @@ impl ExHeader {
             + header.column_count.get() as usize * size_of::<ExhColumnDefinition>()
             + header.page_count.get() as usize * size_of::<ExhPage>();
         let languages = (0..header.language_count.get() as usize)
-            .map(|x| Language::from_raw(&data[languages_base + x * size_of::<Language>()..]))
+            .map(|x| Language::from_raw((&data[languages_base + x * size_of::<Language>()..]).to_int_le::<u16>()))
             .collect::<Vec<_>>();
 
         Ok(Self {
