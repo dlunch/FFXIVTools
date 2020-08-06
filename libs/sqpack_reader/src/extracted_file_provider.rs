@@ -15,8 +15,8 @@ use async_trait::async_trait;
 use crate::error::Result;
 use crate::reference::{SqPackFileHash, SqPackFileReference};
 
-#[async_trait(?Send)]
-pub trait ExtractedFileProvider {
+#[async_trait]
+pub trait ExtractedFileProvider: Sync + Send {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>>;
     async fn read_file_size(&self, hash: &SqPackFileHash) -> Option<u64>;
     async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>>;

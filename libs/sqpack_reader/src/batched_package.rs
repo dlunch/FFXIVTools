@@ -55,7 +55,7 @@ impl<'a> BatchedPackage<'a> {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl Package for BatchedPackage<'_> {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let (tx, rx) = oneshot::channel();

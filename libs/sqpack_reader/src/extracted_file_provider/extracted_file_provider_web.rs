@@ -140,7 +140,7 @@ impl ExtractedFileProviderWeb {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl ExtractedFileProvider for ExtractedFileProviderWeb {
     async fn read_file(&self, hash: &SqPackFileHash) -> Result<Vec<u8>> {
         self.fetch(hash).await
