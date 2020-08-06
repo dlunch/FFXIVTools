@@ -7,8 +7,8 @@ use log::debug;
 use crate::error::Result;
 use crate::reference::SqPackFileReference;
 
-#[async_trait(?Send)]
-pub trait Package {
+#[async_trait]
+pub trait Package: Sync + Send {
     async fn read_file(&self, path: &str) -> Result<Vec<u8>> {
         debug!("Reading {}", path);
 
@@ -24,7 +24,7 @@ pub trait Package {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>>;
 }
 
-#[async_trait(?Send)]
-pub trait BatchablePackage {
+#[async_trait]
+pub trait BatchablePackage: Sync + Send {
     async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>>;
 }
