@@ -34,5 +34,5 @@ npm run devserver
 Run
 
 ```
-docker run -p 8080:8080 -d --volume=<data path>:/server/data dlunch/ffxivtools_server:latest
+docker run -p 8000:8000 -d --volume=<data path>:/server/data dlunch/ffxivtools_server:latest
 ```
