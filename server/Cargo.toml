@@ -8,14 +8,11 @@ edition = "2018"
 default = []
 
 [dependencies]
-rocket = { git = "https://github.com/SergioBenitez/Rocket" }
+rocket = { git = "https://github.com/SergioBenitez/Rocket", default-features = false  }
 futures = { version = "^0.3", default-features = false }
 itertools = { version = "^0.9", features = ["use_std"], default-features = false }
 log = { version = "^0.4", default-features = false }
-lazy_static = { version = "^1.4", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
-genawaiter = { version = "^0.99", features = ["futures03"] }
-bytes = { version = "^0.5.4", default-features = false }
 serde_json = {version = "^1.0", default-features = false }
 serde = { version = "^1.0", default-features = false }
 

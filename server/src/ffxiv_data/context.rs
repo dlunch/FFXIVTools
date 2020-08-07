@@ -4,8 +4,6 @@ use std::ops::Deref;
 use std::path::Path;
 use std::sync::Arc;
 
-use actix_web::{dev::Payload, web, FromRequest, HttpRequest};
-use futures::future::{ok, Ready};
 use itertools::Itertools;
 use log::info;
 
@@ -76,15 +74,5 @@ impl Deref for Context {
 
     fn deref(&self) -> &ContextImpl {
         &self.context
-    }
-}
-
-impl FromRequest for Context {
-    type Config = ();
-    type Error = actix_web::Error;
-    type Future = Ready<Result<Self, Self::Error>>;
-
-    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        ok(req.app_data::<web::Data<Context>>().unwrap().get_ref().clone())
     }
 }
