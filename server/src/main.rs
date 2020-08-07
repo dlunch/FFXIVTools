@@ -1,4 +1,4 @@
-// mod ffxiv_data;
+mod ffxiv_data;
 
 use std::io::Cursor;
 
@@ -89,5 +89,6 @@ fn rocket() -> rocket::Rocket {
 
     rocket::ignite()
         .attach(AdHoc::on_response("CORS", attach_cors))
+        .attach(AdHoc::on_attach("ffxiv_data", ffxiv_data::config))
         .mount("/", routes![probe])
 }
