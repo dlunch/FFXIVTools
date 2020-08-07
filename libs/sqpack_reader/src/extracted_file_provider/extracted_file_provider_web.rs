@@ -42,32 +42,42 @@ async fn do_download(
     _progress_callback: &Option<Box<dyn Fn(usize, usize) + Sync + Send + 'static>>,
 ) -> core::result::Result<Vec<u8>, wasm_bindgen::JsValue> {
     use alloc::vec;
+    use futures::channel::oneshot::channel;
     use js_sys::Uint8Array;
     use wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
+    use wasm_bindgen_futures::{spawn_local, JsFuture};
     use web_sys::{Request, RequestInit, RequestMode, Response};
 
-    let mut opts = RequestInit::new();
-    opts.method("GET");
-    opts.mode(RequestMode::Cors);
+    let (sender, receiver) = channel();
 
-    let request = Request::new_with_str_and_init(&uri, &opts)?;
+    let uri = uri.to_owned();
+    spawn_local(async move {
+        // TODO try_blocks
+        let mut opts = RequestInit::new();
+        opts.method("GET");
+        opts.mode(RequestMode::Cors);
 
-    let window = web_sys::window().unwrap();
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+        let request = Request::new_with_str_and_init(&uri, &opts).unwrap();
 
-    let resp: Response = resp_value.dyn_into().unwrap();
-    if resp.ok() {
-        let buf = JsFuture::from(resp.array_buffer()?).await?;
-        let u8_array = Uint8Array::new(&buf);
+        let window = web_sys::window().unwrap();
+        let resp_value = JsFuture::from(window.fetch_with_request(&request)).await.unwrap();
 
-        let mut result = vec![0u8; u8_array.length() as usize];
-        u8_array.copy_to(&mut result);
+        let resp: Response = resp_value.dyn_into().unwrap();
+        let result = if resp.ok() {
+            let buf = JsFuture::from(resp.array_buffer().unwrap()).await.unwrap();
+            let u8_array = Uint8Array::new(&buf);
 
-        Ok(result)
-    } else {
-        Err(wasm_bindgen::JsValue::from_str(&resp.status_text()))
-    }
+            let mut result = vec![0u8; u8_array.length() as usize];
+            u8_array.copy_to(&mut result);
+
+            Ok(result)
+        } else {
+            Err(resp.status_text())
+        };
+        sender.send(result).unwrap();
+    });
+
+    receiver.await.unwrap().map_err(|x| wasm_bindgen::JsValue::from_str(&x))
 }
 
 pub struct ExtractedFileProviderWeb {
