@@ -12,6 +12,7 @@ RUN --mount=type=cache,target=/src/target cargo install --path server --locked -
 FROM debian:stretch-slim
 COPY --from=builder /src/build/bin /server
 
-EXPOSE 8080
+EXPOSE 8000
 WORKDIR "/server"
+ENV ROCKET_ENV production
 ENTRYPOINT ["/server/server"]
