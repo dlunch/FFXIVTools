@@ -40,7 +40,7 @@ impl<'a> WasmPackage<'a> {
     }
 }
 
-#[async_trait(?Send)]
+#[async_trait]
 impl Package for WasmPackage<'_> {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         self.package.read_file_by_reference(reference).await
