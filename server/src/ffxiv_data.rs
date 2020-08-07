@@ -161,7 +161,7 @@ async fn get_compressed(
     Ok(result)
 }
 
-#[get("/compressed/<version>/bulk/<paths..>")]
+#[get("/compressed/<version>/bulk/<paths..>", rank = 0)]
 async fn get_compressed_bulk(context: State<'_, Context>, version: String, paths: PathBuf) -> Result<Vec<u8>, status::NotFound<&'static str>> {
     let package = find_package(&context, &version)?;
 
