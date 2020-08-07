@@ -58,9 +58,6 @@ pub struct Context {
     context: Arc<ContextImpl>,
 }
 
-unsafe impl Send for Context {}
-unsafe impl Sync for Context {}
-
 impl Context {
     pub fn new() -> Result<Self, io::Error> {
         Ok(Self {
