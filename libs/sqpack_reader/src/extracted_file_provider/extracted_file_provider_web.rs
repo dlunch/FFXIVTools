@@ -51,6 +51,7 @@ async fn do_download(
     let (sender, receiver) = channel();
 
     let uri = uri.to_owned();
+    // We have to use spawn_local because JsFuture is not `Send`
     spawn_local(async move {
         // TODO try_blocks
         let mut opts = RequestInit::new();
