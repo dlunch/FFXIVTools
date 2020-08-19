@@ -57,7 +57,7 @@ mod tests {
             .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
             .try_init();
 
-        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
+        let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/global_520/");
         let pack = SqPackReaderExtractedFile::new(provider);
         {
             let data = pack.read_file("exd/item.exh").await?;
