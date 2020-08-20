@@ -41,7 +41,6 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-${{ matrix.rust }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-{{ matrix.rust }}-cargo-build-target-
 
       - uses: actions-rs/toolchain@v1
         with:
