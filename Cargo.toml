@@ -4,7 +4,6 @@ members = [
     "libs/ffxiv_ex",
     "libs/ffxiv_parser",
     "libs/ffxiv_model",
-    "libs/renderer",
     "libs/util",
     "libs/havok_parser",
     "tools/sqpack_extractor",
