@@ -21,7 +21,7 @@ nalgebra = { version = "^0.22", default-features = false }
 
 sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
-renderer = { version = "^0.1", default-features = false, path = "../renderer" }
+renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }
 
 [build-dependencies]
 shaderc = { version = "^0.6", default-features = false }
