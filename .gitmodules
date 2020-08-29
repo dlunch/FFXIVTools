@@ -1,3 +1,0 @@
-[submodule "libs/renderer"]
-	path = libs/renderer
-	url = https://github.com/dlunch/renderer.git

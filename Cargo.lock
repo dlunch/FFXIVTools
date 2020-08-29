@@ -2294,8 +2294,8 @@ dependencies = [
 [[package]]
 name = "renderer"
 version = "0.1.0"
+source = "git+https://github.com/dlunch/renderer#ea5d6f23d264822ea3700f088c0427eb0db0968a"
 dependencies = [
- "async-std",
  "futures",
  "hashbrown",
  "log",
@@ -2305,7 +2305,6 @@ dependencies = [
  "spinning_top",
  "squish",
  "wgpu",
- "winit",
  "zerocopy",
 ]
 
