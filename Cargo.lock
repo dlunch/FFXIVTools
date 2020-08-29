@@ -711,7 +711,7 @@ dependencies = [
  "nalgebra",
  "raw-window-handle",
  "renderer",
- "shaderc",
+ "shader_builder",
  "spinning_top",
  "sqpack_reader",
  "zerocopy",
@@ -2294,14 +2294,14 @@ dependencies = [
 [[package]]
 name = "renderer"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#ea5d6f23d264822ea3700f088c0427eb0db0968a"
+source = "git+https://github.com/dlunch/renderer#c7e4d2db001dcfd816a4f364c29a3f7b48f55565"
 dependencies = [
  "futures",
  "hashbrown",
  "log",
  "nalgebra",
  "raw-window-handle",
- "shaderc",
+ "shader_builder",
  "spinning_top",
  "squish",
  "wgpu",
@@ -2594,6 +2594,14 @@ name = "sha1"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
+
+[[package]]
+name = "shader_builder"
+version = "0.1.0"
+source = "git+https://github.com/dlunch/renderer#c7e4d2db001dcfd816a4f364c29a3f7b48f55565"
+dependencies = [
+ "shaderc",
+]
 
 [[package]]
 name = "shaderc"

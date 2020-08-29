@@ -24,4 +24,4 @@ ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_pa
 renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }
 
 [build-dependencies]
-shaderc = { version = "^0.6", default-features = false }
+shader_builder = { version = "^0.1", git = "https://github.com/dlunch/renderer" }
