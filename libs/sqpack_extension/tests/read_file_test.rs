@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    #[cfg(feature = "std")]
+    #[cfg(feature = "test_local")]
     #[async_std::test]
     #[cfg(unix)]
     async fn read_file_test() -> sqpack::Result<()> {
