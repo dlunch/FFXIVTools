@@ -139,9 +139,9 @@ dependencies = [
 
 [[package]]
 name = "async-mutex"
-version = "1.1.5"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20e85981fc34e84cdff3fc2c9219189752633fdc538a06df8b5ac45b68a4f3a9"
+checksum = "065de1ccf10280d0d75c2f3a71a970ee1007c85c51aa3e7deee1df100f1dfadb"
 dependencies = [
  "event-listener",
 ]
@@ -184,9 +184,9 @@ checksum = "c17772156ef2829aadc587461c7753af20b7e8db1529bc66855add962a3b35d3"
 
 [[package]]
 name = "async-trait"
-version = "0.1.38"
+version = "0.1.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e1a4a2f97ce50c9d0282c1468816208588441492b40d813b2e0419c22c05e7f"
+checksum = "687c230d85c0a52504709705fc8a53e4a692b83a2184f03dae73e38e1e93a783"
 dependencies = [
  "proc-macro2 1.0.19",
  "quote 1.0.7",
@@ -2075,12 +2075,13 @@ checksum = "d36492546b6af1463394d46f0c834346f31548646f6ba10849802c9c9a27ac33"
 
 [[package]]
 name = "polling"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e09dffb745feffca5be3dea51c02b7b368c4597ab0219a82acaf9799ab3e0d1"
+checksum = "d10bd4578b2ca39fa2581c058921cb50ad226a8999829ba595e1665bcfdaf4a8"
 dependencies = [
  "cfg-if",
  "libc",
+ "log",
  "wepoll-sys-stjepang",
  "winapi 0.3.9",
 ]
@@ -2298,7 +2299,7 @@ dependencies = [
 [[package]]
 name = "renderer"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#c7e4d2db001dcfd816a4f364c29a3f7b48f55565"
+source = "git+https://github.com/dlunch/renderer#8770226dbe5f1bdc8ce02105a83b9540b99447e6"
 dependencies = [
  "futures",
  "hashbrown",
@@ -2603,7 +2604,7 @@ checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
 [[package]]
 name = "shader_builder"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#c7e4d2db001dcfd816a4f364c29a3f7b48f55565"
+source = "git+https://github.com/dlunch/renderer#8770226dbe5f1bdc8ce02105a83b9540b99447e6"
 dependencies = [
  "shaderc",
 ]
@@ -2738,7 +2739,7 @@ dependencies = [
 [[package]]
 name = "sqpack"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/sqpack#9ad8075ca963bca073302cb055dd4f24986bddca"
+source = "git+https://github.com/dlunch/sqpack#f2c77a41b803b28c4163cfd3410e91ce20c21caa"
 dependencies = [
  "async-std",
  "async-trait",
@@ -3515,9 +3516,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a5558a9607100816a033b0d06a2d6d06e8bf6fb294803d1dea871e9a479eec0"
+checksum = "0087ab26d366d286f20193a801e10dfb5943c7aecd617944cf88731820a55453"
 dependencies = [
  "arrayvec",
  "bitflags",
