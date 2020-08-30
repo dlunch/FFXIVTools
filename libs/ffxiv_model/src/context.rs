@@ -10,7 +10,7 @@ use nalgebra::Matrix4;
 
 use ffxiv_parser::{Eqdp, Pbd};
 use renderer::{Renderer, Texture, TextureFormat};
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 
 use crate::constants::{BodyId, ModelPart};
 use crate::shader_holder::ShaderHolder;

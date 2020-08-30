@@ -10,4 +10,6 @@ edition = "2018"
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
 clap = { version = "^2.33", default-features = false }
 async-std = { version = "^1.6", features = ["default", "attributes"], default-features = false }
-sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../../libs/sqpack_reader" }
+
+sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }
+sqpack_extension = { version = "^0.1", path = "../../libs/sqpack_extension" }

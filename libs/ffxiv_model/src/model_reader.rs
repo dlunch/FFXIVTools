@@ -4,7 +4,7 @@ use futures::{future, FutureExt};
 
 use ffxiv_parser::{Mdl, Mtrl};
 use renderer::{Renderer, Texture};
-use sqpack_reader::{Package, Result, SqPackReaderError};
+use sqpack::{Package, Result, SqPackReaderError};
 
 use crate::constants::{BodyId, ModelPart};
 use crate::context::Context;

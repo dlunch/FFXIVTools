@@ -15,7 +15,8 @@ use rocket::{
 use serde::Serialize;
 
 use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
-use sqpack_reader::{Package, SqPackFileHash, SqPackReaderExtractedFile};
+use sqpack::{Package, SqPackFileHash};
+use sqpack_extension::SqPackReaderExtractedFile;
 
 use context::Context;
 

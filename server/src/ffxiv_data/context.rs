@@ -7,7 +7,7 @@ use std::sync::Arc;
 use itertools::Itertools;
 use log::info;
 
-use sqpack_reader::{ExtractedFileProviderLocal, SqPackReaderExtractedFile};
+use sqpack_extension::{ExtractedFileProviderLocal, SqPackReaderExtractedFile};
 
 const REGIONS: [&str; 3] = ["kor", "chn", "global"];
 

@@ -7,7 +7,8 @@ use async_trait::async_trait;
 use wasm_bindgen_futures::spawn_local;
 use wasm_timer::Delay;
 
-use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Package, Result, SqPackFileReference, SqPackReaderExtractedFile};
+use sqpack::{Package, Result, SqPackFileReference};
+use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 pub struct WasmPackage<'a> {
     package: Arc<BatchedPackage<'a>>,

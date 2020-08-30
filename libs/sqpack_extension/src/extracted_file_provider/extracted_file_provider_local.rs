@@ -7,9 +7,9 @@ use futures::{
 };
 use log::debug;
 
+use sqpack::{Result, SqPackFileHash, SqPackFileReference, SqPackReaderError};
+
 use super::ExtractedFileProvider;
-use crate::error::{Result, SqPackReaderError};
-use crate::reference::{SqPackFileHash, SqPackFileReference};
 
 pub struct ExtractedFileProviderLocal {
     base_dirs: Vec<PathBuf>,

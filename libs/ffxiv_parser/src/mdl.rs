@@ -5,7 +5,7 @@ use core::ops::Range;
 use hashbrown::HashSet;
 use phf::phf_map;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::{cast, cast_array, SliceByteOrderExt, StrExt};
 
 #[repr(C)]

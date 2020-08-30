@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "libs/sqpack_reader",
+    "libs/sqpack_extension",
     "libs/ffxiv_ex",
     "libs/ffxiv_parser",
     "libs/ffxiv_model",

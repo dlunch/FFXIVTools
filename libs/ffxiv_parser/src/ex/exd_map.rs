@@ -2,7 +2,7 @@ use alloc::{collections::BTreeMap, vec::Vec};
 
 use futures::{future, FutureExt};
 
-use sqpack_reader::{Package, Result, SqPackReaderError};
+use sqpack::{Package, Result, SqPackReaderError};
 
 use super::definition::ExhPage;
 use super::exd::ExData;

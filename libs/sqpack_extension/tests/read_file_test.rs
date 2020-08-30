@@ -1,16 +1,17 @@
 #[cfg(test)]
 mod tests {
 
-    #[cfg(feature = "test_local")]
+    #[cfg(feature = "std")]
     #[async_std::test]
     #[cfg(unix)]
-    async fn read_file_test() -> sqpack_reader::Result<()> {
+    async fn read_file_test() -> sqpack::Result<()> {
         use std::path::Path;
 
-        use sqpack_reader::{ExtractedFileProviderLocal, Package, SqPackReaderExtractedFile};
+        use sqpack::Package;
+        use sqpack_extension::{ExtractedFileProviderLocal, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack"), log::LevelFilter::Debug)
             .try_init();
         {
             let provider = ExtractedFileProviderLocal::with_path(Path::new("/mnt/i/FFXIVData/data/kor_505"));
@@ -50,11 +51,12 @@ mod tests {
 
     #[async_std::test]
     #[cfg(feature = "std")]
-    async fn read_web_test() -> sqpack_reader::Result<()> {
-        use sqpack_reader::{ExtractedFileProviderWeb, Package, SqPackReaderExtractedFile};
+    async fn read_web_test() -> sqpack::Result<()> {
+        use sqpack::Package;
+        use sqpack_extension::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack"), log::LevelFilter::Debug)
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/global_520/");

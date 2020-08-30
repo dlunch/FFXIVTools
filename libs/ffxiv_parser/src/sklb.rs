@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::cast;
 
 #[repr(C)]

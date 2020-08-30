@@ -1,7 +1,7 @@
 use alloc::{collections::BTreeMap, format, vec::Vec};
 use core::mem::size_of;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::cast;
 
 use super::definition::{ExdHeader, ExdRow};
