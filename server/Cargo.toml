@@ -17,4 +17,5 @@ serde_json = {version = "^1.0", default-features = false }
 serde = { version = "^1.0", default-features = false }
 
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../libs/ffxiv_parser" }
-sqpack_reader = { version = "^0.1", features = ["std"], default-features = false, path = "../libs/sqpack_reader"}
+sqpack_extension = { version = "^0.1", features = ["std"], path = "../libs/sqpack_extension" }
+sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }

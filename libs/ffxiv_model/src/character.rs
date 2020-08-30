@@ -7,7 +7,7 @@ use futures::{
 use hashbrown::HashMap;
 
 use renderer::{RenderContext, Renderable, Renderer};
-use sqpack_reader::{Package, Result, SqPackReaderError};
+use sqpack::{Package, Result, SqPackReaderError};
 
 use crate::{
     character_equipment_part::CharacterEquipmentPart, character_part::CharacterPart, constants::ModelPart, context::Context,

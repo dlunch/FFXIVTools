@@ -2,11 +2,12 @@
 mod tests {
     #[async_std::test]
     #[cfg(feature = "std")]
-    async fn read_files_test() -> sqpack_reader::Result<()> {
-        use sqpack_reader::{BatchablePackage, ExtractedFileProviderWeb, SqPackFileReference, SqPackReaderExtractedFile};
+    async fn read_files_test() -> sqpack::Result<()> {
+        use sqpack::SqPackFileReference;
+        use sqpack_extension::{BatchablePackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack"), log::LevelFilter::Debug)
             .try_init();
 
         let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/global_520/");

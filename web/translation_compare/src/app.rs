@@ -4,7 +4,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
-use sqpack_reader::Result;
+use sqpack::Result;
 use web_common::{regions, Region, WasmPackage};
 
 use crate::list::List;
@@ -162,7 +162,7 @@ mod tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn test_read_name() {
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack"), log::LevelFilter::Debug)
             .try_init();
 
         let region = &regions()[0];

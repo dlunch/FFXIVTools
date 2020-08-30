@@ -3,7 +3,7 @@ use core::mem::size_of;
 
 use serde::{Serialize, Serializer};
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::{cast, SliceByteOrderExt, StrExt};
 
 #[repr(C)]

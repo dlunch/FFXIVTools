@@ -11,7 +11,7 @@ pub use exl::ExList;
 
 use core::mem::size_of;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::cast;
 
 use definition::{ExdDataHeader, ExdMultiRowDataHeader, ExdMultiRowDataItemHeader};

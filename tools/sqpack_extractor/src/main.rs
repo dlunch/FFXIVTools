@@ -8,7 +8,8 @@ use futures::{
     stream::{FuturesUnordered, TryStreamExt},
 };
 
-use sqpack_reader::{SqPackArchiveId, SqPackReader};
+use sqpack::{SqPackArchiveId, SqPackReader};
+use sqpack_extension::ExtractedSqPackRawFile;
 
 #[async_std::main]
 async fn main() -> io::Result<()> {
@@ -34,10 +35,11 @@ async fn main() -> io::Result<()> {
 
                 files
                     .map(|file_hash| async move {
-                        let data = archive
-                            .read_as_compressed(folder_hash, file_hash)
+                        let raw_file = archive
+                            .read_raw(folder_hash, file_hash)
                             .await
                             .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))?;
+                        let data = raw_file.into_extracted();
                         let path = format!("{}/{}", folder_hash, file_hash);
 
                         println!("{}", path);

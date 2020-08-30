@@ -12,8 +12,7 @@ cfg_if::cfg_if! {
 
 use async_trait::async_trait;
 
-use crate::error::Result;
-use crate::reference::{SqPackFileHash, SqPackFileReference};
+use sqpack::{Result, SqPackFileHash, SqPackFileReference};
 
 #[async_trait]
 pub trait ExtractedFileProvider: Sync + Send {

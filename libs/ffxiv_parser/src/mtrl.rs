@@ -1,7 +1,7 @@
 use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 use core::mem::size_of;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::{cast, cast_array, SliceByteOrderExt, StrExt};
 
 #[repr(C)]

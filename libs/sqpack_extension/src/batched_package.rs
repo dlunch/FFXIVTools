@@ -5,9 +5,9 @@ use futures::channel::oneshot;
 use hashbrown::HashMap;
 use spinning_top::Spinlock;
 
-use crate::error::Result;
-use crate::package::{BatchablePackage, Package};
-use crate::reference::SqPackFileReference;
+use sqpack::{Package, Result, SqPackFileReference};
+
+use crate::BatchablePackage;
 
 pub struct BatchedPackage<'a> {
     real: Box<dyn BatchablePackage + 'a>,

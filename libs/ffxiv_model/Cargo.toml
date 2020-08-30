@@ -19,7 +19,7 @@ enum-iterator = { version = "^0.6", default-features = false }
 zerocopy = { version = "^0.3", default-features = false }
 nalgebra = { version = "^0.22", default-features = false }
 
-sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
+sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }
 

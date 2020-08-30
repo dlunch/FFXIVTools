@@ -3,11 +3,10 @@ use alloc::{borrow::ToOwned, boxed::Box, format, string::String, vec::Vec};
 use async_trait::async_trait;
 use log::debug;
 
+use sqpack::{Result, SqPackFileHash, SqPackFileReference, SqPackReaderError};
 use util::cast;
 
 use super::ExtractedFileProvider;
-use crate::error::{Result, SqPackReaderError};
-use crate::reference::{SqPackFileHash, SqPackFileReference};
 
 #[repr(C)]
 struct BulkItemHeader {
