@@ -1,7 +1,7 @@
 use alloc::{format, vec::Vec};
 use core::mem::size_of;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::{cast, SliceByteOrderExt};
 
 use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};

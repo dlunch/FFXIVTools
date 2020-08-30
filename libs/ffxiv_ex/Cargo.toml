@@ -12,9 +12,10 @@ doctest = false
 [dependencies]
 log = { version = "^0.4", default-features = false }
 
-sqpack_reader = { version = "^0.1", default-features = false, path = "../sqpack_reader" }
+sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 
 [dev-dependencies]
 async-std = { version = "^1.6", features = ["attributes", "tokio02"] }
 pretty_env_logger = { version = "^0.4", default-features = false }
+sqpack_extension = { version = "^0.1", default-features = false, path = "../sqpack_extension" }

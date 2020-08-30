@@ -18,14 +18,15 @@ use winit::{
 
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
 use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
-use sqpack_reader::{BatchedPackage, ExtractedFileProviderWeb, Result, SqPackReader, SqPackReaderExtractedFile};
+use sqpack::{Result, SqPackReader};
+use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 // task::spawn requires 'static lifetime.
 static mut APP: OnceCell<App> = OnceCell::new();
 
 fn main() {
     let _ = pretty_env_logger::formatted_timed_builder()
-        .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+        .filter(Some("sqpack"), log::LevelFilter::Debug)
         .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
         .filter(Some("renderer"), log::LevelFilter::Debug)
         .filter(Some("ffxiv_model"), log::LevelFilter::Debug)

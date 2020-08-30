@@ -6,7 +6,7 @@ use spinning_top::Spinlock;
 
 use ffxiv_parser::{Tex, TextureType};
 use renderer::{CompressedTextureFormat, Renderer, Texture, TextureFormat};
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 
 pub struct TextureCache {
     waiters: Spinlock<HashMap<String, Vec<oneshot::Sender<bool>>>>,

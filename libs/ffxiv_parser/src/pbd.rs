@@ -4,7 +4,7 @@ use core::mem::size_of;
 use hashbrown::HashMap;
 use nalgebra::Matrix4;
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 use util::{cast, cast_array, StrExt};
 
 #[repr(C)]

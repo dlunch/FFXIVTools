@@ -1,5 +1,6 @@
 use alloc::{sync::Arc, vec, vec::Vec};
-use core::{cell::RefCell, cmp, f32};
+use core::{cell::RefCell, cmp};
+use std::f32;
 
 use crate::byte_reader::ByteReader;
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};

@@ -3,13 +3,13 @@
 mod tests {
     #[async_std::test]
     #[cfg(unix)]
-    async fn read_as_compressed_test() -> sqpack_reader::Result<()> {
+    async fn read_as_compressed_test() -> sqpack::Result<()> {
         use std::path::Path;
 
-        use sqpack_reader::{ExtractedFileProviderLocal, SqPackFileReference, SqPackReader, SqPackReaderExtractedFile};
+        use sqpack::{ExtractedFileProviderLocal, SqPackFileReference, SqPackReader, SqPackReaderExtractedFile};
 
         let _ = pretty_env_logger::formatted_timed_builder()
-            .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+            .filter(Some("sqpack"), log::LevelFilter::Debug)
             .try_init();
         {
             let pack = SqPackReader::new(Path::new("/mnt/d/Games/FINAL FANTASY XIV - KOREA/game/sqpack"))?;

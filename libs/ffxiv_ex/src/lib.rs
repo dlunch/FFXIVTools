@@ -23,7 +23,7 @@ use alloc::string::String;
 use core::marker::PhantomData;
 
 use ffxiv_parser::{Ex, ExRow, Language};
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 
 pub trait WrappedExRow<'a> {
     fn new(raw: ExRow<'a>) -> Self;

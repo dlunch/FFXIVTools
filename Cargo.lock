@@ -696,7 +696,8 @@ dependencies = [
  "ffxiv_parser",
  "log",
  "pretty_env_logger",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
 ]
 
 [[package]]
@@ -713,7 +714,7 @@ dependencies = [
  "renderer",
  "shader_builder",
  "spinning_top",
- "sqpack_reader",
+ "sqpack",
  "zerocopy",
 ]
 
@@ -730,7 +731,8 @@ dependencies = [
  "pretty_env_logger",
  "serde",
  "serde_repr",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
  "util",
 ]
 
@@ -1163,7 +1165,8 @@ dependencies = [
  "hashbrown",
  "log",
  "pretty_env_logger",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
  "util",
 ]
 
@@ -1595,7 +1598,8 @@ dependencies = [
  "once_cell",
  "pretty_env_logger",
  "renderer",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
  "winit",
 ]
 
@@ -2586,7 +2590,8 @@ dependencies = [
  "rocket",
  "serde",
  "serde_json",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
 ]
 
 [[package]]
@@ -2731,18 +2736,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sqpack_extractor"
+name = "sqpack"
 version = "0.1.0"
-dependencies = [
- "async-std",
- "clap",
- "futures",
- "sqpack_reader",
-]
-
-[[package]]
-name = "sqpack_reader"
-version = "0.1.0"
+source = "git+https://github.com/dlunch/sqpack#9ad8075ca963bca073302cb055dd4f24986bddca"
 dependencies = [
  "async-std",
  "async-trait",
@@ -2750,17 +2746,41 @@ dependencies = [
  "cfg-if",
  "crc32fast",
  "futures",
+ "log",
+ "miniz_oxide",
+]
+
+[[package]]
+name = "sqpack_extension"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "async-trait",
+ "bytes",
+ "cfg-if",
+ "futures",
  "hashbrown",
  "js-sys",
  "log",
- "miniz_oxide",
  "pretty_env_logger",
  "reqwest",
  "spinning_top",
+ "sqpack",
  "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "sqpack_extractor"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "clap",
+ "futures",
+ "sqpack",
+ "sqpack_extension",
 ]
 
 [[package]]
@@ -3096,7 +3116,7 @@ dependencies = [
  "ffxiv_parser",
  "log",
  "pretty_env_logger",
- "sqpack_reader",
+ "sqpack",
  "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -3443,7 +3463,8 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "ffxiv_parser",
- "sqpack_reader",
+ "sqpack",
+ "sqpack_extension",
  "wasm-bindgen-futures",
  "wasm-timer",
 ]

@@ -1,6 +1,6 @@
 use alloc::{borrow::ToOwned, str, string::String, vec::Vec};
 
-use sqpack_reader::{Package, Result};
+use sqpack::{Package, Result};
 
 pub struct ExList {
     pub ex_names: Vec<String>,

@@ -85,7 +85,7 @@ fn rocket() -> rocket::Rocket {
         .filter(Some("_"), log::LevelFilter::Debug)
         .filter(Some("launch"), log::LevelFilter::Debug)
         .filter(Some("rocket"), log::LevelFilter::Debug)
-        .filter(Some("sqpack_reader"), log::LevelFilter::Debug)
+        .filter(Some("sqpack"), log::LevelFilter::Debug)
         .init();
 
     rocket::ignite()
