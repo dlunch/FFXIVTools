@@ -8,27 +8,25 @@
     "devserver": "webpack-dev-server --open -d --config webpack/webpack.config.dev.js"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^3.9.1",
-    "@typescript-eslint/parser": "^3.9.1",
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
     "@wasm-tool/wasm-pack-plugin": "^1.3.1",
     "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^6.0.2",
-    "eslint": "^7.7.0",
+    "copy-webpack-plugin": "^6.1.1",
+    "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-import-resolver-typescript": "^2.2.1",
+    "eslint-import-resolver-typescript": "^2.3.0",
     "eslint-plugin-import": "^2.20.2",
     "loader-utils": "^2.0.0",
     "node-html-parser": "^1.2.18",
-    "prettier": "^2.0.5",
-    "ts-loader": "^8.0.2",
+    "prettier": "^2.1.2",
+    "ts-loader": "^8.0.3",
     "tsconfig-paths-webpack-plugin": "^3.3.0",
-    "typescript": "^3.9.7",
-    "webpack": "^4.44.1",
+    "typescript": "^4.0.3",
+    "wasm-pack": "^0.9.1",
+    "webpack": "^4.44.2",
     "webpack-cli": "^3.3.3",
     "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^5.1.2"
-  },
-  "dependencies": {
-    "wasm-pack": "^0.9.1"
+    "webpack-merge": "^5.1.4"
   }
 }
