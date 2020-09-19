@@ -116,7 +116,7 @@ async fn get_ex_bulk(
         result.push_str("\":");
         result.push_str(&ex_json);
     }
-    result.push_str("}");
+    result.push('}');
 
     Ok(content::Json(result))
 }
