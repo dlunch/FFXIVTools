@@ -1,3 +1,5 @@
+#![type_length_limit = "2097152"]
+
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
