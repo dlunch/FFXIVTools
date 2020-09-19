@@ -568,6 +568,8 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
         let mut mask = ByteReader::new(Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, 0x8000_0000));
 
         let mut result = Vec::with_capacity(self.number_of_transform_tracks);
+        #[allow(clippy::unknown_clippy_lints)]
+        #[allow(clippy::same_item_push)] // https://github.com/rust-lang/rust-clippy/issues/5902
         for _ in 0..self.number_of_transform_tracks {
             let packed_quantization_types = mask.read();
 
