@@ -260,6 +260,8 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         let bytes = self.reader.read_bytes(bytes_to_read);
 
         let mut result = Vec::with_capacity(count);
+        #[allow(clippy::unknown_clippy_lints)]
+        #[allow(clippy::same_item_push)] // https://github.com/rust-lang/rust-clippy/issues/5902
         for byte in bytes {
             let mut byte = *byte;
             for _ in 0..8 {
