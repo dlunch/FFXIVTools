@@ -8,7 +8,7 @@ use futures::{
     stream::{FuturesUnordered, TryStreamExt},
 };
 
-use sqpack::{SqPackArchiveId, SqPackReader};
+use sqpack::{SqPackArchiveId, SqPackPackage};
 use sqpack_extension::ExtractedSqPackRawFile;
 
 #[async_std::main]
@@ -18,10 +18,11 @@ async fn main() -> io::Result<()> {
         .arg(Arg::with_name("root").takes_value(true).required(true))
         .get_matches();
 
-    let package = SqPackReader::new(Path::new(matches.value_of("base_path").unwrap()))?;
+    let package = SqPackPackage::new(Path::new(matches.value_of("base_path").unwrap()))?;
 
     let archive_id = SqPackArchiveId::from_file_path(matches.value_of("root").unwrap());
     let archive = package.archive(archive_id).await?;
+    let archive = archive.read().await;
 
     archive
         .folders()

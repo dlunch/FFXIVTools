@@ -3,7 +3,7 @@ use core::mem::size_of;
 
 use bytes::Bytes;
 
-use sqpack::SqPackRawFile;
+use sqpack::internal::SqPackRawFile;
 use util::{cast, round_up};
 
 #[repr(C)]
