@@ -11,6 +11,7 @@ use crate::{shader_holder::ShaderType, Context};
 pub struct CharacterMaterial {}
 
 impl CharacterMaterial {
+    #[allow(clippy::manual_async_fn)]
     pub fn create<'a>(
         renderer: &'a Renderer,
         context: &'a Context,
