@@ -16,10 +16,10 @@ cfg_if::cfg_if! {
             future::FutureExt,
             stream::{FuturesUnordered, TryStreamExt},
         };
-        use sqpack::{Package, SqPackReader};
+        use sqpack::{Package, SqPackPackage};
 
         #[async_trait]
-        impl BatchablePackage for SqPackReader {
+        impl BatchablePackage for SqPackPackage {
             async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<HashMap<SqPackFileReference, Vec<u8>>> {
                 references
                     .iter()
