@@ -3,7 +3,7 @@ use alloc::{boxed::Box, vec::Vec};
 use async_trait::async_trait;
 use hashbrown::HashMap;
 
-use sqpack::{Package, Result, SqPackFileHash, SqPackFileReference, SqPackRawFile};
+use sqpack::{internal::SqPackRawFile, Package, Result, SqPackFileHash, SqPackFileReference};
 
 use crate::batchable_package::BatchablePackage;
 use crate::extracted_file_provider::ExtractedFileProvider;
