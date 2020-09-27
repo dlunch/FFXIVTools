@@ -22,7 +22,6 @@ async fn main() -> io::Result<()> {
 
     let archive_id = SqPackArchiveId::from_file_path(matches.value_of("root").unwrap());
     let archive = package.archive(archive_id).await?;
-    let archive = archive.read().await;
 
     archive
         .folders()
