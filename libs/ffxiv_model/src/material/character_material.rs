@@ -16,6 +16,7 @@ impl CharacterMaterial {
         renderer: &'a Renderer,
         context: &'a Context,
         mtrl: &'a Mtrl,
+        stain_id: u8,
         mut textures: HashMap<&'static str, Arc<Texture>>,
         uniforms: HashMap<&'static str, Arc<Buffer>>,
     ) -> impl Future<Output = Material> + 'a {
