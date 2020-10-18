@@ -20,6 +20,7 @@ pub async fn create_material(
     textures: &[Arc<Texture>],
     bone_transform: Arc<Buffer>,
     customization: &Customization,
+    stain_id: u8,
 ) -> Material {
     let mut uniforms = HashMap::new();
     uniforms.insert("BoneTransformsUniform", bone_transform);
@@ -27,7 +28,9 @@ pub async fn create_material(
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
     let textures = gather_textures(mtrl, textures);
     match mtrl.shader_name() {
-        "character.shpk" | "characterglass.shpk" => character_material::CharacterMaterial::create(renderer, context, mtrl, textures, uniforms).await,
+        "character.shpk" | "characterglass.shpk" => {
+            character_material::CharacterMaterial::create(renderer, context, mtrl, stain_id, textures, uniforms).await
+        }
         "hair.shpk" => hair_material::HairMaterial::create(renderer, context, textures, uniforms),
         "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, textures, uniforms),
         "skin.shpk" => skin_material::SkinMaterial::create(renderer, context, textures, uniforms),
