@@ -1,7 +1,6 @@
 pub struct Equipment {
     pub(crate) model_id: u16,
     pub(crate) variant_id: u8,
-    #[allow(dead_code)]
     pub(crate) stain_id: u8,
 }
 

@@ -20,6 +20,7 @@ pub struct EquipmentModelData {
     pub model_data: ModelData,
     pub original_body_id: BodyId,
     pub deformed_body_id: BodyId,
+    pub stain_id: u8,
 }
 
 pub struct ModelReader {}
@@ -51,6 +52,7 @@ impl ModelReader {
             model_data,
             original_body_id: customization.body_id,
             deformed_body_id,
+            stain_id: equipment.stain_id,
         })
     }
 

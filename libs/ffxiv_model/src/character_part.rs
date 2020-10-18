@@ -8,6 +8,7 @@ use ffxiv_parser::BufferItemType;
 use renderer::{Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
 
 use crate::context::Context;
+use crate::customization::Customization;
 use crate::material::create_material;
 use crate::model_reader::ModelData;
 
@@ -16,7 +17,13 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn new(renderer: &Renderer, model_data: ModelData, bone_transforms: &HashMap<String, Matrix4<f32>>, context: &Context) -> Self {
+    pub async fn new(
+        renderer: &Renderer,
+        model_data: ModelData,
+        bone_transforms: &HashMap<String, Matrix4<f32>>,
+        context: &Context,
+        customization: &Customization,
+    ) -> Self {
         let mdl = model_data.mdl;
 
         let visibility_mask = 0;
@@ -77,7 +84,7 @@ impl CharacterPart {
             let bone_transform = Arc::new(renderer.buffer_pool.alloc(bone_transform_data.len()));
             bone_transform.write(&bone_transform_data);
 
-            let material = create_material(renderer, context, mtrl, texs, bone_transform).await;
+            let material = create_material(renderer, context, mtrl, texs, bone_transform, customization).await;
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }

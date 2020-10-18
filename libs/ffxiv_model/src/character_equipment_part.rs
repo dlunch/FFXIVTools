@@ -5,7 +5,7 @@ use nalgebra::Matrix4;
 
 use renderer::{RenderContext, Renderable, Renderer};
 
-use crate::{character_part::CharacterPart, context::Context, model_reader::EquipmentModelData};
+use crate::{character_part::CharacterPart, context::Context, customization::Customization, model_reader::EquipmentModelData};
 
 pub struct CharacterEquipmentPart {
     part: CharacterPart,
@@ -17,6 +17,7 @@ impl CharacterEquipmentPart {
         model_data: EquipmentModelData,
         _bone_transforms: &HashMap<String, Matrix4<f32>>,
         context: &Context,
+        customization: &Customization,
     ) -> Self {
         log::debug!(
             "original {:?} deformed {:?}",
@@ -24,7 +25,7 @@ impl CharacterEquipmentPart {
             model_data.deformed_body_id as u16
         );
         let prebone_deformer = context.get_body_deform_matrices(model_data.original_body_id, model_data.deformed_body_id);
-        let part = CharacterPart::new(renderer, model_data.model_data, &prebone_deformer, context).await;
+        let part = CharacterPart::new(renderer, model_data.model_data, &prebone_deformer, context, customization).await;
 
         Self { part }
     }
