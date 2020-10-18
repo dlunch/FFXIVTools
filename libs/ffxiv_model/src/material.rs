@@ -10,7 +10,8 @@ use hashbrown::HashMap;
 use ffxiv_parser::Mtrl;
 use renderer::{Buffer, Material, Renderer, Texture};
 
-use crate::Context;
+use crate::context::Context;
+use crate::customization::Customization;
 
 pub async fn create_material(
     renderer: &Renderer,
@@ -18,6 +19,7 @@ pub async fn create_material(
     mtrl: &Mtrl,
     textures: &[Arc<Texture>],
     bone_transform: Arc<Buffer>,
+    customization: &Customization,
 ) -> Material {
     let mut uniforms = HashMap::new();
     uniforms.insert("BoneTransformsUniform", bone_transform);
