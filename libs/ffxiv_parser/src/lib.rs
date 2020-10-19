@@ -15,6 +15,7 @@ mod mtrl;
 mod pap;
 mod pbd;
 mod sklb;
+mod stm;
 mod tex;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -59,4 +60,5 @@ pub use mtrl::{Mtrl, MtrlParameterType};
 pub use pap::Pap;
 pub use pbd::Pbd;
 pub use sklb::Sklb;
+pub use stm::Stm;
 pub use tex::{Tex, TextureType};
