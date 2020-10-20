@@ -84,7 +84,7 @@ impl CharacterPart {
             let bone_transform = Arc::new(renderer.buffer_pool.alloc(bone_transform_data.len()));
             bone_transform.write(&bone_transform_data);
 
-            let material = create_material(renderer, context, mtrl, texs, bone_transform, customization, 0).await;
+            let material = create_material(renderer, context, mtrl, texs, bone_transform, customization, 1).await;
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
