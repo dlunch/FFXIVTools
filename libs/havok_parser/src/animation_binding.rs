@@ -35,7 +35,7 @@ impl HavokAnimationBinding {
         let blend_hint = HavokAnimationBlendHint::from_raw(root.get("blendHint").as_int() as u8);
 
         let raw_animation = root.get("animation").as_object();
-        let animation = match raw_animation.borrow().object_type.name.as_str() {
+        let animation = match &*raw_animation.borrow().object_type.name {
             "hkaSplineCompressedAnimation" => Box::new(HavokSplineCompressedAnimation::new(raw_animation.clone())),
             _ => panic!(),
         };
