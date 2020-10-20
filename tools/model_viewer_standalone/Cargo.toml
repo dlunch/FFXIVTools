@@ -17,6 +17,6 @@ hashbrown = { version = "^0.8", features = ["ahash", "inline-more"], default-fea
 once_cell = { version = "^1.4", features = ["std"], default-features = false }
 
 renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }
-sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
-sqpack_extension = { version = "^0.1", path = "../../libs/sqpack_extension" }
+sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
+sqpack_extension = { version = "^0.1", features = ["std"], path = "../../libs/sqpack_extension" }
 ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
