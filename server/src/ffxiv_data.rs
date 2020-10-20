@@ -60,7 +60,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
 }
 
 fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackReaderExtractedFile, status::NotFound<&'static str>> {
-    Ok(context.packages.get(version).ok_or_else(|| status::NotFound("No such package"))?)
+    Ok(context.packages.get(version).ok_or(status::NotFound("No such package"))?)
 }
 
 /// routes
