@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, str, string::String, sync::Arc, vec, vec::Vec};
+use alloc::{borrow::ToOwned, str, sync::Arc, vec, vec::Vec};
 use core::cell::RefCell;
 
 use hashbrown::HashMap;
@@ -40,7 +40,7 @@ impl HavokTagType {
 
 pub struct HavokBinaryTagFileReader<'a> {
     file_version: u8,
-    remembered_strings: Vec<Arc<String>>,
+    remembered_strings: Vec<Arc<str>>,
     remembered_types: Vec<Arc<HavokObjectType>>,
     remembered_objects: Vec<Arc<RefCell<HavokObject>>>,
     objects: Vec<Arc<RefCell<HavokObject>>>,
@@ -56,8 +56,8 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
     fn new(reader: ByteReader<'a>) -> Self {
         let file_version = 0;
-        let remembered_strings = vec![Arc::new("string".to_owned()), Arc::new("".to_owned())];
-        let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::new("object".to_owned()), None, Vec::new()))];
+        let remembered_strings = vec![Arc::from("string"), Arc::from("")];
+        let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::from("object"), None, Vec::new()))];
         let remembered_objects = Vec::new();
         let objects = Vec::new();
 
@@ -243,14 +243,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         HavokObjectType::new(name, Some(parent), members)
     }
 
-    fn read_string(&mut self) -> Arc<String> {
+    fn read_string(&mut self) -> Arc<str> {
         let length = self.read_packed_int();
         if length < 0 {
             return self.remembered_strings[-length as usize].clone();
         }
 
-        let result = Arc::new(str::from_utf8(self.reader.read_bytes(length as usize)).unwrap().to_owned());
-        self.remembered_strings.push(result.clone());
+        let result = Arc::from(str::from_utf8(self.reader.read_bytes(length as usize)).unwrap().to_owned());
+        self.remembered_strings.push(Arc::clone(&result));
 
         result
     }
@@ -298,7 +298,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
     }
 
     fn find_type(&self, type_name: &str) -> Arc<HavokObjectType> {
-        self.remembered_types.iter().find(|&x| (*x.name) == type_name).unwrap().clone()
+        self.remembered_types.iter().find(|&x| &*x.name == type_name).unwrap().clone()
     }
 
     fn fill_object_reference(&self, object: &mut HavokObject) {

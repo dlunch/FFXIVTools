@@ -1,4 +1,4 @@
-use alloc::{str, string::String, sync::Arc, vec::Vec};
+use alloc::{str, sync::Arc, vec::Vec};
 use core::cell::RefCell;
 
 use bitflags::bitflags;
@@ -82,7 +82,7 @@ pub type HavokReal = f32;
 pub enum HavokValue {
     Integer(HavokInteger),
     Real(HavokReal),
-    String(Arc<String>),
+    String(Arc<str>),
     Vec(Vec<HavokReal>),
     Array(Vec<HavokValue>),
     Object(Arc<RefCell<HavokObject>>),
@@ -158,14 +158,14 @@ impl HavokRootObject {
 }
 
 pub struct HavokObjectTypeMember {
-    pub name: Arc<String>,
+    pub name: Arc<str>,
     pub type_: HavokValueType,
     pub tuple_size: u32,
-    pub class_name: Option<Arc<String>>,
+    pub class_name: Option<Arc<str>>,
 }
 
 impl HavokObjectTypeMember {
-    pub fn new(name: Arc<String>, type_: HavokValueType, tuple_size: u32, type_name: Option<Arc<String>>) -> Self {
+    pub fn new(name: Arc<str>, type_: HavokValueType, tuple_size: u32, type_name: Option<Arc<str>>) -> Self {
         Self {
             name,
             type_,
@@ -176,13 +176,13 @@ impl HavokObjectTypeMember {
 }
 
 pub struct HavokObjectType {
-    pub name: Arc<String>,
+    pub name: Arc<str>,
     parent: Option<Arc<HavokObjectType>>,
     members: Vec<HavokObjectTypeMember>,
 }
 
 impl HavokObjectType {
-    pub fn new(name: Arc<String>, parent: Option<Arc<HavokObjectType>>, members: Vec<HavokObjectTypeMember>) -> Self {
+    pub fn new(name: Arc<str>, parent: Option<Arc<HavokObjectType>>, members: Vec<HavokObjectTypeMember>) -> Self {
         Self { name, parent, members }
     }
 
@@ -214,7 +214,7 @@ impl HavokObject {
     }
 
     pub fn get(&self, member_name: &str) -> &HavokValue {
-        let member_index = self.object_type.members().iter().position(|&x| (*x.name) == member_name).unwrap();
+        let member_index = self.object_type.members().iter().position(|&x| &*x.name == member_name).unwrap();
 
         &self.data.get(&member_index).unwrap()
     }
