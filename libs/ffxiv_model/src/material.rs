@@ -19,7 +19,7 @@ pub async fn create_material(
     mtrl: &Mtrl,
     textures: &[Arc<Texture>],
     bone_transform: Arc<Buffer>,
-    customization: &Customization,
+    #[allow(unused_variables)] customization: &Customization,
     stain_id: u8,
 ) -> Material {
     let mut uniforms = HashMap::new();

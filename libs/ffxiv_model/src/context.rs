@@ -8,7 +8,7 @@ use futures::{
 use hashbrown::HashMap;
 use nalgebra::Matrix4;
 
-use ffxiv_parser::{Eqdp, Pbd};
+use ffxiv_parser::{Eqdp, Pbd, Stm};
 use renderer::{Renderer, Texture, TextureFormat};
 use sqpack::{Package, Result};
 
@@ -20,6 +20,7 @@ pub struct Context {
     pub(crate) shader_holder: ShaderHolder,
     pub(crate) texture_cache: TextureCache,
     pub(crate) empty_texture: Arc<Texture>,
+    pub(crate) staining_template: Stm,
     equipment_deformer_parameters: HashMap<BodyId, Eqdp>,
     prebone_deformer: Pbd,
 }
@@ -29,11 +30,13 @@ impl Context {
         let empty_texture = Self::create_empty_texture(renderer).await;
         let equipment_deformer_parameters = Self::create_equipment_deformer_parameters(package).await?;
         let prebone_deformer = Pbd::new(package).await?;
+        let staining_template = Stm::new(package).await?;
 
         Ok(Self {
             shader_holder: ShaderHolder::new(renderer),
             texture_cache: TextureCache::new(),
             empty_texture,
+            staining_template,
             equipment_deformer_parameters,
             prebone_deformer,
         })
