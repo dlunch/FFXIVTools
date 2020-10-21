@@ -1,4 +1,5 @@
 #version 450
+#extension GL_EXT_samplerless_texture_functions : enable
 
 #include "frag_common.glsl"
 
@@ -20,9 +21,14 @@ void main() {
     if(normalMap.b <= 0.5)
         discard;
 
-    float key = (normalMap.a * 15.0 + 0.5) / 16.0;
-    vec4 diffuseMap = texture(sampler2D(ColorTable, Sampler), vec2(0.125, key));
-    vec4 specularMap = texture(sampler2D(ColorTable, Sampler), vec2(0.375, key));
+    ivec2 normalSize = textureSize(Normal, 0);
+    ivec2 coord = {FragmentTexCoord.x * normalSize.x, FragmentTexCoord.y * normalSize.y};
+    float colorTableKey = texelFetch(Normal, coord, 0).a;
+
+    ivec2 colorTableSize = textureSize(ColorTable, 0);
+    int colorTabley = colorTableSize.y - int(colorTableKey * colorTableSize.y);
+    vec4 diffuseMap = texelFetch(ColorTable, ivec2(0, colorTabley), 0);
+    vec4 specularMap = texelFetch(ColorTable, ivec2(1, colorTabley), 0);
 
     vec3 color = calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, specularMap, 32.0);
     OutColor = calculateGamma(color);
