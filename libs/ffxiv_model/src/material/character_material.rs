@@ -53,7 +53,7 @@ impl CharacterMaterial {
                 if stain_data & 0x1f != 0 {
                     let template_data = staining_template.get(stain_data >> 5);
 
-                    let row = &mut result[i * 16..];
+                    let row = &mut result[(i * 16) * 2..];
                     if stain_data & 1 != 0 {
                         Self::apply_staining_row(template_data, stain_id, 0, &mut row[..6], 3);
                     }
