@@ -26,7 +26,7 @@ void main() {
     float colorTableKey = texelFetch(Normal, coord, 0).a;
 
     ivec2 colorTableSize = textureSize(ColorTable, 0);
-    int colorTabley = colorTableSize.y - int(colorTableKey * colorTableSize.y);
+    int colorTabley = int(colorTableKey * colorTableSize.y);
     vec4 diffuseMap = texelFetch(ColorTable, ivec2(0, colorTabley), 0);
     vec4 specularMap = texelFetch(ColorTable, ivec2(1, colorTabley), 0);
 
