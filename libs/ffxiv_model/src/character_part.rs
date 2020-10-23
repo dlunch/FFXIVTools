@@ -10,20 +10,50 @@ use renderer::{Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, V
 use crate::context::Context;
 use crate::customization::Customization;
 use crate::material::create_material;
-use crate::model_reader::ModelData;
+use crate::model_reader::{EquipmentModelData, ModelData};
 
 pub struct CharacterPart {
     models: Vec<Model>,
 }
 
 impl CharacterPart {
-    pub async fn new(
+    pub async fn with_model(
         renderer: &Renderer,
         model_data: ModelData,
         bone_transforms: &HashMap<String, Matrix4<f32>>,
         context: &Context,
         customization: &Customization,
     ) -> Self {
+        let models = Self::create_models(renderer, model_data, bone_transforms, context, customization).await;
+
+        Self { models }
+    }
+
+    pub async fn with_equipment_model(
+        renderer: &Renderer,
+        model_data: EquipmentModelData,
+        _bone_transforms: &HashMap<String, Matrix4<f32>>,
+        context: &Context,
+        customization: &Customization,
+    ) -> Self {
+        log::debug!(
+            "original {:?} deformed {:?}",
+            model_data.original_body_id as u16,
+            model_data.deformed_body_id as u16
+        );
+        let prebone_deformer = context.get_body_deform_matrices(model_data.original_body_id, model_data.deformed_body_id);
+        let models = Self::create_models(renderer, model_data.model_data, &prebone_deformer, context, customization).await;
+
+        Self { models }
+    }
+
+    async fn create_models(
+        renderer: &Renderer,
+        model_data: ModelData,
+        bone_transforms: &HashMap<String, Matrix4<f32>>,
+        context: &Context,
+        customization: &Customization,
+    ) -> Vec<Model> {
         let mdl = model_data.mdl;
 
         let visibility_mask = 0;
@@ -89,7 +119,7 @@ impl CharacterPart {
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
 
-        Self { models }
+        models
     }
 
     fn convert_buffer_type(item_type: BufferItemType) -> VertexItemType {
