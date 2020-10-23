@@ -10,8 +10,8 @@ use renderer::{RenderContext, Renderable, Renderer};
 use sqpack::{Package, Result, SqPackReaderError};
 
 use crate::{
-    character_equipment_part::CharacterEquipmentPart, character_part::CharacterPart, constants::ModelPart, context::Context,
-    customization::Customization, equipment::Equipment, model_reader::ModelReader,
+    character_part::CharacterPart, constants::ModelPart, context::Context, customization::Customization, equipment::Equipment,
+    model_reader::ModelReader,
 };
 
 pub struct Character {
@@ -35,7 +35,7 @@ impl Character {
             .map(|x| {
                 x.then(|data| async {
                     Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(
-                        CharacterEquipmentPart::new(renderer, data?, &bone_transforms, context, &customization).await,
+                        CharacterPart::with_equipment_model(renderer, data?, &bone_transforms, context, &customization).await,
                     ))
                 })
             })
@@ -45,11 +45,11 @@ impl Character {
 
         // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
         let face_part_model = ModelReader::read_face(renderer, package, &customization, context).await?;
-        let face_part = Box::new(CharacterPart::new(renderer, face_part_model, &bone_transforms, context, &customization).await);
+        let face_part = Box::new(CharacterPart::with_model(renderer, face_part_model, &bone_transforms, context, &customization).await);
         parts.push(face_part);
 
         let hair_part_model = ModelReader::read_hair(renderer, package, &customization, context).await?;
-        let hair_part = Box::new(CharacterPart::new(renderer, hair_part_model, &bone_transforms, context, &customization).await);
+        let hair_part = Box::new(CharacterPart::with_model(renderer, hair_part_model, &bone_transforms, context, &customization).await);
         parts.push(hair_part);
 
         Ok(Self { parts })
