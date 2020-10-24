@@ -3,9 +3,9 @@ use alloc::collections::BTreeMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
+use common::{regions, Region, WasmPackage};
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
 use sqpack::Result;
-use common::{regions, Region, WasmPackage};
 
 use crate::list::List;
 
