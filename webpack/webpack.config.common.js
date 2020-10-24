@@ -14,6 +14,9 @@ module.exports = {
     model_viewer: "web/model_viewer/model_viewer.html",
     translation_compare: "web/translation_compare/translation_compare.html",
   },
+  experiments: {
+    asyncWebAssembly: true
+  },
   output: {
     path: dist,
     filename: "[name].js",
