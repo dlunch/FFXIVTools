@@ -55,7 +55,7 @@ pub use ex::{Ex, ExList, ExRow, ExRowType};
 pub use ffxiv_string::FFXIVString;
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
-pub use mdl::{BufferItemType, BufferItemUsage, Mdl};
+pub use mdl::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
 pub use mtrl::{Mtrl, MtrlParameterType};
 pub use pap::Pap;
 pub use pbd::Pbd;

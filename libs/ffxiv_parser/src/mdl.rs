@@ -143,7 +143,7 @@ pub struct MeshInfo {
     pub buffer_count: u8,
 }
 
-pub struct Mesh<'a> {
+pub struct MdlMesh<'a> {
     pub mesh_info: &'a MeshInfo,
     pub buffers: Vec<&'a [u8]>,
     pub indices: &'a [u8],
@@ -286,6 +286,13 @@ impl Mdl {
         })
     }
 
+    pub fn mesh_count(&self, lod: usize) -> usize {
+        let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
+        let model_header = &model_headers[lod];
+
+        model_header.mesh_count as usize
+    }
+
     pub fn buffer_items(&self, lod: usize) -> impl Iterator<Item = &BufferItemChunk> {
         let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
         let model_header = &model_headers[lod];
@@ -298,7 +305,7 @@ impl Mdl {
             .take(model_header.mesh_count as usize)
     }
 
-    pub fn meshes<'a>(&'a self, lod: usize) -> impl Iterator<Item = Mesh> + 'a {
+    pub fn meshes<'a>(&'a self, lod: usize) -> impl Iterator<Item = MdlMesh> + 'a {
         let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&self.data[self.mesh_info_offset..])[..mesh_info_count];
@@ -320,7 +327,7 @@ impl Mdl {
             let index_end = index_begin + (mesh_info.index_count as usize) * size_of::<u16>();
 
             let indices = &self.data[index_begin..index_end];
-            Mesh { mesh_info, buffers, indices }
+            MdlMesh { mesh_info, buffers, indices }
         })
     }
 
