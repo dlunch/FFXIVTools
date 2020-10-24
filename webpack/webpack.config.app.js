@@ -45,7 +45,6 @@ module.exports = [
     {
       target: 'electron-main',
       entry: { 'index': 'app/main.ts' },
-      node: false,
       plugins: [
         new CleanWebpackPlugin(),
       ],
