@@ -6,7 +6,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const HtmlLoader = require("./html-loader");
 
 const root = path.resolve(__dirname, "..");
-const dist = path.resolve(root, "dist");
+const dist = path.resolve(root, "web/dist");
 
 module.exports = {
   context: root,

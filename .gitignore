@@ -1,7 +1,8 @@
 **/*.rs.bk
 .env
 node_modules
-/dist
+app/dist
+web/dist
 /data
 /target*
 .cargo
