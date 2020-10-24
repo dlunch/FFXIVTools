@@ -44,7 +44,11 @@ module.exports = [
   merge(config,
     {
       target: 'electron-main',
-      entry: { 'main': 'app/main.ts' }
+      entry: { 'index': 'app/main.ts' },
+      node: false,
+      plugins: [
+        new CleanWebpackPlugin(),
+      ],
     }
   ),
   merge(config,
