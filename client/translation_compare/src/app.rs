@@ -5,7 +5,7 @@ use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
 use sqpack::Result;
-use web_common::{regions, Region, WasmPackage};
+use common::{regions, Region, WasmPackage};
 
 use crate::list::List;
 

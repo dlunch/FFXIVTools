@@ -11,8 +11,8 @@ const dist = path.resolve(root, "web/dist");
 module.exports = {
   context: root,
   entry: {
-    model_viewer: "web/model_viewer/model_viewer.html",
-    translation_compare: "web/translation_compare/translation_compare.html",
+    model_viewer: "client/model_viewer/model_viewer.html",
+    translation_compare: "client/translation_compare/translation_compare.html",
   },
   experiments: {
     asyncWebAssembly: true
@@ -62,17 +62,17 @@ module.exports = {
     new HtmlLoader.EntryExtractPlugin(),
 
     new WasmPackPlugin({
-      crateDirectory: path.resolve(root, "web/model_viewer"),
-      outDir: path.resolve(root, "web/model_viewer/pkg"),
+      crateDirectory: path.resolve(root, "client/model_viewer"),
+      outDir: path.resolve(root, "client/model_viewer/pkg"),
       outName: "index",
     }),
     new WasmPackPlugin({
-      crateDirectory: path.resolve(root, "web/translation_compare"),
-      outDir: path.resolve(root, "web/translation_compare/pkg"),
+      crateDirectory: path.resolve(root, "client/translation_compare"),
+      outDir: path.resolve(root, "client/translation_compare/pkg"),
       outName: "index",
     }),
     new CopyPlugin({
-      patterns: [{ from: "web/index.html" }],
+      patterns: [{ from: "client/index.html" }],
     }),
     new CleanWebpackPlugin(),
   ],

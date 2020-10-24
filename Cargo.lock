@@ -424,6 +424,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ffxiv_parser",
+ "sqpack",
+ "sqpack_extension",
+ "wasm-bindgen-futures",
+ "wasm-timer",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3093,6 +3105,7 @@ dependencies = [
 name = "translation_compare"
 version = "0.1.0"
 dependencies = [
+ "common",
  "console_error_panic_hook",
  "console_log",
  "ffxiv_ex",
@@ -3105,7 +3118,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
- "web_common",
  "wee_alloc",
  "yew",
 ]
@@ -3440,18 +3452,6 @@ checksum = "4bf6ef87ad7ae8008e15a355ce696bed26012b7caa21605188cfd8214ab51e2d"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "web_common"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "ffxiv_parser",
- "sqpack",
- "sqpack_extension",
- "wasm-bindgen-futures",
- "wasm-timer",
 ]
 
 [[package]]
