@@ -2,7 +2,7 @@
 .env
 node_modules
 app/dist
-web/dist
+client/dist
 /data
 /target*
 .cargo

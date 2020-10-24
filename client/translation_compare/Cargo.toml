@@ -21,7 +21,7 @@ console_log = { version = "0.2", features = ["color"], default-features = false 
 log = { version = "0.4", default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
-web_common = { version = "^0.1", path = "../web_common" }
+common = { version = "^0.1", path = "../common" }
 ffxiv_parser = { version = "^0.1", path = "../../libs/ffxiv_parser" }
 ffxiv_ex = { version = "^0.1", path = "../../libs/ffxiv_ex" }
 util = { version = "^0.1", path = "../../libs/util" }
