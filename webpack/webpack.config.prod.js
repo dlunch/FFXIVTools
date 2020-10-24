@@ -3,5 +3,5 @@ const common = require("./webpack.config.common.js");
 
 module.exports = merge(common, {
   mode: "production",
-  devtool: "",
+  devtool: undefined,
 });
