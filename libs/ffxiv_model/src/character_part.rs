@@ -37,7 +37,7 @@ impl CharacterPart {
             let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
             let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, bone_transforms);
 
-            let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 20).await;
+            let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0).await;
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
