@@ -125,9 +125,9 @@ function loader(source) {
       return;
     }
 
-    if (element.tagName === "script") {
+    if (element.tagName === "SCRIPT") {
       scripts.push(element);
-    } else if (element.tagName === "link") {
+    } else if (element.tagName === "LINK") {
       links.push(element);
     }
   });
