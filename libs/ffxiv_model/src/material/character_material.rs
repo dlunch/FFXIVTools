@@ -44,7 +44,7 @@ impl CharacterMaterial {
 
     fn apply_staining(color_table_data: &[u8], stain_id: u8, staining_template: &Stm) -> Vec<u8> {
         if color_table_data.len() == 4 * 16 * 8 || stain_id == 0 {
-            color_table_data.to_vec()
+            color_table_data[..4 * 16 * 8].to_vec()
         } else {
             let mut result = color_table_data[..4 * 16 * 8].to_vec();
 
