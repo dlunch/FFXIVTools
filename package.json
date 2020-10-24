@@ -20,6 +20,7 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-import-resolver-typescript": "^2.3.0",
     "eslint-plugin-import": "^2.20.2",
+    "generate-package-json-webpack-plugin": "^2.0.0",
     "loader-utils": "^2.0.0",
     "node-html-parser": "^1.2.18",
     "prettier": "^2.1.2",

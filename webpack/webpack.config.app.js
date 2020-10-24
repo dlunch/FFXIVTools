@@ -3,6 +3,7 @@ const { merge } = require("webpack-merge");
 const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin");
 
 const root = path.resolve(__dirname, "..");
 
@@ -40,13 +41,21 @@ const config = {
   },
 };
 
+const package = {
+  "author": "Inseok Lee <dlunch@gmail.com>",
+  "name": "ffxiv-tools",
+  "version": "0.1.0",
+  "main": "main.js"
+}
+
 module.exports = [
   merge(config,
     {
       target: 'electron-main',
-      entry: { 'index': 'app/main.ts' },
+      entry: { 'main': 'app/main.ts' },
       plugins: [
         new CleanWebpackPlugin(),
+        new GeneratePackageJsonPlugin(package)
       ],
     }
   ),
