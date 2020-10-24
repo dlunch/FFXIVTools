@@ -132,7 +132,7 @@ impl<'a> App<'a> {
     pub async fn add_character(&'a mut self) -> Result<()> {
         let mut equipments = HashMap::new();
         equipments.insert(ModelPart::Met, Equipment::new(6016, 1, 0));
-        equipments.insert(ModelPart::Top, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Top, Equipment::new(6016, 1, 20));
         equipments.insert(ModelPart::Glv, Equipment::new(6016, 1, 0));
         equipments.insert(ModelPart::Dwn, Equipment::new(6016, 1, 0));
         equipments.insert(ModelPart::Sho, Equipment::new(6016, 1, 0));
