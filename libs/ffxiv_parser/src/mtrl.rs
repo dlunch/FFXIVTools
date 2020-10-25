@@ -91,7 +91,7 @@ impl Mtrl {
         })
     }
 
-    pub fn texture_paths<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
+    pub fn texture_paths(&self) -> impl Iterator<Item = String> + '_ {
         let header = cast::<MtrlHeader>(&self.data);
 
         let base_offset = size_of::<MtrlHeader>();
