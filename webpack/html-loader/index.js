@@ -1,9 +1,9 @@
-const path = require("path");
+const path = require('path');
 
-const loaderUtils = require("loader-utils");
-const { parse } = require("node-html-parser");
+const loaderUtils = require('loader-utils');
+const { parse } = require('node-html-parser');
 
-const pluginName = "HtmlLoader";
+const pluginName = 'HtmlLoader';
 
 function isEntryModule(module) {
   return module.issuer === null;
@@ -11,14 +11,14 @@ function isEntryModule(module) {
 
 function generateScript(jsFiles, hash) {
   return jsFiles
-    .map(x => `<script type='text/javascript' src='${x}?${hash}'></script>`)
-    .join("");
+    .map((x) => `<script type='text/javascript' src='${x}?${hash}'></script>`)
+    .join('');
 }
 
 function generateLink(cssFiles, hash) {
   return cssFiles
-    .map(x => `<link rel='stylesheet' href='${x}?${hash}' />`)
-    .join("");
+    .map((x) => `<link rel='stylesheet' href='${x}?${hash}' />`)
+    .join('');
 }
 
 function chunkContainsUserRequest(chunk, userRequest) {
@@ -51,16 +51,14 @@ function findEntrypointContainingUserRequest(userRequest, compilation) {
 function injectChunks(content, userRequest, compilation) {
   const entrypoint = findEntrypointContainingUserRequest(
     userRequest,
-    compilation
+    compilation,
   );
-  const jsFiles = entrypoint.getFiles().filter(x => x.endsWith(".js"));
-  const cssFiles = entrypoint.getFiles().filter(x => x.endsWith(".css"));
+  const jsFiles = entrypoint.getFiles().filter((x) => x.endsWith('.js'));
+  const cssFiles = entrypoint.getFiles().filter((x) => x.endsWith('.css'));
 
-  const inject =
-    generateScript(jsFiles, compilation.hash) +
-    generateLink(cssFiles, compilation.hash);
+  const inject = generateScript(jsFiles, compilation.hash) + generateLink(cssFiles, compilation.hash);
 
-  return content.replace("</head>", `${inject}</head>`);
+  return content.replace('</head>', `${inject}</head>`);
 }
 
 class EntryExtractPlugin {
@@ -76,26 +74,26 @@ class EntryExtractPlugin {
         /* eslint-disable-next-line no-param-reassign */
         compilation.assets[filename] = {
           source: () => injected,
-          size: () => injected.length
+          size: () => injected.length,
         };
       }
 
       callback();
     });
-    compiler.hooks.thisCompilation.tap(pluginName, compilation => {
+    compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
       compilation.hooks.normalModuleLoader.tap(
         pluginName,
         (loaderContext, module) => {
           if (isEntryModule(module)) {
             /* eslint-disable-next-line no-param-reassign */
-            loaderContext[pluginName] = content => {
+            loaderContext[pluginName] = (content) => {
               entries[module.userRequest] = content;
             };
           } else {
             /* eslint-disable-next-line no-param-reassign */
             delete loaderContext[pluginName];
           }
-        }
+        },
       );
     });
   }
@@ -120,14 +118,14 @@ function loader(source) {
   const scripts = [];
   const links = [];
 
-  traverseElements(root, element => {
+  traverseElements(root, (element) => {
     if (!element.tagName) {
       return;
     }
 
-    if (element.tagName === "SCRIPT") {
+    if (element.tagName === 'SCRIPT') {
       scripts.push(element);
-    } else if (element.tagName === "LINK") {
+    } else if (element.tagName === 'LINK') {
       links.push(element);
     }
   });
@@ -136,7 +134,7 @@ function loader(source) {
 
   for (const script of scripts) {
     const src = script.attributes.src;
-    if (src && !(src.startsWith("http") || src.startsWith("//"))) {
+    if (src && !(src.startsWith('http') || src.startsWith('//'))) {
       requires.push(src);
       script.parentNode.removeChild(script);
     }
@@ -145,12 +143,7 @@ function loader(source) {
   for (const link of links) {
     const href = link.attributes.href;
     const rel = link.attributes.rel;
-    if (
-      rel &&
-      link.attributes.rel === "stylesheet" &&
-      href &&
-      !(href.startsWith("http") || href.startsWith("//"))
-    ) {
+    if (rel && link.attributes.rel === 'stylesheet' && href && !(href.startsWith('http') || href.startsWith('//'))) {
       requires.push(`!!style-loader!css-loader!less-loader?modules!${href}`);
       link.parentNode.removeChild(link);
     }
@@ -161,18 +154,16 @@ function loader(source) {
   }
 
   let result = root.toString();
-  if (root.firstChild.tagName === "html") {
+  if (root.firstChild.tagName === 'html') {
     result = `<!doctype html>${result}`;
   }
   if (this[pluginName]) {
     this[pluginName](result);
-    result = "";
+    result = '';
   }
 
-  const requireClauses = requires.map(x => `require('${x}');`).join("\n");
-  const resultJs = `${requireClauses}\nmodule.exports = ${JSON.stringify(
-    result
-  )}`;
+  const requireClauses = requires.map((x) => `require('${x}');`).join('\n');
+  const resultJs = `${requireClauses}\nmodule.exports = ${JSON.stringify(result)}`;
   callback(null, resultJs);
 }
 
