@@ -11,6 +11,7 @@ members = [
     "client/model_viewer",
     "client/translation_compare",
     "client/common",
+    "app/native",
     "server",
 ]
 
