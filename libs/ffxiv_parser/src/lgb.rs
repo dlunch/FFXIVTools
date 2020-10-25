@@ -129,7 +129,7 @@ impl Lgb {
         str::from_null_terminated_utf8(&self.data[size_of::<LgbHeader>() + self.name_offset as usize..]).unwrap()
     }
 
-    pub fn entries<'a>(&'a self) -> BTreeMap<&'a str, Vec<LayerGroupResourceItem<'a>>> {
+    pub fn entries(&self) -> BTreeMap<&str, Vec<LayerGroupResourceItem>> {
         let base_offset = size_of::<LgbHeader>() + size_of::<LgbResourceHeader>();
         (0..self.entry_count)
             .map(|i| {
@@ -141,7 +141,7 @@ impl Lgb {
             .collect::<BTreeMap<_, _>>()
     }
 
-    fn parse_entry<'a>(data: &'a [u8]) -> (&'a str, Vec<LayerGroupResourceItem<'a>>) {
+    fn parse_entry(data: &[u8]) -> (&str, Vec<LayerGroupResourceItem>) {
         let entry = cast::<LgbResourceEntry>(&data);
         let name = str::from_null_terminated_utf8(&data[entry.name_offset as usize..]).unwrap();
 
