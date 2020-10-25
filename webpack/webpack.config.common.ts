@@ -9,7 +9,7 @@ import * as HtmlLoader from './html-loader';
 const WasmPackPlugin = RawWasmPackPlugin as unknown as new (options: RawWasmPackPlugin.WasmPackPluginOptions) => webpack.WebpackPluginInstance;
 
 const root = path.resolve(__dirname, '..');
-const dist = path.resolve(root, 'web/dist');
+const dist = path.resolve(root, 'client/dist');
 
 const configuration: webpack.Configuration = {
   context: root,
