@@ -8,6 +8,9 @@ edition = "2018"
 doctest = false
 crate-type = ["cdylib"]
 
-[features]
-
 [dependencies]
+napi = { version = "^0.5" }
+napi-derive = { version = "^0.5" }
+
+[build-dependencies]
+napi-build = { version = "^0.2" }
