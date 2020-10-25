@@ -305,7 +305,7 @@ impl Mdl {
             .take(model_header.mesh_count as usize)
     }
 
-    pub fn meshes<'a>(&'a self, lod: usize) -> impl Iterator<Item = MdlMesh> + 'a {
+    pub fn meshes(&self, lod: usize) -> impl Iterator<Item = MdlMesh> {
         let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&self.data[self.mesh_info_offset..])[..mesh_info_count];
@@ -331,7 +331,7 @@ impl Mdl {
         })
     }
 
-    pub fn material_paths<'a>(&'a self) -> impl Iterator<Item = &str> + 'a {
+    pub fn material_paths(&self) -> impl Iterator<Item = &str> {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
         let raw_materials = &cast_array::<u32>(&self.data[self.materials_offset..])[..mdl_header.material_count as usize];
