@@ -54,7 +54,7 @@ export default [
   merge(config,
     {
       target: 'electron-main',
-      entry: { main: 'app/main.ts' },
+      entry: { main: 'app/electron/main.ts' },
       plugins: [
         new GeneratePackageJsonPlugin(packageBase),
       ],
@@ -62,15 +62,15 @@ export default [
   merge(config,
     {
       target: 'electron-preload',
-      entry: { preload: 'app/preload.ts' },
+      entry: { preload: 'app/electron/preload.ts' },
     }),
   merge(config,
     {
       target: 'electron-renderer',
-      entry: { renderer: 'app/renderer.ts' },
+      entry: { renderer: 'app/electron/renderer.ts' },
       plugins: [
         new CopyPlugin({
-          patterns: [{ from: 'app/index.html' }],
+          patterns: [{ from: 'app/electron/index.html' }],
         }),
       ],
     }),
