@@ -1,14 +1,22 @@
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-use crate::treeview::{TreeView, TreeViewItem};
+use crate::treeview::{TreeView, TreeViewData, TreeViewItem};
 
 #[derive(Clone, PartialEq)]
-struct TreeItem {
+struct Item {
     text: String,
 }
 
 pub struct App {
-    tree_data: TreeViewItem<TreeItem>,
+    tree_data: Vec<TreeViewItem<Item>>,
+}
+
+impl TreeViewData for Item {
+    fn render(&self) -> Html {
+        html! {
+            <> { &self.text } </>
+        }
+    }
 }
 
 pub enum Msg {}
@@ -18,12 +26,28 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        App {
-            tree_data: TreeViewItem {
-                data: TreeItem { text: "".into() },
-                children: Vec::new(),
-            },
-        }
+        let test_data = vec![TreeViewItem::new(
+            Item { text: "root".into() },
+            vec![
+                TreeViewItem::new(
+                    Item { text: "child1".into() },
+                    vec![
+                        TreeViewItem::new(
+                            Item { text: "child11".into() },
+                            vec![TreeViewItem::new(Item { text: "child111".into() }, Vec::new())],
+                        ),
+                        TreeViewItem::new(Item { text: "child12".into() }, Vec::new()),
+                    ],
+                ),
+                TreeViewItem::new(
+                    Item { text: "child2".into() },
+                    vec![TreeViewItem::new(Item { text: "child21".into() }, Vec::new())],
+                ),
+                TreeViewItem::new(Item { text: "child3".into() }, Vec::new()),
+            ],
+        )];
+
+        App { tree_data: test_data }
     }
 
     fn update(&mut self, _msg: Self::Message) -> ShouldRender {
@@ -36,7 +60,7 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <TreeView<TreeItem> data = &self.tree_data />
+            <TreeView<Item> data = &self.tree_data />
         }
     }
 }
