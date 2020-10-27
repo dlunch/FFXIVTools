@@ -1,7 +1,5 @@
-#![no_std]
-extern crate alloc;
-
 mod app;
+mod treeview;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
