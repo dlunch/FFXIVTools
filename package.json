@@ -7,7 +7,7 @@
     "app": "electron app/dist",
     "build:dev": "webpack --config webpack/webpack.config.dev.ts",
     "build:prod": "webpack --config webpack/webpack.config.prod.ts",
-    "devserver": "webpack-dev-server --open -d --config webpack/webpack.config.dev.ts"
+    "devserver": "webpack serve --config webpack/webpack.config.dev.ts"
   },
   "dependencies": {
     "electron": "^10.1.5"
