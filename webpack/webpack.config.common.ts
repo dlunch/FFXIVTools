@@ -16,6 +16,7 @@ const configuration: webpack.Configuration = {
   entry: {
     model_viewer: 'client/model_viewer/model_viewer.html',
     translation_compare: 'client/translation_compare/translation_compare.html',
+    explorer: 'client/explorer/explorer.html',
   },
   experiments: {
     asyncWebAssembly: true,
@@ -75,6 +76,11 @@ const configuration: webpack.Configuration = {
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/translation_compare'),
       outDir: path.resolve(root, 'client/translation_compare/pkg'),
+      outName: 'index',
+    }),
+    new WasmPackPlugin({
+      crateDirectory: path.resolve(root, 'client/explorer'),
+      outDir: path.resolve(root, 'client/explorer/pkg'),
       outName: 'index',
     }),
     new CopyPlugin({
