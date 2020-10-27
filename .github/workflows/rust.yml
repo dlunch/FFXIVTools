@@ -51,7 +51,7 @@ jobs:
 
       - name: Install required packages
         if: matrix.os == 'windows-latest'
-        run: choco install ninja
+        run: choco install ninja llvm
 
       - uses: actions-rs/cargo@v1
         with:
