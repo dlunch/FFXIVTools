@@ -15,6 +15,10 @@ app.on('ready', () => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      sandbox: true,
+      worldSafeExecuteJavaScript: true,
+      spellcheck: false,
     },
   });
 
