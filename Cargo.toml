@@ -10,6 +10,7 @@ members = [
     "tools/model_viewer_standalone",
     "client/model_viewer",
     "client/translation_compare",
+    "client/explorer",
     "client/common",
     "app/native",
     "server",
