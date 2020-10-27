@@ -3,33 +3,33 @@ const path = require('path');
 const loaderUtils = require('loader-utils');
 const { parse } = require('node-html-parser');
 
+const { NormalModule } = require('webpack');
+
 const pluginName = 'HtmlLoader';
 
-function isEntryModule(module) {
-  return module.issuer === null;
+function isEntryModule(compilation, module) {
+  return compilation.moduleGraph.getIssuer(module) === null;
 }
 
 function generateScript(jsFiles, hash) {
-  return jsFiles
-    .map((x) => `<script type='text/javascript' src='${x}?${hash}'></script>`)
-    .join('');
+  return jsFiles.map((x) => `<script type='text/javascript' src='${x}?${hash}'></script>`).join('');
 }
 
 function generateLink(cssFiles, hash) {
-  return cssFiles
-    .map((x) => `<link rel='stylesheet' href='${x}?${hash}' />`)
-    .join('');
+  return cssFiles.map((x) => `<link rel='stylesheet' href='${x}?${hash}' />`).join('');
 }
 
-function chunkContainsUserRequest(chunk, userRequest) {
-  if (chunk.entryModule && chunk.entryModule.userRequest) {
-    return chunk.entryModule.userRequest === userRequest;
-  }
+function chunkContainsUserRequest(chunk, userRequest, compilation) {
+  for (const entryModule of compilation.chunkGraph.getChunkEntryModulesIterable(chunk)) {
+    if (entryModule && entryModule.userRequest) {
+      return entryModule.userRequest === userRequest;
+    }
 
-  if (chunk.entryModule && chunk.entryModule.dependencies) {
-    for (const dependency of chunk.entryModule.dependencies) {
-      if (dependency.module.userRequest === userRequest) {
-        return true;
+    if (entryModule && entryModule.dependencies) {
+      for (const dependency of entryModule.dependencies) {
+        if (dependency.module.userRequest === userRequest) {
+          return true;
+        }
       }
     }
   }
@@ -39,7 +39,7 @@ function chunkContainsUserRequest(chunk, userRequest) {
 function findEntrypointContainingUserRequest(userRequest, compilation) {
   for (const entrypoint of compilation.entrypoints.values()) {
     for (const chunk of entrypoint.chunks) {
-      if (chunkContainsUserRequest(chunk, userRequest)) {
+      if (chunkContainsUserRequest(chunk, userRequest, compilation)) {
         return entrypoint;
       }
     }
@@ -49,10 +49,7 @@ function findEntrypointContainingUserRequest(userRequest, compilation) {
 }
 
 function injectChunks(content, userRequest, compilation) {
-  const entrypoint = findEntrypointContainingUserRequest(
-    userRequest,
-    compilation,
-  );
+  const entrypoint = findEntrypointContainingUserRequest(userRequest, compilation);
   const jsFiles = entrypoint.getFiles().filter((x) => x.endsWith('.js'));
   const cssFiles = entrypoint.getFiles().filter((x) => x.endsWith('.css'));
 
@@ -66,35 +63,32 @@ class EntryExtractPlugin {
   apply(compiler) {
     const entries = {};
 
-    compiler.hooks.emit.tapAsync(pluginName, (compilation, callback) => {
-      for (const [userRequest, content] of Object.entries(entries)) {
-        const filename = path.basename(userRequest);
-        const injected = injectChunks(content, userRequest, compilation);
+    compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
+      compilation.hooks.processAssets.tap(pluginName, () => {
+        for (const [userRequest, content] of Object.entries(entries)) {
+          const filename = path.basename(userRequest);
+          const injected = injectChunks(content, userRequest, compilation);
 
-        /* eslint-disable-next-line no-param-reassign */
-        compilation.assets[filename] = {
-          source: () => injected,
-          size: () => injected.length,
-        };
-      }
-
-      callback();
+          /* eslint-disable-next-line no-param-reassign */
+          compilation.assets[filename] = {
+            source: () => injected,
+            size: () => injected.length,
+          };
+        }
+      });
     });
     compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
-      compilation.hooks.normalModuleLoader.tap(
-        pluginName,
-        (loaderContext, module) => {
-          if (isEntryModule(module)) {
-            /* eslint-disable-next-line no-param-reassign */
-            loaderContext[pluginName] = (content) => {
-              entries[module.userRequest] = content;
-            };
-          } else {
-            /* eslint-disable-next-line no-param-reassign */
-            delete loaderContext[pluginName];
-          }
-        },
-      );
+      NormalModule.getCompilationHooks(compilation).loader.tap(pluginName, (loaderContext, module) => {
+        if (isEntryModule(compilation, module)) {
+          /* eslint-disable-next-line no-param-reassign */
+          loaderContext[pluginName] = (content) => {
+            entries[module.userRequest] = content;
+          };
+        } else {
+          /* eslint-disable-next-line no-param-reassign */
+          delete loaderContext[pluginName];
+        }
+      });
     });
   }
 }
