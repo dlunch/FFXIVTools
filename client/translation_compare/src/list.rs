@@ -10,7 +10,7 @@ pub enum Msg {}
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub data: Option<BTreeMap<u32, Vec<String>>>,
+    pub data: BTreeMap<u32, Vec<String>>,
 }
 
 impl Component for List {
@@ -35,16 +35,16 @@ impl Component for List {
     }
 
     fn view(&self) -> Html {
-        let data = if let Some(x) = &self.props.data {
-            x.iter()
-                .map(|(k, v)| html! { <li>{ format!("{}: {}", k, v.join(", ")) }</li> })
-                .collect::<Html>()
-        } else {
-            html! {}
-        };
         html! {
             <ul>
-                { data }
+                {
+                    self
+                        .props
+                        .data
+                        .iter()
+                        .map(|(k, v)| html! { <li>{ format!("{}: {}", k, v.join(", ")) }</li> })
+                        .collect::<Html>()
+                }
             </ul>
         }
     }

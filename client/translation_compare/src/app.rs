@@ -11,7 +11,7 @@ use crate::list::List;
 
 pub struct App {
     link: ComponentLink<Self>,
-    data: Option<BTreeMap<u32, Vec<String>>>,
+    data: BTreeMap<u32, Vec<String>>,
     progress: (usize, usize),
 }
 
@@ -28,7 +28,7 @@ impl Component for App {
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             link,
-            data: None,
+            data: BTreeMap::new(),
             progress: (0, 0),
         }
     }
@@ -40,7 +40,7 @@ impl Component for App {
                 true
             }
             Msg::OnDataReady(x) => {
-                self.data = Some(x);
+                self.data = x;
                 true
             }
             Msg::Progress(x) => {
