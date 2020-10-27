@@ -138,7 +138,7 @@ function loader(source) {
     const href = link.attributes.href;
     const rel = link.attributes.rel;
     if (rel && link.attributes.rel === 'stylesheet' && href && !(href.startsWith('http') || href.startsWith('//'))) {
-      requires.push(`!!style-loader!css-loader!less-loader?modules!${href}`);
+      requires.push(`!!style-loader!css-loader!less-loader!${href}`);
       link.parentNode.removeChild(link);
     }
   }
