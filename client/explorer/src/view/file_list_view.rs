@@ -1,5 +1,7 @@
 use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
+use wasm_bindgen_futures::spawn_local;
+
 use super::tree_view::{TreeView, TreeViewData, TreeViewItem};
 use crate::context::Context;
 
@@ -40,22 +42,24 @@ impl Component for FileListView {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::FetchTreeViewData((key, callback)) => {
-                let context = Context::get();
-                let files = context.file_list.get_files(&key);
+                spawn_local(async move {
+                    let context = Context::get();
+                    let files = context.file_list.get_files(&key).await.unwrap();
 
-                let result = files
-                    .into_iter()
-                    .map(|x| {
-                        let new_key = if key.is_empty() { x } else { format!("{}/{}", key, x) };
+                    let result = files
+                        .into_iter()
+                        .map(|x| {
+                            let new_key = if key.is_empty() { x.clone() } else { format!("{}/{}", key, x) };
 
-                        TreeViewItem {
-                            key: new_key.clone(),
-                            value: Item { text: new_key },
-                        }
-                    })
-                    .collect::<Vec<_>>();
+                            TreeViewItem {
+                                key: new_key,
+                                value: Item { text: x },
+                            }
+                        })
+                        .collect::<Vec<_>>();
 
-                callback.emit(result);
+                    callback.emit(result);
+                });
 
                 false
             }
