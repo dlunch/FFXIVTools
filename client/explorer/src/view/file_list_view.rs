@@ -72,7 +72,9 @@ impl Component for FileListView {
 
     fn view(&self) -> Html {
         html! {
-            <TreeView<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeViewData(x)) />
+            <div class="file-list-view">
+                <TreeView<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeViewData(x)) />
+            </div>
         }
     }
 }
