@@ -5,7 +5,7 @@ const { parse } = require('node-html-parser');
 
 const { NormalModule } = require('webpack');
 
-const pluginName = 'HtmlLoader';
+const pluginName = 'HtmlEntryLoader';
 
 function isEntryModule(compilation, module) {
   return compilation.moduleGraph.getIssuer(module) === null;
