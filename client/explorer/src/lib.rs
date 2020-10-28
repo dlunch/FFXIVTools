@@ -1,6 +1,5 @@
 mod app;
-mod filelistview;
-mod treeview;
+mod view;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
