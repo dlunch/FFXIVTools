@@ -1,6 +1,7 @@
 use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
 use super::tree_view::{TreeView, TreeViewData, TreeViewItem};
+use crate::context::Context;
 
 #[derive(Clone, PartialEq)]
 pub struct Item {
@@ -39,11 +40,21 @@ impl Component for FileListView {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::FetchTreeViewData((key, callback)) => {
-                let new_key = format!("{}/key", key);
-                let result = vec![TreeViewItem {
-                    key: new_key.clone(),
-                    value: Item { text: new_key },
-                }];
+                let context = Context::get();
+                let files = context.file_list.get_files(&key);
+
+                let result = files
+                    .into_iter()
+                    .map(|x| {
+                        let new_key = if key.is_empty() { x } else { format!("{}/{}", key, x) };
+
+                        TreeViewItem {
+                            key: new_key.clone(),
+                            value: Item { text: new_key },
+                        }
+                    })
+                    .collect::<Vec<_>>();
+
                 callback.emit(result);
 
                 false
