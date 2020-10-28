@@ -1,4 +1,6 @@
 mod app;
+mod context;
+mod file_list;
 mod view;
 
 use wasm_bindgen::prelude::wasm_bindgen;
