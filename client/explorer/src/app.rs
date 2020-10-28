@@ -1,26 +1,15 @@
-use yew::prelude::{html, Callback, Component, ComponentLink, Html, ShouldRender};
+use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-use crate::treeview::{TreeView, TreeViewData, TreeViewItem};
+use log::debug;
 
-#[derive(Clone, PartialEq)]
-pub struct Item {
-    text: String,
-}
-
-impl TreeViewData for Item {
-    fn render(&self) -> Html {
-        html! {
-            <> { &self.text } </>
-        }
-    }
-}
-
-pub enum Msg {
-    FetchTreeViewData((String, Callback<Vec<TreeViewItem<String, Item>>>)),
-}
+use crate::filelistview::FileListView;
 
 pub struct App {
     link: ComponentLink<Self>,
+}
+
+pub enum Msg {
+    FileSelected(String),
 }
 
 impl Component for App {
@@ -28,20 +17,15 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        App { link }
+        Self { link }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::FetchTreeViewData((key, callback)) => {
-                let new_key = format!("{}/key", key);
-                let result = vec![TreeViewItem {
-                    key: new_key.clone(),
-                    value: Item { text: new_key },
-                }];
-                callback.emit(result);
+            Msg::FileSelected(x) => {
+                debug!("{}", x);
 
-                false
+                true
             }
         }
     }
@@ -52,7 +36,7 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <TreeView<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeViewData(x)) />
+            <FileListView file_select_callback=self.link.callback(|x| Msg::FileSelected(x)) />
         }
     }
 }
