@@ -2,7 +2,7 @@ use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use log::debug;
 
-use crate::filelistview::FileListView;
+use crate::view::file_list_view::FileListView;
 
 pub struct App {
     link: ComponentLink<Self>,

@@ -1,6 +1,6 @@
 use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
-use crate::treeview::{TreeView, TreeViewData, TreeViewItem};
+use super::tree_view::{TreeView, TreeViewData, TreeViewItem};
 
 #[derive(Clone, PartialEq)]
 pub struct Item {
