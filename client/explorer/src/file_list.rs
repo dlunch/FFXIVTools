@@ -2,6 +2,9 @@ use std::rc::Rc;
 
 use common::WasmPackage;
 
+use ffxiv_parser::ExList;
+use sqpack::Result;
+
 const ROOTS: [&str; 13] = [
     "common",
     "bgcommon",
@@ -27,11 +30,23 @@ impl FileList {
         Self { package }
     }
 
-    pub fn get_files(&self, path: &str) -> Vec<String> {
+    pub async fn get_files(&self, path: &str) -> Result<Vec<String>> {
         if path.is_empty() {
-            ROOTS.iter().map(|&x| x.into()).collect::<Vec<_>>()
+            Ok(ROOTS.iter().map(|&x| x.into()).collect::<Vec<_>>())
+        } else if path.starts_with("exd") {
+            self.get_exd_files(path).await
         } else {
-            Vec::new()
+            Ok(Vec::new())
+        }
+    }
+
+    async fn get_exd_files(&self, path: &str) -> Result<Vec<String>> {
+        if path == "exd" {
+            let exl = ExList::new(&*self.package).await?;
+
+            Ok(exl.ex_names)
+        } else {
+            Ok(Vec::new())
         }
     }
 }
