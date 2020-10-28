@@ -88,7 +88,9 @@ impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeVie
 
 impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> TreeView<K, V> {
     fn render_item(&self, item: &TreeViewItem<K, V>) -> Html {
-        let children = if self.shown_items.contains(&item.key) {
+        let expanded = self.shown_items.contains(&item.key);
+
+        let children = if expanded {
             html! { <TreeView<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
         } else {
             html! {}
@@ -97,7 +99,7 @@ impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> Tre
         let key = Box::new(item.key.clone());
         let callback = self.link.callback(move |_| Msg::TreeItemClick(key.as_ref().clone()));
         html! {
-            <li>
+            <li class={ if expanded { "expanded" } else { "" } }>
                 <span onclick=callback>{ item.value.render() }</span>
                 { children }
             </li>
