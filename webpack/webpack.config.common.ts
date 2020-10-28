@@ -4,7 +4,7 @@ import * as RawWasmPackPlugin from '@wasm-tool/wasm-pack-plugin';
 import * as CopyPlugin from 'copy-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import * as HtmlLoader from './html-loader';
+import * as HtmlEntryLoader from './html-entry-loader';
 
 const WasmPackPlugin = RawWasmPackPlugin as unknown as new (options: RawWasmPackPlugin.WasmPackPluginOptions) => webpack.WebpackPluginInstance;
 
@@ -31,7 +31,7 @@ const configuration: webpack.Configuration = {
         test: /\.(html)$/,
         use: [
           {
-            loader: 'html-loader',
+            loader: 'html-entry-loader',
             options: {
               minimize: true,
             },
@@ -66,7 +66,7 @@ const configuration: webpack.Configuration = {
     contentBase: dist,
   },
   plugins: [
-    new HtmlLoader.EntryExtractPlugin(),
+    new HtmlEntryLoader.EntryExtractPlugin(),
 
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/model_viewer'),
