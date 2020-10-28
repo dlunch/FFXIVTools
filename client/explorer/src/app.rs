@@ -1,14 +1,10 @@
-use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::prelude::{html, Callback, Component, ComponentLink, Html, ShouldRender};
 
 use crate::treeview::{TreeView, TreeViewData, TreeViewItem};
 
 #[derive(Clone, PartialEq)]
-struct Item {
+pub struct Item {
     text: String,
-}
-
-pub struct App {
-    tree_data: Vec<TreeViewItem<Item>>,
 }
 
 impl TreeViewData for Item {
@@ -19,39 +15,35 @@ impl TreeViewData for Item {
     }
 }
 
-pub enum Msg {}
+pub enum Msg {
+    FetchTreeViewData((String, Callback<Vec<TreeViewItem<String, Item>>>)),
+}
+
+pub struct App {
+    link: ComponentLink<Self>,
+}
 
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        let test_data = vec![TreeViewItem::new(
-            Item { text: "root".into() },
-            vec![
-                TreeViewItem::new(
-                    Item { text: "child1".into() },
-                    vec![
-                        TreeViewItem::new(
-                            Item { text: "child11".into() },
-                            vec![TreeViewItem::new(Item { text: "child111".into() }, Vec::new())],
-                        ),
-                        TreeViewItem::new(Item { text: "child12".into() }, Vec::new()),
-                    ],
-                ),
-                TreeViewItem::new(
-                    Item { text: "child2".into() },
-                    vec![TreeViewItem::new(Item { text: "child21".into() }, Vec::new())],
-                ),
-                TreeViewItem::new(Item { text: "child3".into() }, Vec::new()),
-            ],
-        )];
-
-        App { tree_data: test_data }
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+        App { link }
     }
 
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
-        true
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        match msg {
+            Msg::FetchTreeViewData((key, callback)) => {
+                let new_key = format!("{}/key", key);
+                let result = vec![TreeViewItem {
+                    key: new_key.clone(),
+                    value: Item { text: new_key },
+                }];
+                callback.emit(result);
+
+                false
+            }
+        }
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -60,7 +52,7 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <TreeView<Item> data = &self.tree_data />
+            <TreeView<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeViewData(x)) />
         }
     }
 }

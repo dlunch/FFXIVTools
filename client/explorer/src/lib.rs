@@ -10,6 +10,8 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub fn main() {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
+    #[cfg(debug_assertions)]
+    console_log::init_with_level(log::Level::Trace).unwrap();
 
     yew::start_app::<app::App>();
 }

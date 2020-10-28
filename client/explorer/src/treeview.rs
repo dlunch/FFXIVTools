@@ -1,54 +1,48 @@
-use std::collections::BTreeSet;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::boxed::Box;
+use std::collections::HashSet;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
+use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
 pub trait TreeViewData: std::clone::Clone + std::cmp::PartialEq {
     fn render(&self) -> Html;
 }
 
 #[derive(Clone, PartialEq)]
-pub struct TreeViewItem<T: TreeViewData> {
-    id: usize, // auto generated
-
-    pub data: T,
-    pub children: Vec<TreeViewItem<T>>,
+pub struct TreeViewItem<K: std::clone::Clone + std::cmp::PartialEq + std::hash::Hash, V: TreeViewData> {
+    pub key: K,
+    pub value: V,
 }
 
-static mut TREE_ID: AtomicUsize = AtomicUsize::new(0);
-
-impl<T: TreeViewData> TreeViewItem<T> {
-    pub fn new(data: T, children: Vec<TreeViewItem<T>>) -> Self {
-        let id = unsafe { TREE_ID.fetch_add(1, Ordering::SeqCst) };
-
-        Self { id, data, children }
-    }
+pub enum Msg<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> {
+    TreeItemClick(K),
+    Children(Vec<TreeViewItem<K, V>>),
 }
 
-pub enum Msg {
-    TreeItemClick(usize),
-}
+type DataRequestCallback<K, V> = Callback<(K, Callback<Vec<TreeViewItem<K, V>>>)>;
 
 #[derive(Properties, Clone, PartialEq)]
-pub struct Props<T: TreeViewData> {
-    pub data: Vec<TreeViewItem<T>>,
+pub struct Props<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> {
+    pub item_key: K,
+    pub data_request_callback: DataRequestCallback<K, V>,
 }
 
-pub struct TreeView<T: TreeViewData + 'static> {
+pub struct TreeView<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeViewData + 'static> {
     link: ComponentLink<Self>,
-    props: Props<T>,
-    shown_items: BTreeSet<usize>,
+    props: Props<K, V>,
+    shown_items: HashSet<K>,
+    data: Option<Vec<TreeViewItem<K, V>>>,
 }
 
-impl<T: TreeViewData + 'static> Component for TreeView<T> {
-    type Message = Msg;
-    type Properties = Props<T>;
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeViewData + 'static> Component for TreeView<K, V> {
+    type Message = Msg<K, V>;
+    type Properties = Props<K, V>;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             link,
             props,
-            shown_items: BTreeSet::new(),
+            shown_items: HashSet::new(),
+            data: None,
         }
     }
 
@@ -56,6 +50,11 @@ impl<T: TreeViewData + 'static> Component for TreeView<T> {
         match msg {
             Msg::TreeItemClick(x) => {
                 self.toggle_item(x);
+
+                true
+            }
+            Msg::Children(x) => {
+                self.data = Some(x);
 
                 true
             }
@@ -72,44 +71,44 @@ impl<T: TreeViewData + 'static> Component for TreeView<T> {
     }
 
     fn view(&self) -> Html {
-        html! {
-            <ul class="tree-view">
-            {
-                 self
-                    .props
-                    .data
-                    .iter()
-                    .map(|x| self.render_item(x))
-                    .collect::<Html>()
+        if let Some(x) = &self.data {
+            let items = x.iter().map(|x| self.render_item(x)).collect::<Html>();
+            html! {
+                <ul class="tree-view">{ items }</ul>
             }
-            </ul>
+        } else {
+            self.props
+                .data_request_callback
+                .emit((self.props.item_key.clone(), self.link.callback(Msg::Children)));
+
+            html! {}
         }
     }
 }
 
-impl<T: TreeViewData> TreeView<T> {
-    fn render_item(&self, item: &TreeViewItem<T>) -> Html {
-        let id = item.id;
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> TreeView<K, V> {
+    fn render_item(&self, item: &TreeViewItem<K, V>) -> Html {
+        let children = if self.shown_items.contains(&item.key) {
+            html! { <TreeView<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
+        } else {
+            html! {}
+        };
 
+        let key = Box::new(item.key.clone());
+        let callback = self.link.callback(move |_| Msg::TreeItemClick(key.as_ref().clone()));
         html! {
             <li>
-                <span onclick=self.link.callback(move |_| Msg::TreeItemClick(id))>{ item.data.render() }</span>
-                {
-                    if self.shown_items.contains(&item.id) {
-                        html! { <TreeView<T> data=item.children.clone() /> }
-                    } else {
-                        html! {}
-                    }
-                }
+                <span onclick=callback>{ item.value.render() }</span>
+                { children }
             </li>
         }
     }
 
-    fn toggle_item(&mut self, item_id: usize) {
-        if self.shown_items.contains(&item_id) {
-            self.shown_items.remove(&item_id);
+    fn toggle_item(&mut self, key: K) {
+        if self.shown_items.contains(&key) {
+            self.shown_items.remove(&key);
         } else {
-            self.shown_items.insert(item_id);
+            self.shown_items.insert(key);
         }
     }
 }

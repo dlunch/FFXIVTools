@@ -787,11 +787,9 @@ name = "explorer"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "futures",
- "js-sys",
+ "console_log",
+ "log",
  "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test",
  "web-sys",
  "wee_alloc",
  "yew",
