@@ -9,5 +9,26 @@ export default merge(common, {
     contentBase: './dist',
     hot: true,
   },
+  module: {
+    rules: [
+      {
+        test: /\.less$/,
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              esModule: false,
+            },
+          },
+          {
+            loader: 'less-loader',
+          },
+        ],
+      },
+    ],
+  },
   plugins: [new webpack.HotModuleReplacementPlugin()],
 });
