@@ -1,6 +1,15 @@
 .tree-view {
   & > li {
     cursor: pointer;
+    list-style: none;
+  }
+
+  & > li:not(.expanded)::before {
+    content: '-';
+  }
+
+  & > li.expanded::before {
+    content: '+';
   }
 }
 
