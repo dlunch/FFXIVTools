@@ -82,7 +82,7 @@ struct App<'a> {
     renderer: Renderer,
     render_target: WindowRenderTarget,
     context: Context,
-    package: Arc<BatchedPackage<'a>>,
+    package: Arc<BatchedPackage>,
     scene: Scene<'a>,
 }
 

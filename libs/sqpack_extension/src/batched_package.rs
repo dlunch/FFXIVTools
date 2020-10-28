@@ -9,13 +9,13 @@ use sqpack::{Package, Result, SqPackFileReference};
 
 use crate::BatchablePackage;
 
-pub struct BatchedPackage<'a> {
-    real: Box<dyn BatchablePackage + 'a>,
+pub struct BatchedPackage {
+    real: Box<dyn BatchablePackage + 'static>,
     waiters: Spinlock<HashMap<SqPackFileReference, Vec<oneshot::Sender<Vec<u8>>>>>,
 }
 
-impl<'a> BatchedPackage<'a> {
-    pub fn new<R: BatchablePackage + 'a>(real: R) -> Self {
+impl BatchedPackage {
+    pub fn new<R: BatchablePackage + 'static>(real: R) -> Self {
         Self {
             real: Box::new(real),
             waiters: Spinlock::new(HashMap::new()),
@@ -56,7 +56,7 @@ impl<'a> BatchedPackage<'a> {
 }
 
 #[async_trait]
-impl Package for BatchedPackage<'_> {
+impl Package for BatchedPackage {
     async fn read_file_by_reference(&self, reference: &SqPackFileReference) -> Result<Vec<u8>> {
         let (tx, rx) = oneshot::channel();
 
