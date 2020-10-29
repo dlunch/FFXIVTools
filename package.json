@@ -10,7 +10,8 @@
     "devserver": "webpack serve --config webpack/webpack.config.dev.ts"
   },
   "dependencies": {
-    "electron": "^10.1.5"
+    "electron": "^10.1.5",
+    "html-entry-loader": "git+https://github.com/dlunch/html-entry-loader.git"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^6.0.0",

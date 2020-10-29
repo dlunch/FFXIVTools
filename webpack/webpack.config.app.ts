@@ -36,10 +36,6 @@ const config: webpack.Configuration = {
   resolve: {
     extensions: ['.ts', '.js'],
     plugins: [new TsconfigPathsPlugin()],
-    modules: ['.', 'node_modules'],
-  },
-  resolveLoader: {
-    modules: ['node_modules', 'webpack'],
   },
 };
 
