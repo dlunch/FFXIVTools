@@ -81,7 +81,9 @@ impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeVie
                 .data_request_callback
                 .emit((self.props.item_key.clone(), self.link.callback(Msg::Children)));
 
-            html! {}
+            html! {
+                <div>{ "Loading..." }</div>
+            }
         }
     }
 }
