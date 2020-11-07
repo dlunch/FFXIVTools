@@ -13,7 +13,7 @@ futures = {version = "^0.3", features = ["default"], default-features = false }
 nalgebra = { version = "^0.22", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
-hashbrown = { version = "^0.8", features = ["ahash", "inline-more"], default-features = false }
+hashbrown = { version = "^0.9", features = ["ahash", "inline-more"], default-features = false }
 once_cell = { version = "^1.4", features = ["std"], default-features = false }
 
 renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }

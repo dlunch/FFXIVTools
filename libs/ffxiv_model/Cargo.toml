@@ -12,7 +12,7 @@ doctest = false
 [dependencies]
 raw-window-handle = { version = "^0.3", default-features = false }
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
-hashbrown = { version = "^0.8", features = ["ahash", "inline-more"], default-features = false }
+hashbrown = { version = "^0.9", features = ["ahash", "inline-more"], default-features = false }
 spinning_top = { version = "^0.2", default-features = false }
 log = { version = "^0.4", default-features = false }
 enum-iterator = { version = "^0.6", default-features = false }
