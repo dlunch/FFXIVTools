@@ -1,5 +1,6 @@
 target
 dist
-web/pkg
+**/pkg
 **/node_modules
 data
+screenshots
