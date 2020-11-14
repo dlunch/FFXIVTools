@@ -1,0 +1,89 @@
+on:
+  push:
+#    branches:
+#      - master
+#    paths:
+#      - "server/**"
+
+name: Build server image
+
+jobs:
+  build_server:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        targets:
+        - tag: "amd64"
+          platform: "linux/amd64"
+        - tag: "armv7"
+          platform: "linux/arm/v7"
+        - tag: "arm64"
+          platform: "linux/arm64"
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          version: latest
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-${{ matrix.targets.tag }}-buildx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ matrix.targets.tag }}-buildx-
+
+      - name: Docker Login
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Docker Build
+        run: |
+          docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --cache-to "type=local,dest=/tmp/.buildx-cache,mode=max" \
+            --platform ${{ matrix.targets.platform }} \
+            --push \
+            --tag ghcr.io/dlunch/ffxivtools_server:latest-${{ matrix.targets.tag }} \
+            --file ./server/Dockerfile .
+
+      - name: Clear
+        if: always()
+        run: |
+          rm -f ${HOME}/.docker/config.json
+  merge_tags:
+    needs: build_server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Docker Login
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+        run: |
+          docker manifest create ghcr.io/dlunch/ffxivtools_server:latest \
+            ghcr.io/dlunch/ffxivtools_server:latest-amd64 \
+            ghcr.io/dlunch/ffxivtools_server:latest-armv7 \
+            ghcr.io/dlunch/ffxivtools_server:latest-arm64
+          docker manifest push ghcr.io/dlunch/ffxivtools_server:latest
+
+      - name: Clear
+        if: always()
+        run: |
+          rm -f ${HOME}/.docker/config.json
