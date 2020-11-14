@@ -2,8 +2,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "server/**"
 
 name: Build server image
 
