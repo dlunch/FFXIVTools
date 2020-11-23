@@ -1,0 +1,19 @@
+.tree-view > li {
+  cursor: pointer;
+  list-style: none;
+}
+.tree-view > li:not(.expanded)::before {
+  content: '-';
+}
+.tree-view > li.expanded::before {
+  content: '+';
+}
+.file-list-view {
+  float: left;
+  width: 20%;
+}
+.content-view {
+  float: left;
+  width: 80%;
+}
+
