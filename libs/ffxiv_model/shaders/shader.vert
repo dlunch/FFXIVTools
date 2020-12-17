@@ -2,8 +2,8 @@
 #extension GL_EXT_control_flow_attributes : enable
 
 layout(location = 0) in vec4 Position;
-layout(location = 1) in vec4 BoneWeight;
-layout(location = 2) in vec4 BoneIndex;
+layout(location = 1) in ivec4 BoneWeight;
+layout(location = 2) in ivec4 BoneIndex;
 layout(location = 3) in vec4 Normal;
 layout(location = 4) in vec4 TexCoord;
 layout(location = 5) in vec4 BiTangent;
@@ -27,7 +27,7 @@ void getPosition(out vec4 position, out vec4 normal) {
 
 	[[unroll]]
 	for(int i = 0; i < 4; i ++)	{
-		int index = int(BoneIndex[i]);
+		int index = BoneIndex[i];
 		float weight = BoneWeight[i];
 		mat4 boneTransform = mat4(BoneTransforms[index * 3], BoneTransforms[index * 3 + 1], BoneTransforms[index * 3 + 2], vec4(0, 0, 0, 1));
 		position += Position * boneTransform * (weight / 255.0);
