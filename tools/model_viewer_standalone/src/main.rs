@@ -91,7 +91,7 @@ impl<'a> App<'a> {
         #[cfg(unix)]
         let path = "/mnt/e/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
         #[cfg(windows)]
-        let path = "D:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
+        let path = "E:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
 
         let package = if fs::metadata(path).await.is_ok() {
             BatchedPackage::new(SqPackPackage::new(&Path::new(path)).unwrap())
