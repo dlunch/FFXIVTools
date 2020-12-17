@@ -89,7 +89,7 @@ struct App<'a> {
 impl<'a> App<'a> {
     pub async fn new(window: &Window) -> App<'a> {
         #[cfg(unix)]
-        let path = "/mnt/d/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
+        let path = "/mnt/e/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
         #[cfg(windows)]
         let path = "D:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
 
