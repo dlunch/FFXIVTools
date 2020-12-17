@@ -54,7 +54,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           choco install ninja llvm
-          Remove-Item -Recurse -Force C:\msys2
+          Remove-Item -Recurse -Force C:\msys64
 
       - uses: actions-rs/cargo@v1
         with:
