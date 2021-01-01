@@ -22,7 +22,7 @@ void main() {
         discard;
 
     ivec2 normalSize = textureSize(Normal, 0);
-    ivec2 coord = {FragmentTexCoord.x * normalSize.x, FragmentTexCoord.y * normalSize.y};
+    ivec2 coord = {int(FragmentTexCoord.x * normalSize.x), int(FragmentTexCoord.y * normalSize.y)};
     float colorTableKey = texelFetch(Normal, coord, 0).a;
 
     ivec2 colorTableSize = textureSize(ColorTable, 0);
