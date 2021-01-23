@@ -12,11 +12,11 @@ default = []
 std = ["sqpack/std", "async-std"]
 
 [dependencies]
-cfg-if = { version = "^0.1", default-features = false }
+cfg-if = { version = "^1.0", default-features = false }
 futures = {version = "^0.3", features = ["alloc"], default-features = false }
 log = { version = "^0.4", default-features = false }
 async-trait = { version = "^0.1.24", default-features = false }
-bytes = { version = "^0.5.4", default-features = false }
+bytes = { version = "^1.0", default-features = false }
 hashbrown = { version = "^0.9", features = ["ahash", "inline-more"], default-features = false }
 spinning_top = { version = "^0.2", default-features = false }
 
@@ -30,7 +30,7 @@ pretty_env_logger = { version = "^0.4", default-features = false }
 async-std = { version = "^1.6", features = ["attributes", "alloc"], default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-reqwest = { version = "^0.10", features = ["default-tls", "stream"], default-features = false }
+reqwest = { version = "^0.11", features = ["default-tls", "stream"], default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "^0.3" }

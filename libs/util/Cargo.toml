@@ -12,7 +12,7 @@ default = []
 std = ["async-std"]
 
 [dependencies]
-cfg-if = { version = "^0.1", default-features = false }
+cfg-if = { version = "^1.0", default-features = false }
 async-trait = { version = "^0.1.24", default-features = false }
 
 async-std = { version = "^1.6", features = ["default"], default-features = false, optional = true }

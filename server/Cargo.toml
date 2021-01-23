@@ -10,7 +10,7 @@ default = []
 [dependencies]
 rocket = { git = "https://github.com/SergioBenitez/Rocket", default-features = false  }
 futures = { version = "^0.3", default-features = false }
-itertools = { version = "^0.9", features = ["use_std"], default-features = false }
+itertools = { version = "^0.10", features = ["use_std"], default-features = false }
 log = { version = "^0.4", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 serde_json = {version = "^1.0", default-features = false }
