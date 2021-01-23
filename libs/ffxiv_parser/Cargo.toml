@@ -18,7 +18,7 @@ serde_repr = { version = "^0.1", default-features = false }
 hashbrown = { version = "^0.9", features = ["ahash", "inline-more"], default-features = false }
 phf = { version = "^0.8", features = ["macros"], default-features = false }
 log = { version = "^0.4", default-features = false }
-nalgebra = { version = "^0.23", default-features = false }
+nalgebra = { version = "^0.24", default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 util = { version = "^0.1", default-features = false, path = "../util" }
