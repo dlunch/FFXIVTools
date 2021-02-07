@@ -12,12 +12,12 @@ jobs:
     strategy:
       matrix:
         targets:
-        - tag: "amd64"
-          platform: "linux/amd64"
-        - tag: "armv7"
-          platform: "linux/arm/v7"
-        - tag: "arm64"
-          platform: "linux/arm64"
+          - tag: "amd64"
+            platform: "linux/amd64"
+          - tag: "armv7"
+            platform: "linux/arm/v7"
+          - tag: "arm64"
+            platform: "linux/arm64"
 
     steps:
       - name: Cancel Previous Runs
@@ -58,7 +58,7 @@ jobs:
             --platform ${{ matrix.targets.platform }} \
             --push \
             --tag ghcr.io/dlunch/ffxivtools_server:latest-${{ matrix.targets.tag }} \
-            --file ./server/Dockerfile .
+            .
 
       - name: Clear
         if: always()
