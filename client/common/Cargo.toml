@@ -12,7 +12,7 @@ doctest = false
 [dependencies]
 async-trait = { version = "^0.1.24", default-features = false }
 wasm-bindgen-futures = { version = "^0.4", default-features = false }
-wasm-timer = { version = "^0.2", default-features = false }
+async-timer = { version = "^0.7", default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", path = "../../libs/sqpack_extension" }
