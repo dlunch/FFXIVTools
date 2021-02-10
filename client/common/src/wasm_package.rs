@@ -23,13 +23,14 @@ impl WasmPackage {
         let package = result.clone();
 
         spawn_local(async move {
+            let mut interval = Interval::platform_new(Duration::from_millis(16));
             loop {
                 if Arc::strong_count(&package) == 1 {
                     break;
                 }
 
                 package.poll().await.unwrap();
-                Interval::platform_new(Duration::from_millis(16)).as_mut().await;
+                interval.as_mut().await;
             }
         });
 
