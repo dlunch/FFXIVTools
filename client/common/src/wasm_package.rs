@@ -3,10 +3,10 @@ use crate::Region;
 use alloc::{boxed::Box, format, sync::Arc, vec::Vec};
 use core::time::Duration;
 
-use async_timer::Interval;
 use async_trait::async_trait;
 use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 use wasm_bindgen_futures::spawn_local;
+use wasm_timer::Delay;
 
 use sqpack::{Package, Result, SqPackFileReference};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
@@ -32,14 +32,13 @@ impl WasmPackage {
         let package = result.clone();
 
         spawn_local(async move {
-            let mut interval = Interval::platform_new(Duration::from_millis(16));
             loop {
                 if Arc::strong_count(&package) == 1 {
                     break;
                 }
 
                 package.poll().await.unwrap();
-                interval.as_mut().await;
+                Delay::new(Duration::from_millis(16)).await.unwrap();
             }
         });
 
