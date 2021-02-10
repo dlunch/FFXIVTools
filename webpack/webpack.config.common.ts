@@ -56,6 +56,7 @@ const configuration: webpack.Configuration = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    modules: ['node_modules', 'client/common'],
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     plugins: [new TsconfigPathsPlugin() as any],
@@ -65,6 +66,9 @@ const configuration: webpack.Configuration = {
   },
   plugins: [
     new HtmlEntryLoader.EntryExtractPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST),
+    }),
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     new WasmPackPlugin({

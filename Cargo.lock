@@ -461,8 +461,10 @@ dependencies = [
  "async-timer",
  "async-trait",
  "ffxiv_parser",
+ "js-sys",
  "sqpack",
  "sqpack_extension",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
 
