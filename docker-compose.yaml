@@ -6,8 +6,11 @@ services:
       dockerfile: Dockerfile.server
     volumes:
       - ./data:/server/data
+    environment:
+      ROCKET_PROFILE: release
+      ROCKET_ADDRESS: 0.0.0.0
     ports:
-      - 8000:80
+      - 8000:8000
   client:
     build:
       context: .
