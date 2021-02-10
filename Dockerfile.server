@@ -23,5 +23,4 @@ COPY --from=builder /src/build/bin /server
 
 EXPOSE 8000
 WORKDIR "/server"
-ENV ROCKET_ENV production
 ENTRYPOINT ["/server/server"]
