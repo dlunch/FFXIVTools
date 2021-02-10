@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    volumes:
+      - ./data:/server/data
+    ports:
+      - 8000:80
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports:
+      - 8080:80

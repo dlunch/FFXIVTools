@@ -58,6 +58,7 @@ jobs:
             --platform ${{ matrix.targets.platform }} \
             --push \
             --tag ghcr.io/dlunch/ffxivtools_server:latest-${{ matrix.targets.tag }} \
+            --file Dockerfile.server \
             .
 
       - name: Clear
