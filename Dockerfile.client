@@ -17,6 +17,8 @@ RUN apt-get install build-essential protobuf-compiler libssl-dev -y
 WORKDIR /src
 
 COPY . .
+
+ENV IS_LOCALHOST=1
 RUN --mount=type=cache,target=/src/node_modules npm install
 RUN --mount=type=cache,target=/src/target --mount=type=cache,target=/src/node_modules npm run build:prod
 

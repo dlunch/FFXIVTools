@@ -43,7 +43,7 @@ impl Component for FileListView {
         match msg {
             Msg::FetchTreeViewData((key, callback)) => {
                 spawn_local(async move {
-                    let context = Context::get();
+                    let context = Context::get().await;
                     let files = context.file_list.get_files(&key).await.unwrap();
 
                     let result = files

@@ -131,7 +131,7 @@ impl App {
     }
 
     async fn read_names<'a, T: NamedExRow<'static> + 'static>(region: &Region) -> Result<BTreeMap<u32, Vec<String>>> {
-        let package = WasmPackage::new(region);
+        let package = WasmPackage::new(region).await;
 
         let wrapped_ex = WrappedEx::<T>::new(&package).await?;
         // TODO do we really require unsafe here??
