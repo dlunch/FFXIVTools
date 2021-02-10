@@ -13,26 +13,7 @@ Basic rendering works on PC
 
 ![](https://github.com/dlunch/FFXIVTools/raw/master/screenshots/200521.png)
 
-# Build instructions
+# Running
 
-## Main website
-
-Build
-
-```
-npm run build
-```
-
-Devserver
-
-```
-npm run devserver
-```
-
-## Server
-
-Run
-
-```
-docker run -p 8000:8000 -d --volume=<data path>:/server/data dlunch/ffxivtools_server:latest
-```
+`docker-compose up`
+and open `http://localhost:8080` in your web browser
