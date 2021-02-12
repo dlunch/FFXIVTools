@@ -2,7 +2,7 @@ use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, S
 
 use wasm_bindgen_futures::spawn_local;
 
-use super::tree_component::{TreeComponent, TreeData, TreeItem};
+use super::tree::{Tree, TreeData, TreeItem};
 use crate::context::Context;
 
 #[derive(Clone, PartialEq)]
@@ -27,11 +27,11 @@ pub struct Props {
     pub file_select_callback: Callback<String>,
 }
 
-pub struct FileListComponent {
+pub struct FileList {
     link: ComponentLink<Self>,
 }
 
-impl Component for FileListComponent {
+impl Component for FileList {
     type Message = Msg;
     type Properties = Props;
 
@@ -73,7 +73,7 @@ impl Component for FileListComponent {
     fn view(&self) -> Html {
         html! {
             <div class="file-list-component">
-                <TreeComponent<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeData(x)) />
+                <Tree<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeData(x)) />
             </div>
         }
     }

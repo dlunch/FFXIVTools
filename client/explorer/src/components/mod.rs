@@ -1,3 +1,3 @@
-pub mod content_component;
-pub mod file_list_component;
-pub mod tree_component;
+pub mod content;
+pub mod file_list;
+pub mod tree;
