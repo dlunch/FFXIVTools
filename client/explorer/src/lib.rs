@@ -1,7 +1,7 @@
 mod app;
 mod context;
 mod file_list;
-mod view;
+mod components;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 

@@ -2,7 +2,7 @@ use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, S
 
 use wasm_bindgen_futures::spawn_local;
 
-use super::tree_view::{TreeView, TreeViewData, TreeViewItem};
+use super::tree_component::{TreeComponent, TreeData, TreeItem};
 use crate::context::Context;
 
 #[derive(Clone, PartialEq)]
@@ -10,7 +10,7 @@ pub struct Item {
     text: String,
 }
 
-impl TreeViewData for Item {
+impl TreeData for Item {
     fn render(&self) -> Html {
         html! {
             <> { &self.text } </>
@@ -19,7 +19,7 @@ impl TreeViewData for Item {
 }
 
 pub enum Msg {
-    FetchTreeViewData((String, Callback<Vec<TreeViewItem<String, Item>>>)),
+    FetchTreeData((String, Callback<Vec<TreeItem<String, Item>>>)),
 }
 
 #[derive(Properties, Clone, PartialEq)]
@@ -27,11 +27,11 @@ pub struct Props {
     pub file_select_callback: Callback<String>,
 }
 
-pub struct FileListView {
+pub struct FileListComponent {
     link: ComponentLink<Self>,
 }
 
-impl Component for FileListView {
+impl Component for FileListComponent {
     type Message = Msg;
     type Properties = Props;
 
@@ -41,7 +41,7 @@ impl Component for FileListView {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::FetchTreeViewData((key, callback)) => {
+            Msg::FetchTreeData((key, callback)) => {
                 spawn_local(async move {
                     let context = Context::get().await;
                     let files = context.file_list.get_files(&key).await.unwrap();
@@ -51,7 +51,7 @@ impl Component for FileListView {
                         .map(|x| {
                             let new_key = if key.is_empty() { x.clone() } else { format!("{}/{}", key, x) };
 
-                            TreeViewItem {
+                            TreeItem {
                                 key: new_key,
                                 value: Item { text: x },
                             }
@@ -72,8 +72,8 @@ impl Component for FileListView {
 
     fn view(&self) -> Html {
         html! {
-            <div class="file-list-view">
-                <TreeView<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeViewData(x)) />
+            <div class="file-list-component">
+                <TreeComponent<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeData(x)) />
             </div>
         }
     }
