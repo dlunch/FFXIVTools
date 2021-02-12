@@ -3,37 +3,37 @@ use std::collections::HashSet;
 
 use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
-pub trait TreeViewData: std::clone::Clone + std::cmp::PartialEq {
+pub trait TreeData: std::clone::Clone + std::cmp::PartialEq {
     fn render(&self) -> Html;
 }
 
 #[derive(Clone, PartialEq)]
-pub struct TreeViewItem<K: std::clone::Clone + std::cmp::PartialEq + std::hash::Hash, V: TreeViewData> {
+pub struct TreeItem<K: std::clone::Clone + std::cmp::PartialEq + std::hash::Hash, V: TreeData> {
     pub key: K,
     pub value: V,
 }
 
-pub enum Msg<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> {
+pub enum Msg<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeData> {
     TreeItemClick(K),
-    Children(Vec<TreeViewItem<K, V>>),
+    Children(Vec<TreeItem<K, V>>),
 }
 
-type DataRequestCallback<K, V> = Callback<(K, Callback<Vec<TreeViewItem<K, V>>>)>;
+type DataRequestCallback<K, V> = Callback<(K, Callback<Vec<TreeItem<K, V>>>)>;
 
 #[derive(Properties, Clone, PartialEq)]
-pub struct Props<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> {
+pub struct Props<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeData> {
     pub item_key: K,
     pub data_request_callback: DataRequestCallback<K, V>,
 }
 
-pub struct TreeView<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeViewData + 'static> {
+pub struct TreeComponent<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> {
     link: ComponentLink<Self>,
     props: Props<K, V>,
     shown_items: HashSet<K>,
-    data: Option<Vec<TreeViewItem<K, V>>>,
+    data: Option<Vec<TreeItem<K, V>>>,
 }
 
-impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeViewData + 'static> Component for TreeView<K, V> {
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> Component for TreeComponent<K, V> {
     type Message = Msg<K, V>;
     type Properties = Props<K, V>;
 
@@ -88,12 +88,12 @@ impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeVie
     }
 }
 
-impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeViewData> TreeView<K, V> {
-    fn render_item(&self, item: &TreeViewItem<K, V>) -> Html {
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeData> TreeComponent<K, V> {
+    fn render_item(&self, item: &TreeItem<K, V>) -> Html {
         let expanded = self.shown_items.contains(&item.key);
 
         let children = if expanded {
-            html! { <TreeView<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
+            html! { <TreeComponent<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
         } else {
             html! {}
         };

@@ -1,10 +1,10 @@
 use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
-pub struct ContentView {}
+pub struct ContentComponent {}
 
 pub enum Msg {}
 
-impl Component for ContentView {
+impl Component for ContentComponent {
     type Message = Msg;
     type Properties = ();
 
@@ -22,7 +22,7 @@ impl Component for ContentView {
 
     fn view(&self) -> Html {
         html! {
-            <div class="content-view">
+            <div class="content-component">
                 <p> { "content" } </p>
             </div>
         }
