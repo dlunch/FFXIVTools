@@ -2,8 +2,8 @@ use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
 
 use log::debug;
 
-use crate::components::content_component::ContentComponent;
-use crate::components::file_list_component::FileListComponent;
+use crate::components::content::Content;
+use crate::components::file_list::FileList;
 
 pub struct App {
     link: ComponentLink<Self>,
@@ -38,8 +38,8 @@ impl Component for App {
     fn view(&self) -> Html {
         html! {
             <div>
-                <FileListComponent file_select_callback=self.link.callback(|x| Msg::FileSelected(x)) />
-                <ContentComponent />
+                <FileList file_select_callback=self.link.callback(|x| Msg::FileSelected(x)) />
+                <Content />
             </div>
         }
     }

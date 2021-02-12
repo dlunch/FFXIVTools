@@ -26,14 +26,14 @@ pub struct Props<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeD
     pub data_request_callback: DataRequestCallback<K, V>,
 }
 
-pub struct TreeComponent<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> {
+pub struct Tree<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> {
     link: ComponentLink<Self>,
     props: Props<K, V>,
     shown_items: HashSet<K>,
     data: Option<Vec<TreeItem<K, V>>>,
 }
 
-impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> Component for TreeComponent<K, V> {
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeData + 'static> Component for Tree<K, V> {
     type Message = Msg<K, V>;
     type Properties = Props<K, V>;
 
@@ -88,12 +88,12 @@ impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash + 'static, V: TreeDat
     }
 }
 
-impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeData> TreeComponent<K, V> {
+impl<K: std::clone::Clone + std::cmp::Eq + std::hash::Hash, V: TreeData> Tree<K, V> {
     fn render_item(&self, item: &TreeItem<K, V>) -> Html {
         let expanded = self.shown_items.contains(&item.key);
 
         let children = if expanded {
-            html! { <TreeComponent<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
+            html! { <Tree<K, V> item_key=item.key.clone() data_request_callback=self.props.data_request_callback.clone() /> }
         } else {
             html! {}
         };
