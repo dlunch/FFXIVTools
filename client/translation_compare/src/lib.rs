@@ -20,3 +20,6 @@ pub fn start(base_url: &str) {
     };
     yew::start_app_with_props::<app::App>(props);
 }
+
+#[wasm_bindgen(start)]
+pub fn main() {}
