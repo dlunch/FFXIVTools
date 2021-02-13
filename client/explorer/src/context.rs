@@ -12,25 +12,18 @@ pub struct Context {
 }
 
 impl Context {
-    pub async fn get() -> &'static Self {
-        // not threadsafe, but wasm is threadless environment
-        unsafe {
-            match &INSTANCE {
-                Some(x) => x,
-                None => {
-                    let instance = Context::new().await;
-                    INSTANCE = Some(instance);
-
-                    INSTANCE.as_ref().unwrap()
-                }
-            }
-        }
+    pub fn get() -> &'static Self {
+        return unsafe { INSTANCE.as_ref() }.unwrap();
     }
 
-    async fn new() -> Self {
-        let package = Rc::new(WasmPackage::new(&regions()[0]).await);
+    pub async fn init(base_url: &str) {
+        let package = Rc::new(WasmPackage::new(&regions()[0], base_url).await);
         let file_list = FileList::new(package.clone());
 
-        Self { package, file_list }
+        let instance = Self { package, file_list };
+
+        unsafe {
+            INSTANCE = Some(instance);
+        }
     }
 }
