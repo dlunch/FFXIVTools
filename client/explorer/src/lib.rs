@@ -22,3 +22,6 @@ pub fn start(base_url: String) {
 
     yew::start_app::<app::App>();
 }
+
+#[wasm_bindgen(start)]
+pub fn main() {}
