@@ -56,7 +56,6 @@ const configuration: webpack.Configuration = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-    modules: ['node_modules', 'client/common'],
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     plugins: [new TsconfigPathsPlugin() as any],

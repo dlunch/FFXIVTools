@@ -1,7 +1,7 @@
 use alloc::collections::BTreeMap;
 
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
 
 use common::{regions, Region, WasmPackage};
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
@@ -9,7 +9,13 @@ use sqpack::Result;
 
 use crate::list::List;
 
+#[derive(Properties, Clone, PartialEq)]
+pub struct Props {
+    pub base_url: String,
+}
+
 pub struct App {
+    props: Props,
     link: ComponentLink<Self>,
     data: BTreeMap<u32, Vec<String>>,
     progress: (usize, usize),
@@ -23,10 +29,11 @@ pub enum Msg {
 
 impl Component for App {
     type Message = Msg;
-    type Properties = ();
+    type Properties = Props;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
+            props,
             link,
             data: BTreeMap::new(),
             progress: (0, 0),
@@ -100,6 +107,7 @@ impl App {
         let progress_callback = self.link.callback(Msg::Progress);
         let ready_callback = self.link.callback(Msg::OnDataReady);
 
+        let base_url = self.props.base_url.clone();
         spawn_local(async move {
             let regions = regions();
             let mut result = BTreeMap::new();
@@ -108,14 +116,14 @@ impl App {
             for (i, region) in regions.iter().enumerate() {
                 progress_callback.emit((i, regions.len()));
                 let names = match name {
-                    "classjob" => Self::read_names::<ClassJob>(region).await,
-                    "item" => Self::read_names::<Item>(region).await,
-                    "action" => Self::read_names::<Action>(region).await,
-                    "craftaction" => Self::read_names::<CraftAction>(region).await,
-                    "bnpcname" => Self::read_names::<BNpcName>(region).await,
-                    "enpcresident" => Self::read_names::<ENpcResident>(region).await,
-                    "quest" => Self::read_names::<Quest>(region).await,
-                    "placename" => Self::read_names::<PlaceName>(region).await,
+                    "classjob" => Self::read_names::<ClassJob>(region, &base_url).await,
+                    "item" => Self::read_names::<Item>(region, &base_url).await,
+                    "action" => Self::read_names::<Action>(region, &base_url).await,
+                    "craftaction" => Self::read_names::<CraftAction>(region, &base_url).await,
+                    "bnpcname" => Self::read_names::<BNpcName>(region, &base_url).await,
+                    "enpcresident" => Self::read_names::<ENpcResident>(region, &base_url).await,
+                    "quest" => Self::read_names::<Quest>(region, &base_url).await,
+                    "placename" => Self::read_names::<PlaceName>(region, &base_url).await,
                     _ => panic!(),
                 }
                 .unwrap();
@@ -130,8 +138,8 @@ impl App {
         });
     }
 
-    async fn read_names<'a, T: NamedExRow<'static> + 'static>(region: &Region) -> Result<BTreeMap<u32, Vec<String>>> {
-        let package = WasmPackage::new(region).await;
+    async fn read_names<'a, T: NamedExRow<'static> + 'static>(region: &Region, base_url: &str) -> Result<BTreeMap<u32, Vec<String>>> {
+        let package = WasmPackage::new(region, base_url).await;
 
         let wrapped_ex = WrappedEx::<T>::new(&package).await?;
         // TODO do we really require unsafe here??

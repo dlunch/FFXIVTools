@@ -4,29 +4,19 @@ use alloc::{boxed::Box, format, sync::Arc, vec::Vec};
 use core::time::Duration;
 
 use async_trait::async_trait;
-use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 use wasm_bindgen_futures::spawn_local;
 use wasm_timer::Delay;
 
 use sqpack::{Package, Result, SqPackFileReference};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
-
-#[rustfmt::skip]
-#[wasm_bindgen(module = "common")]
-extern "C" {
-    #[wasm_bindgen(js_name = "getBaseUri")]
-    async fn get_base_uri() -> JsValue;
-}
-
 pub struct WasmPackage {
     package: Arc<BatchedPackage>,
 }
 
 impl WasmPackage {
-    pub async fn new(region: &Region) -> Self {
-        let base_uri = unsafe { get_base_uri().await.as_string().unwrap() };
+    pub async fn new(region: &Region, base_url: &str) -> Self {
         let uri = format!("{}_{}", region.name, region.version);
-        let provider = ExtractedFileProviderWeb::new(&format!("{}/{}/", base_uri, uri));
+        let provider = ExtractedFileProviderWeb::new(&format!("{}/{}/", base_url, uri));
 
         let result = Arc::new(BatchedPackage::new(SqPackReaderExtractedFile::new(provider)));
         let package = result.clone();

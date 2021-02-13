@@ -8,12 +8,15 @@ use wasm_bindgen::prelude::wasm_bindgen;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen(start)]
-pub fn main() {
+#[wasm_bindgen]
+pub fn start(base_url: &str) {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
     #[cfg(debug_assertions)]
     console_log::init_with_level(log::Level::Trace).unwrap();
 
-    yew::start_app::<app::App>();
+    let props = app::Props {
+        base_url: base_url.to_owned(),
+    };
+    yew::start_app_with_props::<app::App>(props);
 }
