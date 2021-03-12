@@ -17,7 +17,7 @@ spinning_top = { version = "^0.2", default-features = false }
 log = { version = "^0.4", default-features = false }
 enum-iterator = { version = "^0.6", default-features = false }
 zerocopy = { version = "^0.3", default-features = false }
-nalgebra = { version = "^0.24", default-features = false }
+nalgebra = { version = "^0.25", default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
