@@ -27,12 +27,7 @@ use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExt
 static mut APP: OnceCell<App> = OnceCell::new();
 
 fn main() {
-    let _ = pretty_env_logger::formatted_timed_builder()
-        .filter(Some("sqpack"), log::LevelFilter::Debug)
-        .filter(Some("model_viewer_standalone"), log::LevelFilter::Debug)
-        .filter(Some("renderer"), log::LevelFilter::Debug)
-        .filter(Some("ffxiv_model"), log::LevelFilter::Debug)
-        .try_init();
+    let _ = pretty_env_logger::init_timed();
 
     let event_loop = EventLoop::new();
 
