@@ -6,6 +6,7 @@ use crate::byte_reader::ByteReader;
 use crate::{animation::HavokAnimation, object::HavokObject, transform::HavokTransform};
 
 #[repr(u8)]
+#[allow(clippy::upper_case_acronyms)]
 enum RotationQuantization {
     POLAR32 = 0,
     THREECOMP40 = 1,
@@ -52,6 +53,7 @@ impl RotationQuantization {
 }
 
 #[repr(u8)]
+#[allow(clippy::upper_case_acronyms)]
 enum ScalarQuantization {
     BITS8 = 0,
     BITS16 = 1,
@@ -568,8 +570,6 @@ impl HavokAnimation for HavokSplineCompressedAnimation {
         let mut mask = ByteReader::new(Self::compute_packed_nurbs_offsets(&self.data, &self.block_offsets, block, 0x8000_0000));
 
         let mut result = Vec::with_capacity(self.number_of_transform_tracks);
-        #[allow(clippy::unknown_clippy_lints)]
-        #[allow(clippy::same_item_push)] // https://github.com/rust-lang/rust-clippy/issues/5902
         for _ in 0..self.number_of_transform_tracks {
             let packed_quantization_types = mask.read();
 
