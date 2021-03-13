@@ -7,65 +7,6 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug integration test 'read_test'",
-      "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=read_test",
-          "--package=sqpack_reader",
-          "--all-features"
-        ],
-        "filter": {
-          "name": "read_test",
-          "kind": "test"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Debug integration test 'read_as_compressed_test'",
-      "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=read_as_compressed_test",
-          "--package=sqpack_reader",
-          "--all-features"
-        ],
-        "filter": {
-          "name": "read_as_compressed_test",
-          "kind": "test"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Debug integration test 'read_file_test'",
-      "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=read_file_test",
-          "--package=sqpack_reader"
-        ],
-        "filter": {
-          "name": "read_file_test",
-          "kind": "test"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Debug integration test 'exl_test'",
       "cargo": {
         "args": ["test", "--no-run", "--test=exl_test"],
@@ -82,12 +23,7 @@
       "request": "launch",
       "name": "Debug integration test 'exd_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=exd_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=exd_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "exd_test",
           "kind": "test"
@@ -101,12 +37,7 @@
       "request": "launch",
       "name": "Debug integration test 'lvb_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=lvb_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=lvb_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "lvb_test",
           "kind": "test"
@@ -120,12 +51,7 @@
       "request": "launch",
       "name": "Debug integration test 'lgb_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=lgb_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=lgb_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "lgb_test",
           "kind": "test"
@@ -139,12 +65,7 @@
       "request": "launch",
       "name": "Debug integration test 'mdl_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=mdl_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=mdl_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "mdl_test",
           "kind": "test"
@@ -158,12 +79,7 @@
       "request": "launch",
       "name": "Debug integration test 'mtrl_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=mtrl_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=mtrl_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "mtrl_test",
           "kind": "test"
@@ -177,12 +93,7 @@
       "request": "launch",
       "name": "Debug integration test 'pbd_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=pbd_test",
-          "--package=ffxiv_parser"
-        ],
+        "args": ["test", "--no-run", "--test=pbd_test", "--package=ffxiv_parser"],
         "filter": {
           "name": "pbd_test",
           "kind": "test"
@@ -196,12 +107,7 @@
       "request": "launch",
       "name": "Debug integration test 'animation_test'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--test=animation_test",
-          "--package=havok_parser"
-        ],
+        "args": ["test", "--no-run", "--test=animation_test", "--package=havok_parser"],
         "filter": {
           "name": "animation_test",
           "kind": "test"
@@ -229,11 +135,7 @@
       "request": "launch",
       "name": "Debug executable 'model_viewer_standalone'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=model_viewer_standalone",
-          "--package=model_viewer_standalone"
-        ],
+        "args": ["build", "--bin=model_viewer_standalone", "--package=model_viewer_standalone"],
         "filter": {
           "name": "model_viewer_standalone",
           "kind": "bin"
