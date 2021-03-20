@@ -80,7 +80,7 @@ impl Context {
     }
 
     async fn create_empty_texture(renderer: &Renderer) -> Arc<Texture> {
-        Arc::new(Texture::with_texels(renderer, 1, 1, &[0, 0, 0, 0], TextureFormat::Rgba8Unorm).await)
+        Arc::new(Texture::with_texels(renderer, 1, 1, &[0, 0, 0, 0], TextureFormat::Rgba8Unorm))
     }
 
     async fn create_equipment_deformer_parameters(package: &dyn Package) -> Result<HashMap<BodyId, Eqdp>> {

@@ -141,6 +141,6 @@ impl<'a> App<'a> {
 
     pub async fn render(&mut self) {
         self.package.poll().await.unwrap();
-        self.renderer.render(&self.scene, &mut self.render_target).await;
+        self.renderer.render(&self.scene, &mut self.render_target);
     }
 }
