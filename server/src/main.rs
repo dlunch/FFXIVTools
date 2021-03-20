@@ -18,10 +18,10 @@ struct CloudFlareHeader {
 }
 
 #[rocket::async_trait]
-impl<'a, 'r> FromRequest<'a, 'r> for CloudFlareHeader {
+impl<'r> FromRequest<'r> for CloudFlareHeader {
     type Error = ();
 
-    async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let dc = request.headers().get_one("CF_RAY").map(|x| x.split('-').nth(1).unwrap().to_owned());
         let ip_country = request.headers().get_one("CF_IPCOUNTRY").map(|x| x.to_owned());
 
