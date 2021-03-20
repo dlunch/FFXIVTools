@@ -243,7 +243,7 @@ impl HavokSplineCompressedAnimation {
 
         let mut result = [0., 0., 0., 1.];
         for (i, &item) in buf.iter().enumerate() {
-            result[i] = ((item as f32) - 2047.0) * 0.00034543566;
+            result[i] = ((item as f32) - 2047.0) / 2895.0;
         }
 
         let length_square = result.iter().map(|x| x * x).sum::<f32>();
@@ -283,7 +283,7 @@ impl HavokSplineCompressedAnimation {
 
         let mut result = [0., 0., 0., 1.];
         for (i, &item) in vals.iter().enumerate() {
-            result[i] = ((item as f32) - 16383.0) * 0.000043161006;
+            result[i] = ((item as f32) - 16383.0) / 23169.0;
         }
 
         let length_square = result.iter().map(|x| x * x).sum::<f32>();

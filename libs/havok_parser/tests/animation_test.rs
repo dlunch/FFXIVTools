@@ -30,7 +30,7 @@ async fn pap_test() -> Result<()> {
     let frame = havok_animation.sample(0.);
     assert_eq!(frame[0].scale, [1., 1., 1., 1.]);
     assert_eq!(frame[0].translation, [-0.0030806093, 0.43175536, 0.0022856377, 0.0]);
-    assert_eq!(frame[2].rotation, [0.5508639, -0.42250308, 0.568975, -0.44080335]);
+    assert_eq!(frame[2].rotation, [0.55086535, -0.42250422, 0.5689718, -0.4408045]);
 
     Ok(())
 }
