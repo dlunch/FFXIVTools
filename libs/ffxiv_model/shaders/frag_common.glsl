@@ -50,8 +50,3 @@ vec3 calculateLight(in vec4 fragmentPosition, in mat4 fragmentTBN, in vec4 diffu
 
 	return result;
 }
-
-vec4 calculateGamma(in vec3 color) {
-#define GAMMA 2.2
-    return vec4(pow(abs(color), vec3(1.0 / GAMMA)), 1.0);
-}

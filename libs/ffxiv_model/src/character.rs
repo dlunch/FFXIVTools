@@ -33,10 +33,14 @@ impl Character {
             .map(|(equipment_part, equipment)| ModelReader::read_equipment(renderer, package, &customization, equipment_part, equipment, context));
         let mut parts = read_futures
             .map(|x| {
-                x.then(|data| async {
-                    Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(
-                        CharacterPart::with_equipment_model(renderer, data?, &bone_transforms, context, &customization).await,
-                    ))
+                x.map(|data| {
+                    Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(CharacterPart::with_equipment_model(
+                        renderer,
+                        data?,
+                        &bone_transforms,
+                        context,
+                        &customization,
+                    )))
                 })
             })
             .collect::<FuturesUnordered<_>>()

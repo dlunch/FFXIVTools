@@ -7,7 +7,7 @@ edition = "2018"
 [features]
 
 [dependencies]
-winit = { version = "^0.24", features = ["wayland"], default-features = false }
+winit = { version = "^0.24", features = ["wayland", "x11"], default-features = false }
 async-std = { version = "^1.9", features = ["default", "attributes", "tokio1", "unstable"], default-features = false }
 futures = {version = "^0.3", features = ["default"], default-features = false }
 nalgebra = { version = "^0.25", default-features = false }

@@ -30,6 +30,5 @@ void main() {
     vec4 diffuseMap = texelFetch(ColorTable, ivec2(0, colorTabley), 0);
     vec4 specularMap = texelFetch(ColorTable, ivec2(1, colorTabley), 0);
 
-    vec3 color = calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, specularMap, 32.0);
-    OutColor = calculateGamma(color);
+    OutColor = vec4(calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, specularMap, 32.0), 1.0);
 }

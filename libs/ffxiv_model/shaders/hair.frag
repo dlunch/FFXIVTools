@@ -20,6 +20,5 @@ void main() {
 
     vec4 diffuseMap = texture(sampler2D(Diffuse, Sampler), FragmentTexCoord);
 
-    vec3 color = calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, vec4(0, 0, 0, 1), 4.0);
-    OutColor = calculateGamma(color);
+    OutColor = vec4(calculateLight(FragmentPosition, FragmentTBN, diffuseMap, normalMap, vec4(0, 0, 0, 1), 4.0), 1.0);
 }

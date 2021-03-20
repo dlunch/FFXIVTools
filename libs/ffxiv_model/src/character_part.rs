@@ -33,11 +33,11 @@ impl CharacterPart {
 
         let mut models = Vec::with_capacity(mdl.mesh_count(lod));
         for ((mesh_data, buffer_item), (mtrl, texs)) in mdl.meshes(lod).zip(mdl.buffer_items(lod)).zip(model_data.mtrls) {
-            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item).await;
+            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
             let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
             let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, bone_transforms);
 
-            let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0).await;
+            let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
@@ -45,7 +45,7 @@ impl CharacterPart {
         Self { models }
     }
 
-    pub async fn with_equipment_model(
+    pub fn with_equipment_model(
         renderer: &Renderer,
         equipment_model_data: EquipmentModelData,
         _bone_transforms: &HashMap<String, Matrix4<f32>>,
@@ -66,7 +66,7 @@ impl CharacterPart {
 
         let mut models = Vec::with_capacity(mdl.mesh_count(lod));
         for ((mesh_data, buffer_item), (mtrl, texs)) in mdl.meshes(lod).zip(mdl.buffer_items(lod)).zip(equipment_model_data.model_data.mtrls) {
-            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item).await;
+            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
             let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
             let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, &prebone_deformer);
 
@@ -78,8 +78,7 @@ impl CharacterPart {
                 bone_transform,
                 customization,
                 equipment_model_data.stain_id,
-            )
-            .await;
+            );
 
             models.push(Model::new(&renderer, mesh, material, mesh_parts));
         }
@@ -87,7 +86,7 @@ impl CharacterPart {
         Self { models }
     }
 
-    async fn load_mesh(renderer: &Renderer, mesh_data: &MdlMesh<'_>, buffer_item: &BufferItemChunk) -> Mesh {
+    fn load_mesh(renderer: &Renderer, mesh_data: &MdlMesh<'_>, buffer_item: &BufferItemChunk) -> Mesh {
         let vertex_formats = (0..mesh_data.mesh_info.buffer_count as usize)
             .map(|buffer_index| {
                 let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
@@ -103,7 +102,7 @@ impl CharacterPart {
             .map(|i| mesh_data.mesh_info.strides[i] as usize)
             .collect::<Vec<_>>();
 
-        Mesh::new(&renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats).await
+        Mesh::new(&renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats)
     }
 
     fn get_mesh_parts(mdl: &Mdl, mesh_data: &MdlMesh<'_>, visibility_mask: usize, hidden_attributes: &HashSet<&str>) -> Vec<Range<u32>> {

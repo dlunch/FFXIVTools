@@ -42,7 +42,7 @@ impl TextureCache {
         }
         if should_fetch {
             let tex = Tex::new(package, &texture_path).await?;
-            let texture = Arc::new(Self::load_texture(renderer, &tex).await);
+            let texture = Arc::new(Self::load_texture(renderer, &tex));
 
             {
                 let mut textures = self.textures.lock();
@@ -60,9 +60,9 @@ impl TextureCache {
         Ok(self.textures.lock().get(&texture_path).unwrap().clone())
     }
 
-    async fn load_texture(renderer: &Renderer, tex: &Tex) -> Texture {
+    fn load_texture(renderer: &Renderer, tex: &Tex) -> Texture {
         if tex.texture_type() == TextureType::BGRA {
-            Texture::with_texels(&renderer, tex.width() as u32, tex.height() as u32, tex.data(0), TextureFormat::Bgra8Unorm).await
+            Texture::with_texels(&renderer, tex.width() as u32, tex.height() as u32, tex.data(0), TextureFormat::Bgra8Unorm)
         } else {
             Texture::with_compressed_texels(
                 &renderer,
@@ -71,7 +71,6 @@ impl TextureCache {
                 tex.data(0),
                 Self::convert_compressed_texture_format(tex.texture_type()),
             )
-            .await
         }
     }
 

@@ -13,7 +13,7 @@ use renderer::{Buffer, Material, Renderer, Texture};
 use crate::context::Context;
 use crate::customization::Customization;
 
-pub async fn create_material(
+pub fn create_material(
     renderer: &Renderer,
     context: &Context,
     mtrl: &Mtrl,
@@ -29,7 +29,7 @@ pub async fn create_material(
     let textures = gather_textures(mtrl, textures);
     match mtrl.shader_name() {
         "character.shpk" | "characterglass.shpk" => {
-            character_material::CharacterMaterial::create(renderer, context, mtrl, stain_id, textures, uniforms).await
+            character_material::CharacterMaterial::create(renderer, context, mtrl, stain_id, textures, uniforms)
         }
         "hair.shpk" => hair_material::HairMaterial::create(renderer, context, textures, uniforms),
         "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, textures, uniforms),
