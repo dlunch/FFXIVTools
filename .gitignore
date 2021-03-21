@@ -6,3 +6,4 @@ client/dist
 /data
 /target*
 .cargo
+.vscode
