@@ -27,7 +27,7 @@ impl ContextImpl {
                 let mut split = file_name.split('_');
                 Some((path, split.next()?.to_owned(), split.next()?.parse::<usize>().unwrap()))
             })
-            .filter_map(|x| x)
+            .flatten()
             .sorted_by_key(|(_, region, version)| REGIONS.iter().position(|x| x == region).unwrap() * 1000 + version)
             .map(|(path, region, version)| (path, format!("{}_{}", region, version)))
             .rev()

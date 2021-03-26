@@ -117,8 +117,8 @@ impl<'a> App<'a> {
 
         Self {
             renderer,
-            context,
             render_target,
+            context,
             package,
             scene,
         }
