@@ -4,11 +4,11 @@ use util::SliceByteOrderExt;
 
 #[derive(Clone)]
 #[repr(C)]
-pub struct U16BE {
+pub struct U16be {
     raw: [u8; 2],
 }
 
-impl U16BE {
+impl U16be {
     pub fn get(&self) -> u16 {
         u16::from_be_bytes(self.raw)
     }
@@ -16,11 +16,11 @@ impl U16BE {
 
 #[derive(Clone)]
 #[repr(C)]
-pub struct U32BE {
+pub struct U32be {
     raw: [u8; 4],
 }
 
-impl U32BE {
+impl U32be {
     pub fn get(&self) -> u32 {
         u32::from_be_bytes(self.raw)
     }
@@ -47,15 +47,15 @@ impl ExRowType {
 #[repr(C)]
 pub struct ExhHeader {
     _magic: [u8; 4],
-    pub version: U16BE,
-    pub row_size: U16BE,
-    pub column_count: U16BE,
-    pub page_count: U16BE,
-    pub language_count: U16BE,
+    pub version: U16be,
+    pub row_size: U16be,
+    pub column_count: U16be,
+    pub page_count: U16be,
+    pub language_count: U16be,
     _unk1: u16,
-    pub row_type: U16BE,
+    pub row_type: U16be,
     _unk2: u16,
-    pub item_count: U32BE,
+    pub item_count: U32be,
     _unk3: u32,
     _unk4: u32,
 }
@@ -63,8 +63,8 @@ pub struct ExhHeader {
 #[derive(Clone)]
 #[repr(C)]
 pub struct ExhColumnDefinition {
-    pub field_type: U16BE,
-    pub offset: U16BE,
+    pub field_type: U16be,
+    pub offset: U16be,
 }
 
 #[derive(Copy, Clone)]
@@ -76,7 +76,7 @@ pub struct ExhPage {
 
 impl ExhPage {
     pub fn from_raw(raw: &[u8]) -> Self {
-        let start = (&raw[..]).to_int_be::<u32>();
+        let start = raw.to_int_be::<u32>();
         let count = (&raw[size_of::<u32>()..]).to_int_be::<u32>();
 
         Self { start, count }
@@ -86,10 +86,10 @@ impl ExhPage {
 #[repr(C)]
 pub struct ExdHeader {
     _magic: [u8; 4],
-    pub version: U16BE,
+    pub version: U16be,
     _unk1: u16,
-    pub row_size: U32BE,
-    pub data_size: U32BE,
+    pub row_size: U32be,
+    pub data_size: U32be,
     _unk2: u32,
     _unk3: u32,
     _unk4: u32,
@@ -98,24 +98,24 @@ pub struct ExdHeader {
 
 #[repr(C)]
 pub struct ExdRow {
-    pub index: U32BE,
-    pub offset: U32BE,
+    pub index: U32be,
+    pub offset: U32be,
 }
 
 #[repr(C)]
 pub struct ExdMultiRowDataItemHeader {
-    pub sub_index: U16BE,
+    pub sub_index: U16be,
 }
 
 #[repr(C)]
 pub struct ExdMultiRowDataHeader {
-    pub length: U32BE,
-    pub count: U16BE,
+    pub length: U32be,
+    pub count: U16be,
 }
 
 #[repr(C)]
 pub struct ExdDataHeader {
-    pub length: U32BE,
+    pub length: U32be,
     _unk: u16,
 }
 

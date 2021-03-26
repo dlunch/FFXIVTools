@@ -3,13 +3,12 @@ use alloc::{
     format, str,
     string::{String, ToString},
 };
-use core::convert::Into;
 
-pub struct FFXIVString<'a> {
+pub struct FfxivString<'a> {
     data: &'a [u8],
 }
 
-impl<'a> FFXIVString<'a> {
+impl<'a> FfxivString<'a> {
     const MARKUP_START: u8 = b'\x02';
     pub fn new(data: &'a [u8]) -> Self {
         let end = data.iter().position(|&x| x == b'\0').unwrap() + 1;
@@ -96,8 +95,8 @@ impl<'a> FFXIVString<'a> {
     }
 }
 
-impl<'a> Into<String> for FFXIVString<'a> {
-    fn into(self) -> String {
-        self.decode()
+impl<'a> From<FfxivString<'a>> for String {
+    fn from(s: FfxivString<'a>) -> String {
+        s.decode()
     }
 }
