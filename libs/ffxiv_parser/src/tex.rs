@@ -7,6 +7,7 @@ use util::{cast, SliceByteOrderExt};
 
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum TextureType {
     DXT1 = 0x3420,
     DXT3 = 0x3430,
