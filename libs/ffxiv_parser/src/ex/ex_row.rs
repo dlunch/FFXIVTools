@@ -3,12 +3,12 @@ use alloc::vec::Vec;
 use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
 
 use super::definition::{ExFieldType, ExhColumnDefinition};
-use crate::ffxiv_string::FFXIVString;
+use crate::ffxiv_string::FfxivString;
 
 use util::SliceByteOrderExt;
 
 pub enum ExRowItem<'a> {
-    String(FFXIVString<'a>),
+    String(FfxivString<'a>),
     Bool(bool),
     Int8(i8),
     UInt8(u8),
@@ -51,12 +51,12 @@ impl<'a> ExRow<'a> {
         }
     }
 
-    pub fn string(&self, index: usize) -> FFXIVString {
+    pub fn string(&self, index: usize) -> FfxivString {
         debug_assert!(ExFieldType::from_raw(self.columns[index].field_type.get()) == ExFieldType::String);
 
         let str_offset = self.data_slice(index).to_int_be::<u32>() as usize + self.row_size as usize;
 
-        FFXIVString::new(&self.data[str_offset..])
+        FfxivString::new(&self.data[str_offset..])
     }
 
     pub fn bool(&self, index: usize) -> bool {

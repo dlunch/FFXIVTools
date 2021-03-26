@@ -52,7 +52,7 @@ impl Language {
 
 pub use eqdp::Eqdp;
 pub use ex::{Ex, ExList, ExRow, ExRowType};
-pub use ffxiv_string::FFXIVString;
+pub use ffxiv_string::FfxivString;
 pub use lgb::{LayerGroupResourceItem, Lgb};
 pub use lvb::Lvb;
 pub use mdl::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
