@@ -40,7 +40,7 @@ fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
     let response = if enable_cf {
         "https://ffxiv-data.dlunch.net"
     } else {
-        "https://ffxiv-data3.dlunch.net"
+        "https://ffxiv-data-kr.dlunch.net"
     };
 
     Response::build()
