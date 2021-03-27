@@ -71,5 +71,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/dist
-          publish_branch: ${{ fromJSON('["gh-pages", "prod-pages"]')[ github.ref == 'refs/heads/master' ] }}
-          cname: ${{ fromJSON('["ffxiv-new-dev.dlunch.net", "ffxiv-new.dlunch.net"]')[ github.ref == 'refs/heads/master' ] }}
+          publish_branch: ${{ fromJSON('["gh-pages", "prod-pages"]')[ github.ref != 'refs/heads/master' ] }}
+          cname: ${{ fromJSON('["ffxiv-new-dev.dlunch.net", "ffxiv-new.dlunch.net"]')[ github.ref != 'refs/heads/master' ] }}
