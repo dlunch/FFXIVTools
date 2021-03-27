@@ -67,18 +67,9 @@ jobs:
         run: npm run build:prod
 
       - name: Deploy to Github Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/dist
+          publish_branch: ${{ fromJSON('["gh-pages", "prod-pages"]')[ github.ref == 'refs/heads/master' ] }}
           cname: ffxiv-dev-new.dlunch.net
-
-      - name: Deploy to Netlify
-        if: github.ref == 'refs/heads/release'
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --dir=dist --prod
-        env:
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
