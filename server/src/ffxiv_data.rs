@@ -218,8 +218,8 @@ async fn get_compressed_bulk(context: State<'_, Context>, version: String, paths
     Ok(result)
 }
 
-pub async fn config(rocket: Rocket) -> Result<Rocket, Rocket> {
-    Ok(rocket
+pub async fn config(rocket: Rocket<rocket::Build>) -> Rocket<rocket::Build> {
+    rocket
         .mount("/", routes![get_exl, get_ex, get_ex_bulk, get_lvb, get_compressed, get_compressed_bulk])
-        .manage(Context::new().unwrap()))
+        .manage(Context::new().unwrap())
 }
