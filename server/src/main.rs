@@ -70,7 +70,7 @@ fn insert_headers<'a>(response: &'a mut Response, allowed_origin: &'a str) {
     response.set_header(Header::new("Vary", "Origin, Accept-Encoding"));
 }
 
-fn attach_cors<'a, 'r, 's>(req: &'a Request<'r>, mut res: &'a mut Response<'s>) -> BoxFuture<'a, ()> {
+fn attach_cors<'b, 'r>(req: &'r Request<'_>, mut res: &'b mut Response<'r>) -> BoxFuture<'b, ()> {
     Box::pin(async move {
         let source_origin = req.headers().get_one("Origin");
         let allowed_origin = get_allowed_origin(source_origin);
@@ -80,11 +80,11 @@ fn attach_cors<'a, 'r, 's>(req: &'a Request<'r>, mut res: &'a mut Response<'s>) 
 }
 
 #[launch]
-fn rocket() -> rocket::Rocket {
+fn rocket() -> _ {
     pretty_env_logger::init_timed();
 
-    rocket::ignite()
+    rocket::build()
         .attach(AdHoc::on_response("CORS", attach_cors))
-        .attach(AdHoc::on_attach("ffxiv_data", ffxiv_data::config))
+        .attach(AdHoc::on_ignite("ffxiv_data", ffxiv_data::config))
         .mount("/", routes![probe])
 }
