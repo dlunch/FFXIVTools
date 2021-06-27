@@ -1,7 +1,5 @@
 mod ffxiv_data;
 
-use std::io::Cursor;
-
 use futures::future::BoxFuture;
 use rocket::{
     fairing::AdHoc,
@@ -9,7 +7,7 @@ use rocket::{
     http::Header,
     launch,
     request::{FromRequest, Outcome},
-    routes, Request, Response,
+    routes, Request, Responder, Response,
 };
 
 struct CloudFlareHeader {
@@ -29,8 +27,15 @@ impl<'r> FromRequest<'r> for CloudFlareHeader {
     }
 }
 
+#[derive(Responder)]
+#[response(content_type = "text")]
+struct ProbeResponse {
+    body: &'static str,
+    header: Header<'static>,
+}
+
 #[get("/probe")]
-fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
+fn probe<'r>(header: CloudFlareHeader) -> ProbeResponse {
     let enable_cf = if let (Some(dc), Some(ip_country)) = (header.dc, header.ip_country) {
         !(ip_country == "KR" && dc != "ICN")
     } else {
@@ -43,10 +48,10 @@ fn probe<'r>(header: CloudFlareHeader) -> Response<'r> {
         "https://ffxiv-data-kr.dlunch.net"
     };
 
-    Response::build()
-        .raw_header("Cache-Control", "max-age=31536000")
-        .sized_body(response.len(), Cursor::new(response))
-        .finalize()
+    ProbeResponse {
+        body: response,
+        header: Header::new("Cache-Control", "max-age=31536000"),
+    }
 }
 
 fn get_allowed_origin(source_origin: Option<&str>) -> &str {
