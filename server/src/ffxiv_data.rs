@@ -66,7 +66,7 @@ fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackRea
 /// routes
 
 #[get("/parsed/exl/<version>")]
-async fn get_exl(context: State<'_, Context>, version: String) -> Result<content::Json<String>, status::NotFound<&'static str>> {
+async fn get_exl(context: &State<Context>, version: String) -> Result<content::Json<String>, status::NotFound<&'static str>> {
     let package = find_package(&context, &version)?;
     let exl = ExList::new(package).await.map_err(|_| status::NotFound("Not found"))?;
 
@@ -75,7 +75,7 @@ async fn get_exl(context: State<'_, Context>, version: String) -> Result<content
 
 #[get("/parsed/ex/<version>/<language>/<ex_name>")]
 async fn get_ex(
-    context: State<'_, Context>,
+    context: &State<Context>,
     version: String,
     language: u16,
     ex_name: String,
@@ -88,7 +88,7 @@ async fn get_ex(
 
 #[get("/parsed/ex/bulk/<version>/<language>/<ex_names>")]
 async fn get_ex_bulk(
-    context: State<'_, Context>,
+    context: &State<Context>,
     version: String,
     language: u16,
     ex_names: String,
@@ -122,7 +122,7 @@ async fn get_ex_bulk(
 }
 
 #[get("/parsed/lvb/<version>/<path..>")]
-async fn get_lvb(context: State<'_, Context>, version: String, path: PathBuf) -> Result<content::Json<String>, status::NotFound<&'static str>> {
+async fn get_lvb(context: &State<Context>, version: String, path: PathBuf) -> Result<content::Json<String>, status::NotFound<&'static str>> {
     let package = find_package(&context, &version)?;
 
     let lvb = Lvb::new(package, &path.to_str().unwrap())
@@ -146,7 +146,7 @@ async fn get_lvb(context: State<'_, Context>, version: String, path: PathBuf) ->
 
 #[get("/compressed/<version>/<folder_hash>/<file_hash>/<path_hash>")]
 async fn get_compressed(
-    context: State<'_, Context>,
+    context: &State<Context>,
     version: String,
     folder_hash: u32,
     file_hash: u32,
@@ -163,7 +163,7 @@ async fn get_compressed(
 }
 
 #[get("/compressed/<version>/bulk/<paths..>", rank = 0)]
-async fn get_compressed_bulk(context: State<'_, Context>, version: String, paths: PathBuf) -> Result<Vec<u8>, status::NotFound<&'static str>> {
+async fn get_compressed_bulk(context: &State<Context>, version: String, paths: PathBuf) -> Result<Vec<u8>, status::NotFound<&'static str>> {
     let package = find_package(&context, &version)?;
 
     let hashes = paths

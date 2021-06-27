@@ -7,10 +7,10 @@ edition = "2018"
 [features]
 
 [dependencies]
-winit = { version = "^0.24", features = ["wayland", "x11"], default-features = false }
+winit = { version = "^0.25", features = ["wayland", "x11"], default-features = false }
 async-std = { version = "^1.9", features = ["default", "attributes", "tokio1", "unstable"], default-features = false }
 futures = {version = "^0.3", features = ["default"], default-features = false }
-nalgebra = { version = "^0.26", default-features = false }
+nalgebra = { version = "^0.27", default-features = false }
 pretty_env_logger = { version = "^0.4", default-features = false }
 log = { version = "^0.4", default-features = false }
 hashbrown = { version = "^0.11", features = ["ahash", "inline-more"], default-features = false }
