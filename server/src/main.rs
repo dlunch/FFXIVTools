@@ -35,7 +35,7 @@ struct ProbeResponse {
 }
 
 #[get("/probe")]
-fn probe<'r>(header: CloudFlareHeader) -> ProbeResponse {
+fn probe(header: CloudFlareHeader) -> ProbeResponse {
     let enable_cf = if let (Some(dc), Some(ip_country)) = (header.dc, header.ip_country) {
         !(ip_country == "KR" && dc != "ICN")
     } else {
