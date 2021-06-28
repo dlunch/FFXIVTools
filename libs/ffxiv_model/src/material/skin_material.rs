@@ -15,9 +15,8 @@ impl SkinMaterial {
         textures: HashMap<&'static str, Arc<Texture>>,
         uniforms: HashMap<&'static str, Arc<Buffer>>,
     ) -> Material {
-        let vertex_shader = context.shader_holder.vertex_shader.clone();
-        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Skin);
+        let shader = context.shader_holder.shader(ShaderType::Skin);
 
-        Material::new(&renderer, textures, uniforms, vertex_shader, fragment_shader)
+        Material::new(&renderer, textures, uniforms, shader)
     }
 }

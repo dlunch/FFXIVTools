@@ -448,15 +448,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cmake"
-version = "0.1.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb6210b637171dfba4cda12e579ac6dc73f5165ad56133e5d72ef3131f320855"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "cocoa"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1000,7 +991,6 @@ dependencies = [
  "nalgebra",
  "raw-window-handle",
  "renderer",
- "shader_builder",
  "spinning_top",
  "sqpack",
  "zerocopy",
@@ -2661,14 +2651,13 @@ checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 [[package]]
 name = "renderer"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#388e9fb9493285955652e6a2edafa3ca90669386"
+source = "git+https://github.com/dlunch/renderer#31c9866170cf5b2b380a79e7d87a5a8b730c733e"
 dependencies = [
  "futures",
  "hashbrown 0.11.2",
  "log",
  "nalgebra",
  "raw-window-handle",
- "shader_builder",
  "spinning_top",
  "squish",
  "wgpu",
@@ -2975,34 +2964,6 @@ name = "sha1"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
-
-[[package]]
-name = "shader_builder"
-version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#388e9fb9493285955652e6a2edafa3ca90669386"
-dependencies = [
- "shaderc",
-]
-
-[[package]]
-name = "shaderc"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ca37955a53b37fa20380c414aec5343ab76b6993ebfd86e74facd7209bac577"
-dependencies = [
- "libc",
- "shaderc-sys",
-]
-
-[[package]]
-name = "shaderc-sys"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da6962db4d543df2fb613d76e6f4c7bcf58ff3300709c92f2349239955ce0a9f"
-dependencies = [
- "cmake",
- "libc",
-]
 
 [[package]]
 name = "signal-hook"
