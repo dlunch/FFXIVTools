@@ -62,10 +62,10 @@ impl TextureCache {
 
     fn load_texture(renderer: &Renderer, tex: &Tex) -> Texture {
         if tex.texture_type() == TextureType::BGRA {
-            Texture::with_texels(&renderer, tex.width() as u32, tex.height() as u32, tex.data(0), TextureFormat::Bgra8Unorm)
+            Texture::with_texels(renderer, tex.width() as u32, tex.height() as u32, tex.data(0), TextureFormat::Bgra8Unorm)
         } else {
             Texture::with_compressed_texels(
-                &renderer,
+                renderer,
                 tex.width() as u32,
                 tex.height() as u32,
                 tex.data(0),

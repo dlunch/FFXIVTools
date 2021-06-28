@@ -21,6 +21,6 @@ impl HairMaterial {
             textures.insert("Diffuse", context.empty_texture.clone());
         }
 
-        Material::new(&renderer, textures, uniforms, shader)
+        Material::new(renderer, textures, uniforms, shader)
     }
 }

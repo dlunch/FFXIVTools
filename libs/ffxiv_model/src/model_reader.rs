@@ -100,7 +100,7 @@ impl ModelReader {
         let mdl = Mdl::new(package, &mdl_path).await?;
 
         let mtrls = future::try_join_all(mdl.material_paths().map(|material_path| {
-            let material_path = material_path_fetcher(&material_path);
+            let material_path = material_path_fetcher(material_path);
             Mtrl::new(package, material_path).then(|mtrl| async {
                 let mtrl = mtrl?;
                 let texs = future::try_join_all(
