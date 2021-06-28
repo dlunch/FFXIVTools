@@ -21,7 +21,7 @@ use sqpack_extension::SqPackReaderExtractedFile;
 use context::Context;
 
 async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String, status::NotFound<&'static str>> {
-    let ex = Ex::new(package, &ex_name).await.map_err(|_| status::NotFound("Not found"))?;
+    let ex = Ex::new(package, ex_name).await.map_err(|_| status::NotFound("Not found"))?;
 
     let languages = if let Some(language) = language {
         if ex.languages()[0] == Language::None {
@@ -67,7 +67,7 @@ fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackRea
 
 #[get("/parsed/exl/<version>")]
 async fn get_exl(context: &State<Context>, version: String) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
     let exl = ExList::new(package).await.map_err(|_| status::NotFound("Not found"))?;
 
     Ok(content::Json(serde_json::to_string(&exl.ex_names).unwrap()))
@@ -80,7 +80,7 @@ async fn get_ex(
     language: u16,
     ex_name: String,
 ) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
     let result = ex_to_json(package, Some(Language::from_raw(language)), &ex_name).await?;
 
     Ok(content::Json(result))
@@ -95,10 +95,10 @@ async fn get_ex_bulk(
 ) -> Result<content::Json<String>, status::NotFound<&'static str>> {
     let language = Language::from_raw(language);
 
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
     let ex_jsons = ex_names
         .split('.')
-        .map(|ex_name| ex_to_json(package, Some(language), &ex_name).map(move |data| Ok::<_, _>((ex_name.to_owned(), data?))))
+        .map(|ex_name| ex_to_json(package, Some(language), ex_name).map(move |data| Ok::<_, _>((ex_name.to_owned(), data?))))
         .collect::<FuturesUnordered<_>>()
         .try_collect::<Vec<_>>()
         .await?;
@@ -123,9 +123,9 @@ async fn get_ex_bulk(
 
 #[get("/parsed/lvb/<version>/<path..>")]
 async fn get_lvb(context: &State<Context>, version: String, path: PathBuf) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
 
-    let lvb = Lvb::new(package, &path.to_str().unwrap())
+    let lvb = Lvb::new(package, path.to_str().unwrap())
         .await
         .map_err(|_| status::NotFound("Not found"))?;
 
@@ -152,7 +152,7 @@ async fn get_compressed(
     file_hash: u32,
     path_hash: u32,
 ) -> Result<Vec<u8>, status::NotFound<&'static str>> {
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
 
     let result = package
         .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
@@ -164,7 +164,7 @@ async fn get_compressed(
 
 #[get("/compressed/<version>/bulk/<paths..>", rank = 0)]
 async fn get_compressed_bulk(context: &State<Context>, version: String, paths: PathBuf) -> Result<Vec<u8>, status::NotFound<&'static str>> {
-    let package = find_package(&context, &version)?;
+    let package = find_package(context, &version)?;
 
     let hashes = paths
         .to_str()
@@ -188,7 +188,7 @@ async fn get_compressed_bulk(context: &State<Context>, version: String, paths: P
     let total_size = hashes
         .iter()
         .map(|hash| {
-            package.read_compressed_size_by_hash(&hash).map(|x| match x {
+            package.read_compressed_size_by_hash(hash).map(|x| match x {
                 Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
                 None => Err(status::NotFound("No such file")),
             })
@@ -201,7 +201,7 @@ async fn get_compressed_bulk(context: &State<Context>, version: String, paths: P
 
     let mut result = Vec::with_capacity(total_size as usize);
 
-    let package = find_package(&context, &version).unwrap();
+    let package = find_package(context, &version).unwrap();
     for hash in hashes {
         let mut data = package.read_as_compressed_by_hash(&hash).await.unwrap();
 
