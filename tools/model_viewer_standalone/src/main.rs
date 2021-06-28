@@ -89,7 +89,7 @@ impl<'a> App<'a> {
         let path = "D:\\Games\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack";
 
         let package = if fs::metadata(path).await.is_ok() {
-            BatchedPackage::new(SqPackPackage::new(&Path::new(path)).unwrap())
+            BatchedPackage::new(SqPackPackage::new(Path::new(path)).unwrap())
         } else {
             let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/all/", |current, total| {
                 debug!("{}/{}", current, total)
