@@ -31,10 +31,9 @@ impl CharacterMaterial {
             textures.insert("Mask", context.empty_texture.clone());
         }
 
-        let vertex_shader = context.shader_holder.vertex_shader.clone();
-        let fragment_shader = context.shader_holder.fragment_shader(ShaderType::Character);
+        let shader = context.shader_holder.shader(ShaderType::Character);
 
-        Material::new(&renderer, textures, uniforms, vertex_shader, fragment_shader)
+        Material::new(&renderer, textures, uniforms, shader)
     }
 
     fn apply_staining(color_table_data: &[u8], stain_id: u8, staining_template: &Stm) -> Vec<u8> {
