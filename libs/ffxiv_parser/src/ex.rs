@@ -73,7 +73,7 @@ impl Ex {
         debug_assert!(self.header.row_type == ExRowType::Multi);
 
         Some(self.data.all(language)?.map(move |(row_id, row_data)| {
-            let header = cast::<ExdMultiRowDataHeader>(&row_data);
+            let header = cast::<ExdMultiRowDataHeader>(row_data);
             let multi_row_data = &row_data[size_of::<ExdMultiRowDataHeader>()..];
 
             let rows = (0..header.count.get()).map(move |x| self.to_multi_row_item(multi_row_data, x));

@@ -142,7 +142,7 @@ impl Lgb {
     }
 
     fn parse_entry(data: &[u8]) -> (&str, Vec<LayerGroupResourceItem>) {
-        let entry = cast::<LgbResourceEntry>(&data);
+        let entry = cast::<LgbResourceEntry>(data);
         let name = str::from_null_terminated_utf8(&data[entry.name_offset as usize..]).unwrap();
 
         let base_offset = entry.items_offset as usize;
