@@ -62,7 +62,7 @@ impl ShaderHolder {
         let shader = Self::compose_shader(include_str!("../shaders/character.wgsl"));
 
         Shader::new(
-            &renderer,
+            renderer,
             &shader,
             "vs_main",
             "fs_main",
@@ -90,7 +90,7 @@ impl ShaderHolder {
         let shader = Self::compose_shader(include_str!("../shaders/skin.wgsl"));
 
         Shader::new(
-            &renderer,
+            renderer,
             &shader,
             "vs_main",
             "fs_main",
@@ -117,7 +117,7 @@ impl ShaderHolder {
         let shader = Self::compose_shader(include_str!("../shaders/iris.wgsl"));
 
         Shader::new(
-            &renderer,
+            renderer,
             &shader,
             "vs_main",
             "fs_main",
@@ -144,7 +144,7 @@ impl ShaderHolder {
         let shader = Self::compose_shader(include_str!("../shaders/hair.wgsl"));
 
         Shader::new(
-            &renderer,
+            renderer,
             &shader,
             "vs_main",
             "fs_main",

@@ -21,7 +21,7 @@ impl CharacterMaterial {
         let color_table_data = mtrl.color_table();
         if !color_table_data.is_empty() {
             let color_table_texels = Self::apply_staining(color_table_data, stain_id, &context.staining_template);
-            let color_table_tex = Texture::with_texels(&renderer, 4, 16, &color_table_texels, TextureFormat::Rgba16Float);
+            let color_table_tex = Texture::with_texels(renderer, 4, 16, &color_table_texels, TextureFormat::Rgba16Float);
             textures.insert("ColorTable", Arc::new(color_table_tex));
         } else {
             textures.insert("ColorTable", context.empty_texture.clone());
@@ -33,7 +33,7 @@ impl CharacterMaterial {
 
         let shader = context.shader_holder.shader(ShaderType::Character);
 
-        Material::new(&renderer, textures, uniforms, shader)
+        Material::new(renderer, textures, uniforms, shader)
     }
 
     fn apply_staining(color_table_data: &[u8], stain_id: u8, staining_template: &Stm) -> Vec<u8> {

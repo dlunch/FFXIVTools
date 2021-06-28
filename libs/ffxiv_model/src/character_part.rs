@@ -39,7 +39,7 @@ impl CharacterPart {
 
             let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
-            models.push(Model::new(&renderer, mesh, material, mesh_parts));
+            models.push(Model::new(renderer, mesh, material, mesh_parts));
         }
 
         Self { models }
@@ -80,7 +80,7 @@ impl CharacterPart {
                 equipment_model_data.stain_id,
             );
 
-            models.push(Model::new(&renderer, mesh, material, mesh_parts));
+            models.push(Model::new(renderer, mesh, material, mesh_parts));
         }
 
         Self { models }
@@ -102,7 +102,7 @@ impl CharacterPart {
             .map(|i| mesh_data.mesh_info.strides[i] as usize)
             .collect::<Vec<_>>();
 
-        Mesh::new(&renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats)
+        Mesh::new(renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats)
     }
 
     fn get_mesh_parts(mdl: &Mdl, mesh_data: &MdlMesh<'_>, visibility_mask: usize, hidden_attributes: &HashSet<&str>) -> Vec<Range<u32>> {
@@ -110,7 +110,7 @@ impl CharacterPart {
             .iter()
             .filter_map(|mesh_part| {
                 if mesh_part.visibility_mask & visibility_mask != mesh_part.visibility_mask
-                    || mesh_part.attributes.intersection(&hidden_attributes).next().is_some()
+                    || mesh_part.attributes.intersection(hidden_attributes).next().is_some()
                 {
                     None
                 } else {

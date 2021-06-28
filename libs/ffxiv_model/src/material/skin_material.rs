@@ -17,6 +17,6 @@ impl SkinMaterial {
     ) -> Material {
         let shader = context.shader_holder.shader(ShaderType::Skin);
 
-        Material::new(&renderer, textures, uniforms, shader)
+        Material::new(renderer, textures, uniforms, shader)
     }
 }
