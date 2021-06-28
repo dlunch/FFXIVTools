@@ -216,7 +216,7 @@ impl HavokObject {
     pub fn get(&self, member_name: &str) -> &HavokValue {
         let member_index = self.object_type.members().iter().position(|&x| &*x.name == member_name).unwrap();
 
-        &self.data.get(&member_index).unwrap()
+        self.data.get(&member_index).unwrap()
     }
 
     pub(crate) fn members_mut(&mut self) -> impl Iterator<Item = (&usize, &mut HavokValue)> {
