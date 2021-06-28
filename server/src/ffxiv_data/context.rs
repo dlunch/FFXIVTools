@@ -40,7 +40,7 @@ impl ContextImpl {
             .map(|(path, key)| {
                 (
                     key.to_owned(),
-                    SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(&path)),
+                    SqPackReaderExtractedFile::new(ExtractedFileProviderLocal::with_path(path)),
                 )
             })
             .collect::<HashMap<_, _>>();

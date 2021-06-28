@@ -59,7 +59,7 @@ fn get_allowed_origin(source_origin: Option<&str>) -> &str {
 
     if let Some(origin) = source_origin {
         if ALLOWD_ORIGINS.iter().any(|&x| x == origin) {
-            &origin
+            origin
         } else {
             "https://ffxiv.dlunch.net"
         }
