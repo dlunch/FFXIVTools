@@ -5,10 +5,10 @@ struct VertexOutput {
 	[[location(2)]] world_position: vec4<f32>;
 
 	// naga bug? we can't interpolate mat4x4
-	[[location(3), interpolate(perspective, centroid)]] tbn0: vec4<f32>;
-	[[location(4), interpolate(perspective, centroid)]] tbn1: vec4<f32>;
-	[[location(5), interpolate(perspective, centroid)]] tbn2: vec4<f32>;
-	[[location(6), interpolate(perspective, centroid)]] tbn3: vec4<f32>;
+	[[location(3)]] tbn0: vec4<f32>;
+	[[location(4)]] tbn1: vec4<f32>;
+	[[location(5)]] tbn2: vec4<f32>;
+	[[location(6)]] tbn3: vec4<f32>;
 };
 
 [[block]]
