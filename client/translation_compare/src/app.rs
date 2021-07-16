@@ -95,7 +95,7 @@ impl Component for App {
                     }
                 }
                 </p>
-                <List data = &self.data>
+                <List data = self.data.clone()>
                 </List>
             </div>
         }
