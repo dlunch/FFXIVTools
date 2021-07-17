@@ -73,7 +73,7 @@ impl Component for FileList {
     fn view(&self) -> Html {
         html! {
             <div class="file-list-component">
-                <Tree<String, Item> item_key="" data_request_callback=self.link.callback(move |x| Msg::FetchTreeData(x)) />
+                <Tree<String, Item> item_key="" data_request_callback=self.link.callback(Msg::FetchTreeData) />
             </div>
         }
     }
