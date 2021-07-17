@@ -38,7 +38,7 @@ impl Component for App {
     fn view(&self) -> Html {
         html! {
             <div>
-                <FileList file_select_callback=self.link.callback(|x| Msg::FileSelected(x)) />
+                <FileList file_select_callback=self.link.callback(Msg::FileSelected) />
                 <Content />
             </div>
         }
