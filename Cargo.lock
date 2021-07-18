@@ -1925,14 +1925,20 @@ dependencies = [
 name = "model_viewer"
 version = "0.1.0"
 dependencies = [
+ "common",
  "console_error_panic_hook",
+ "console_log",
+ "ffxiv_model",
  "futures",
  "js-sys",
+ "log",
+ "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
  "wee_alloc",
+ "winit",
  "yew",
 ]
 

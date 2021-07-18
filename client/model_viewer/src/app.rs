@@ -1,8 +1,8 @@
-use alloc::vec;
+use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 
-use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
-
-pub struct App {}
+pub struct App {
+    pub canvas: NodeRef,
+}
 
 pub enum Msg {}
 
@@ -11,7 +11,7 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        App {}
+        App { canvas: NodeRef::default() }
     }
 
     fn update(&mut self, _msg: Self::Message) -> ShouldRender {
@@ -24,7 +24,7 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <p>{ "Hello world!" }</p>
+            <canvas ref=self.canvas.clone() />
         }
     }
 }
