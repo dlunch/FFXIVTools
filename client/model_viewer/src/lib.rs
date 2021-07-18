@@ -22,7 +22,8 @@ pub fn main() {
     console_log::init_with_level(log::Level::Trace).unwrap();
 
     let event_loop = EventLoop::new();
-    let builder = WindowBuilder::new();
+    #[allow(unused_mut)]
+    let mut builder = WindowBuilder::new();
 
     yew::initialize();
 
