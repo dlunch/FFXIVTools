@@ -130,10 +130,6 @@ impl App {
     }
 
     pub fn render(&mut self) {
-        task::block_on(async {
-            self.package.poll().await.unwrap();
-        });
-
         self.renderer.render(&self.scene, &mut self.render_target);
     }
 }
