@@ -9,7 +9,6 @@ use async_std::task;
 use hashbrown::HashMap;
 use log::debug;
 use nalgebra::Point3;
-use once_cell::sync::OnceCell;
 use winit::{
     dpi::LogicalSize,
     event,
@@ -23,10 +22,8 @@ use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
 use sqpack::{Result, SqPackPackage};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
-// task::spawn requires 'static lifetime.
-static mut APP: OnceCell<App> = OnceCell::new();
-
-fn main() {
+#[async_std::main]
+async fn main() {
     let _ = pretty_env_logger::init_timed();
 
     let event_loop = EventLoop::new();
@@ -35,12 +32,8 @@ fn main() {
     builder = builder.with_title("test").with_inner_size(LogicalSize::new(1920, 1080));
     let window = builder.build(&event_loop).unwrap();
 
-    task::block_on(async {
-        unsafe {
-            let _ = APP.set(App::new(&window).await);
-            APP.get_mut().unwrap().add_character().await.unwrap();
-        }
-    });
+    let mut app = App::new(&window).await;
+    app.add_character().await.unwrap();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
@@ -63,26 +56,23 @@ fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                task::block_on(async move {
-                    let app = unsafe { APP.get_mut().unwrap() };
-                    app.render().await;
-                });
+                app.render();
             }
             _ => {}
         }
     });
 }
 
-struct App<'a> {
+struct App {
     renderer: Renderer,
     render_target: WindowRenderTarget,
     context: Context,
     package: Arc<BatchedPackage>,
-    scene: Scene<'a>,
+    scene: Scene,
 }
 
-impl<'a> App<'a> {
-    pub async fn new(window: &Window) -> App<'a> {
+impl App {
+    pub async fn new(window: &Window) -> App {
         #[cfg(unix)]
         let path = "/mnt/d/Games/SquareEnix/FINAL FANTASY XIV - A Realm Reborn/game/sqpack";
         #[cfg(windows)]
@@ -124,7 +114,7 @@ impl<'a> App<'a> {
         }
     }
 
-    pub async fn add_character(&'a mut self) -> Result<()> {
+    pub async fn add_character(&mut self) -> Result<()> {
         let mut equipments = HashMap::new();
         equipments.insert(ModelPart::Met, Equipment::new(6016, 1, 0));
         equipments.insert(ModelPart::Top, Equipment::new(6016, 1, 20));
@@ -139,8 +129,11 @@ impl<'a> App<'a> {
         Ok(())
     }
 
-    pub async fn render(&mut self) {
-        self.package.poll().await.unwrap();
+    pub fn render(&mut self) {
+        task::block_on(async {
+            self.package.poll().await.unwrap();
+        });
+
         self.renderer.render(&self.scene, &mut self.render_target);
     }
 }

@@ -7,16 +7,15 @@ edition = "2018"
 [features]
 
 [dependencies]
-winit = { version = "^0.25", features = ["wayland", "x11"], default-features = false }
-async-std = { version = "^1.9", features = ["default", "attributes", "tokio1", "unstable"], default-features = false }
-futures = {version = "^0.3", features = ["default"], default-features = false }
-nalgebra = { version = "^0.28", default-features = false }
-pretty_env_logger = { version = "^0.4", default-features = false }
-log = { version = "^0.4", default-features = false }
-hashbrown = { version = "^0.11", features = ["ahash", "inline-more"], default-features = false }
-once_cell = { version = "^1.4", features = ["std"], default-features = false }
+winit = { version = "^0.25", features = ["wayland", "x11"] }
+async-std = { version = "^1.9", features = ["attributes", "tokio1", "unstable"] }
+futures = {version = "^0.3" }
+nalgebra = { version = "^0.28" }
+pretty_env_logger = { version = "^0.4" }
+log = { version = "^0.4" }
+hashbrown = { version = "^0.11"}
 
-renderer = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/renderer" }
+renderer = { version = "^0.1", git = "https://github.com/dlunch/renderer" }
 sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../../libs/sqpack_extension" }
-ffxiv_model = { version = "^0.1", default-features = false, path = "../../libs/ffxiv_model" }
+ffxiv_model = { version = "^0.1", path = "../../libs/ffxiv_model" }
