@@ -1,8 +1,14 @@
+use core::cell::{Ref, RefCell};
+
+use winit::event_loop::EventLoop;
 use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 
 pub struct App {
-    pub canvas: NodeRef,
+    canvas: NodeRef,
+    content: RefCell<Option<Content>>,
 }
+
+use super::content::Content;
 
 pub enum Msg {}
 
@@ -11,7 +17,10 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        App { canvas: NodeRef::default() }
+        App {
+            canvas: NodeRef::default(),
+            content: RefCell::new(None),
+        }
     }
 
     fn update(&mut self, _msg: Self::Message) -> ShouldRender {
@@ -26,5 +35,17 @@ impl Component for App {
         html! {
             <canvas ref=self.canvas.clone() />
         }
+    }
+}
+
+impl App {
+    pub fn content(&self) -> Ref<'_, Content> {
+        let content_ref = self.content.borrow();
+
+        Ref::map(content_ref, |x| x.as_ref().unwrap())
+    }
+
+    pub fn start(&self, event_loop: &EventLoop<()>) {
+        self.content.replace(Some(Content::new(event_loop)));
     }
 }

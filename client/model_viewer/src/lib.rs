@@ -1,14 +1,13 @@
 extern crate alloc;
 
 mod app;
+mod content;
 
-use log::debug;
 use wasm_bindgen::prelude::wasm_bindgen;
 use winit::{
     event,
     event::WindowEvent,
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
 };
 
 #[global_allocator]
@@ -22,28 +21,17 @@ pub fn main() {
     console_log::init_with_level(log::Level::Trace).unwrap();
 
     let event_loop = EventLoop::new();
-    #[allow(unused_mut)]
-    let mut builder = WindowBuilder::new();
 
     yew::initialize();
-
-    #[cfg(target_arch = "wasm32")]
-    {
-        use web_sys::HtmlCanvasElement;
-        use winit::platform::web::WindowBuilderExtWebSys;
-
-        let link = yew::App::<app::App>::new().mount_to_body();
-        let component = link.get_component().unwrap();
-        builder = builder.with_canvas(component.canvas.cast::<HtmlCanvasElement>());
-    }
-
-    let window = builder.build(&event_loop).unwrap();
+    let link = yew::App::<app::App>::new().mount_to_body();
+    link.get_component().unwrap().start(&event_loop);
 
     event_loop.run(move |event, _, control_flow| {
+        let app = link.get_component().unwrap();
         *control_flow = ControlFlow::Poll;
 
         match event {
-            event::Event::MainEventsCleared => window.request_redraw(),
+            event::Event::MainEventsCleared => app.content().request_redraw(),
             event::Event::WindowEvent { event, .. } => match event {
                 WindowEvent::KeyboardInput {
                     input:
@@ -60,7 +48,7 @@ pub fn main() {
                 _ => {}
             },
             event::Event::RedrawRequested(_) => {
-                debug!("Redraw");
+                app.content().redraw();
             }
             _ => {}
         }
