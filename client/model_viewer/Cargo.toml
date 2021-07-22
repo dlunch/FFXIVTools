@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 yew = { version = "0.18", features = ["web_sys"], default-features = false  }
 wasm-bindgen = { version = "^0.2", default-features = false }
+wasm-bindgen-futures = { version = "^0.4", default-features = false }
 web-sys = { version = "^0.3", features = ["console"], default-features = false }
 wee_alloc = { version = "^0.4", default-features = false }
 console_error_panic_hook = { version = "^0.1", default-features = false }
@@ -20,6 +21,7 @@ winit = { version = "^0.25", features = ["web-sys"], default-features = false }
 log = { version = "0.4", default-features = false }
 console_log = { version = "0.2", features = ["color"], default-features = false }
 
+renderer = { version = "^0.1", git = "https://github.com/dlunch/renderer" }
 common = { version = "^0.1", path = "../common" }
 ffxiv_model = { version = "^0.1", path = "../../libs/ffxiv_model" }
 util = { version = "^0.1", path = "../../libs/util" }
