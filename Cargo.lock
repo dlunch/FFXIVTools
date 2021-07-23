@@ -1944,6 +1944,7 @@ dependencies = [
  "futures",
  "js-sys",
  "log",
+ "nalgebra",
  "renderer",
  "util",
  "wasm-bindgen",

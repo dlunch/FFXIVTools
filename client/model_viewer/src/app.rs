@@ -1,10 +1,10 @@
-use core::cell::{Ref, RefCell};
+use core::cell::RefCell;
 
-use winit::event_loop::EventLoop;
+use winit::window::Window;
 use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 
 pub struct App {
-    canvas: NodeRef,
+    pub canvas: NodeRef,
     content: RefCell<Option<Content>>,
 }
 
@@ -39,13 +39,15 @@ impl Component for App {
 }
 
 impl App {
-    pub fn content(&self) -> Ref<'_, Content> {
-        let content_ref = self.content.borrow();
-
-        Ref::map(content_ref, |x| x.as_ref().unwrap())
+    pub fn request_redraw(&self) {
+        self.content.borrow().as_ref().unwrap().request_redraw();
     }
 
-    pub fn start(&self, event_loop: &EventLoop<()>) {
-        self.content.replace(Some(Content::new(event_loop)));
+    pub fn redraw(&self) {
+        self.content.borrow_mut().as_mut().unwrap().redraw();
+    }
+
+    pub async fn start(&self, window: Window) {
+        self.content.replace(Some(Content::new(window).await));
     }
 }
