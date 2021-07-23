@@ -1,30 +1,40 @@
-use log::debug;
-use winit::{event_loop::EventLoop, window::Window, window::WindowBuilder};
+use nalgebra::Point3;
+use winit::window::Window;
 
+use common::{regions, WasmPackage};
+use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
+
+#[allow(dead_code)]
 pub struct Content {
+    renderer: Renderer,
     window: Window,
+    render_target: WindowRenderTarget,
+    package: WasmPackage,
+    scene: Scene,
 }
 
 impl Content {
-    pub fn new(event_loop: &EventLoop<()>) -> Self {
-        #[allow(unused_mut)]
-        let mut builder = WindowBuilder::new();
+    pub async fn new(window: Window) -> Self {
+        let package = WasmPackage::new(&regions()[0], "https://ffxiv-data.dlunch.net/compressed").await;
 
-        #[cfg(target_arch = "wasm32")]
-        {
-            use web_sys::HtmlCanvasElement;
-            use winit::platform::web::WindowBuilderExtWebSys;
+        let size = window.inner_size();
+        let renderer = Renderer::new().await;
+        let render_target = WindowRenderTarget::new(&renderer, &window, size.width, size.height);
 
-            builder = builder.with_canvas(self.canvas.cast::<HtmlCanvasElement>());
+        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
+        let scene = Scene::new(camera);
+
+        Self {
+            renderer,
+            window,
+            render_target,
+            package,
+            scene,
         }
-
-        let window = builder.build(event_loop).unwrap();
-
-        Self { window }
     }
 
-    pub fn redraw(&self) {
-        debug!("redraw")
+    pub fn redraw(&mut self) {
+        self.renderer.render(&self.scene, &mut self.render_target);
     }
 
     pub fn request_redraw(&self) {
