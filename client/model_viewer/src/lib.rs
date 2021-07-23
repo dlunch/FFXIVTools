@@ -35,7 +35,7 @@ pub fn main() {
         use web_sys::HtmlCanvasElement;
         use winit::platform::web::WindowBuilderExtWebSys;
 
-        builder = builder.with_canvas(link.get_component().unwrap().canvas.cast::<HtmlCanvasElement>());
+        builder = builder.with_canvas(scope.get_component().unwrap().canvas.cast::<HtmlCanvasElement>());
     }
 
     let window = builder.build(&event_loop).unwrap();
