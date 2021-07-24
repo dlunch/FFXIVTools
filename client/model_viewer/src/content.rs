@@ -1,15 +1,15 @@
+use hashbrown::HashMap;
 use nalgebra::Point3;
 use winit::window::Window;
 
 use common::{regions, WasmPackage};
+use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
 use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
 
-#[allow(dead_code)]
 pub struct Content {
     renderer: Renderer,
     window: Window,
     render_target: WindowRenderTarget,
-    package: WasmPackage,
     scene: Scene,
 }
 
@@ -22,13 +22,25 @@ impl Content {
         let render_target = WindowRenderTarget::new(&renderer, &window, size.width, size.height);
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        let scene = Scene::new(camera);
+        let mut scene = Scene::new(camera);
+        let context = Context::new(&renderer, &package).await.unwrap();
+
+        let mut equipments = HashMap::new();
+        equipments.insert(ModelPart::Met, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Top, Equipment::new(6016, 1, 20));
+        equipments.insert(ModelPart::Glv, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Dwn, Equipment::new(6016, 1, 0));
+        equipments.insert(ModelPart::Sho, Equipment::new(6016, 1, 0));
+
+        let customization = Customization::new(BodyId::AuRaFemale, 1, 1, 1, 1, 1);
+        let character = Character::new(&renderer, &package, &context, customization, equipments).await.unwrap();
+
+        scene.add(character);
 
         Self {
             renderer,
             window,
             render_target,
-            package,
             scene,
         }
     }

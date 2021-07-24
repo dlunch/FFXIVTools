@@ -21,6 +21,7 @@ winit = { version = "^0.25", features = ["web-sys"], default-features = false }
 log = { version = "0.4", default-features = false }
 console_log = { version = "0.2", features = ["color"], default-features = false }
 nalgebra = { version = "^0.28" }
+hashbrown = { version = "^0.11"}
 
 renderer = { version = "^0.1", git = "https://github.com/dlunch/renderer" }
 common = { version = "^0.1", path = "../common" }
