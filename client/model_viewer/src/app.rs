@@ -40,11 +40,17 @@ impl Component for App {
 
 impl App {
     pub fn request_redraw(&self) {
-        self.content.borrow().as_ref().unwrap().request_redraw();
+        let content = self.content.borrow();
+        if let Some(content) = content.as_ref() {
+            content.request_redraw();
+        }
     }
 
     pub fn redraw(&self) {
-        self.content.borrow_mut().as_mut().unwrap().redraw();
+        let mut content = self.content.borrow_mut();
+        if let Some(content) = content.as_mut() {
+            content.redraw();
+        }
     }
 
     pub async fn start(&self, window: Window) {
