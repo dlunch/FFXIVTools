@@ -1,10 +1,8 @@
-import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import * as webpack from 'webpack';
+const { merge } = require('webpack-merge');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const common = require('./webpack.config.common');
 
-import merge from 'webpack-merge';
-import common from './webpack.config.common';
-
-export default merge(common, {
+module.exports = merge(common, {
   mode: 'production',
   devtool: undefined,
   module: {
@@ -28,5 +26,5 @@ export default merge(common, {
       },
     ],
   },
-  plugins: [new MiniCssExtractPlugin() as webpack.WebpackPluginInstance],
+  plugins: [new MiniCssExtractPlugin()],
 });
