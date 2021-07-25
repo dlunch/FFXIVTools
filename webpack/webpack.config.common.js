@@ -1,17 +1,15 @@
-import * as path from 'path';
-import * as webpack from 'webpack';
-import * as CopyPlugin from 'copy-webpack-plugin';
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import * as HtmlEntryLoader from 'html-entry-loader';
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+const path = require('path');
+const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const HtmlEntryLoader = require('html-entry-loader');
 const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin');
 
 const root = path.resolve(__dirname, '..');
 const dist = path.resolve(root, 'client/dist');
 
-const configuration: webpack.Configuration = {
+const configuration = {
   context: root,
   entry: {
     model_viewer: 'client/model_viewer/model_viewer.html',
@@ -57,8 +55,7 @@ const configuration: webpack.Configuration = {
   resolve: {
     extensions: ['.ts', '.js'],
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    plugins: [new TsconfigPathsPlugin() as any],
+    plugins: [new TsconfigPathsPlugin()],
   },
   devServer: {
     contentBase: dist,
@@ -69,19 +66,16 @@ const configuration: webpack.Configuration = {
       'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST),
     }),
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/model_viewer'),
       outDir: path.resolve(root, 'client/model_viewer/pkg'),
       outName: 'index',
     }),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/translation_compare'),
       outDir: path.resolve(root, 'client/translation_compare/pkg'),
       outName: 'index',
     }),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/explorer'),
       outDir: path.resolve(root, 'client/explorer/pkg'),
@@ -94,4 +88,4 @@ const configuration: webpack.Configuration = {
   ],
 };
 
-export default configuration;
+module.exports = configuration;
