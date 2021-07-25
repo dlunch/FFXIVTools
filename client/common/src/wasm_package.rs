@@ -1,11 +1,10 @@
 use crate::Region;
 
 use alloc::{boxed::Box, format, sync::Arc, vec::Vec};
-use core::time::Duration;
 
 use async_trait::async_trait;
+use gloo_timers::future::TimeoutFuture;
 use wasm_bindgen_futures::spawn_local;
-use wasm_timer::Delay;
 
 use sqpack::{Package, Result, SqPackFileReference};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
@@ -28,7 +27,7 @@ impl WasmPackage {
                 }
 
                 package.poll().await.unwrap();
-                Delay::new(Duration::from_millis(16)).await.unwrap();
+                TimeoutFuture::new(16).await
             }
         });
 

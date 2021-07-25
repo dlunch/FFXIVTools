@@ -14,7 +14,7 @@ async-trait = { version = "^0.1.24", default-features = false }
 wasm-bindgen = { version = "^0.2", default-features = false }
 wasm-bindgen-futures = { version = "^0.4", default-features = false }
 js-sys = { version = "^0.3", default-features = false }
-wasm-timer = { version = "^0.2", default-features = false }
+gloo-timers = { version = "^0.2", features = ["futures"], default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", path = "../../libs/sqpack_extension" }
