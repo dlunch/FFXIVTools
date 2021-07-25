@@ -18,7 +18,7 @@ use winit::{
 };
 
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
-use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
+use renderer::{Camera, Renderer, Scene};
 use sqpack::{Result, SqPackPackage};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
@@ -65,7 +65,6 @@ async fn main() {
 
 struct App {
     renderer: Renderer,
-    render_target: WindowRenderTarget,
     context: Context,
     package: Arc<BatchedPackage>,
     scene: Scene,
@@ -98,8 +97,7 @@ impl App {
         });
 
         let size = window.inner_size();
-        let renderer = Renderer::new().await;
-        let render_target = WindowRenderTarget::new(&renderer, window, size.width, size.height);
+        let renderer = Renderer::new(window, size.width, size.height).await;
         let context = Context::new(&renderer, &*package).await.unwrap();
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
@@ -107,7 +105,6 @@ impl App {
 
         Self {
             renderer,
-            render_target,
             context,
             package,
             scene,
@@ -130,6 +127,6 @@ impl App {
     }
 
     pub fn render(&mut self) {
-        self.renderer.render(&self.scene, &mut self.render_target);
+        self.renderer.render(&self.scene);
     }
 }
