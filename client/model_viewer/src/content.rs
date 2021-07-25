@@ -4,12 +4,11 @@ use winit::window::Window;
 
 use common::{regions, WasmPackage};
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
-use renderer::{Camera, Renderer, Scene, WindowRenderTarget};
+use renderer::{Camera, Renderer, Scene};
 
 pub struct Content {
     renderer: Renderer,
     window: Window,
-    render_target: WindowRenderTarget,
     scene: Scene,
 }
 
@@ -18,8 +17,7 @@ impl Content {
         let package = WasmPackage::new(&regions()[0], "https://ffxiv-data.dlunch.net/compressed").await;
 
         let size = window.inner_size();
-        let renderer = Renderer::new().await;
-        let render_target = WindowRenderTarget::new(&renderer, &window, size.width, size.height);
+        let renderer = Renderer::new(&window, size.width, size.height).await;
 
         let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
         let mut scene = Scene::new(camera);
@@ -37,16 +35,11 @@ impl Content {
 
         scene.add(character);
 
-        Self {
-            renderer,
-            window,
-            render_target,
-            scene,
-        }
+        Self { renderer, window, scene }
     }
 
     pub fn redraw(&mut self) {
-        self.renderer.render(&self.scene, &mut self.render_target);
+        self.renderer.render(&self.scene);
     }
 
     pub fn request_redraw(&self) {
