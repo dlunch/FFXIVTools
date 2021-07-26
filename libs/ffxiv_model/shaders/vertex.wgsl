@@ -17,7 +17,7 @@ struct transform {
 };
 [[block]]
 struct bone_transform {
-    transforms: array<vec4<f32>, 192>;
+    transforms: array<vec4<f32>, 192u>;
 };
 
 [[group(0), binding(0)]]
