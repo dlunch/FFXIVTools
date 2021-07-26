@@ -38,7 +38,7 @@ fn vs_main(
 	var skinned_position: vec4<f32> = vec4<f32>(0.0);
 	var skinned_normal: vec4<f32> = vec4<f32>(0.0);
 
-	for (var i: i32 = 0; i < 4; i = i + 1) {
+	for (var i: u32 = 0u; i < 4u; i = i + 1u) {
 		var index: u32 = bone_index[i];
 		var weight: f32 = f32(bone_weight[i]) / 255.0;
 		var boneTransform: mat4x4<f32> = mat4x4<f32>(
