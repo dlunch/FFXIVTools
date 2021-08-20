@@ -22,7 +22,7 @@
     "eslint": "^7.19",
     "eslint-config-airbnb-base": "^14.1",
     "eslint-import-resolver-typescript": "^2.3",
-    "eslint-plugin-import": "^2.20",
+    "eslint-plugin-import": "^2.24",
     "generate-package-json-webpack-plugin": "^2.0",
     "html-entry-loader": "git+https://github.com/dlunch/html-entry-loader.git",
     "less": "^4.1",
