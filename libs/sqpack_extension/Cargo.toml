@@ -23,11 +23,11 @@ spinning_top = { version = "^0.2", default-features = false }
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 util = { version = "^0.1", default-features = false, path = "../util" }
 
-async-std = { version = "^1.6", optional = true }
+async-std = { version = "^1.10", optional = true }
 
 [dev-dependencies]
 pretty_env_logger = { version = "^0.4", default-features = false }
-async-std = { version = "^1.6", features = ["attributes", "alloc"], default-features = false }
+async-std = { version = "^1.10", features = ["attributes", "alloc"], default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 reqwest = { version = "^0.11", features = ["default-tls", "stream"], default-features = false }
