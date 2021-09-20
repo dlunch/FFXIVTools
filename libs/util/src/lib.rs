@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate alloc;
+use core::{mem, slice};
 
 mod slice_ext;
 mod str_ext;
@@ -20,7 +21,7 @@ pub fn cast<T>(data: &[u8]) -> &T {
 }
 
 pub fn cast_array<T>(data: &[u8]) -> &[T] {
-    unsafe { &*(data as *const [u8] as *const [T]) }
+    unsafe { slice::from_raw_parts(data as *const [u8] as *const T, data.len() / mem::size_of::<T>()) }
 }
 
 pub fn round_up(num_to_round: usize, multiple: usize) -> usize {
