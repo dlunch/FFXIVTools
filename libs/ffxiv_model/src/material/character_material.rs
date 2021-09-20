@@ -16,7 +16,7 @@ impl CharacterMaterial {
         mtrl: &'a Mtrl,
         stain_id: u8,
         mut textures: HashMap<&'static str, Arc<Texture>>,
-        uniforms: HashMap<&'static str, Arc<Buffer>>,
+        uniforms: &[(&'static str, alloc::sync::Arc<Buffer>)],
     ) -> Material {
         let color_table_data = mtrl.color_table();
         if !color_table_data.is_empty() {
@@ -33,7 +33,7 @@ impl CharacterMaterial {
 
         let shader = context.shader_holder.shader(ShaderType::Character);
 
-        Material::new(renderer, textures, uniforms, shader)
+        Material::new(renderer, &textures.into_iter().collect::<Vec<_>>(), uniforms, shader)
     }
 
     fn apply_staining(color_table_data: &[u8], stain_id: u8, staining_template: &Stm) -> Vec<u8> {

@@ -146,7 +146,7 @@ pub struct MeshInfo {
 pub struct MdlMesh<'a> {
     pub mesh_info: &'a MeshInfo,
     pub buffers: Vec<&'a [u8]>,
-    pub indices: &'a [u8],
+    pub indices: &'a [u16],
 }
 
 static ATTRIBUTES: phf::Map<&'static str, usize> = phf_map! {
@@ -326,7 +326,7 @@ impl Mdl {
             let index_begin = model_header.index_data_offset as usize + (mesh_info.index_offset as usize) * size_of::<u16>();
             let index_end = index_begin + (mesh_info.index_count as usize) * size_of::<u16>();
 
-            let indices = &self.data[index_begin..index_end];
+            let indices = cast_array(&self.data[index_begin..index_end]);
             MdlMesh { mesh_info, buffers, indices }
         })
     }

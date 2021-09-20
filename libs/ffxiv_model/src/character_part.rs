@@ -14,7 +14,7 @@ use crate::material::create_material;
 use crate::model_reader::{EquipmentModelData, ModelData};
 
 pub struct CharacterPart {
-    models: Vec<Model>,
+    models: Vec<(Model, Vec<Range<u32>>)>,
 }
 
 impl CharacterPart {
@@ -39,7 +39,7 @@ impl CharacterPart {
 
             let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
-            models.push(Model::new(renderer, mesh, material, mesh_parts));
+            models.push((Model::new(renderer, mesh, material), mesh_parts));
         }
 
         Self { models }
@@ -80,7 +80,7 @@ impl CharacterPart {
                 equipment_model_data.stain_id,
             );
 
-            models.push(Model::new(renderer, mesh, material, mesh_parts));
+            models.push((Model::new(renderer, mesh, material), mesh_parts));
         }
 
         Self { models }
@@ -158,7 +158,7 @@ impl CharacterPart {
 impl Renderable for CharacterPart {
     fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
         for model in &self.models {
-            model.render(&mut render_context);
+            model.0.render(&mut render_context);
         }
     }
 }
