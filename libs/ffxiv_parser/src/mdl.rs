@@ -293,16 +293,13 @@ impl Mdl {
         model_header.mesh_count as usize
     }
 
-    pub fn buffer_items(&self, lod: usize) -> impl Iterator<Item = &BufferItemChunk> {
+    pub fn buffer_items(&self, lod: usize) -> &[BufferItemChunk] {
         let model_headers = &cast_array::<ModelHeader>(&self.data[self.model_header_offset..])[..Self::LOD_COUNT];
         let model_header = &model_headers[lod];
 
         const BUFFER_ITEM_OFFSET: usize = 0x44;
-        let items_chunks = cast_array::<BufferItemChunk>(&self.data[BUFFER_ITEM_OFFSET..]);
-        items_chunks
-            .iter()
-            .skip(model_header.mesh_offset as usize)
-            .take(model_header.mesh_count as usize)
+        &cast_array::<BufferItemChunk>(&self.data[BUFFER_ITEM_OFFSET..])
+            [model_header.mesh_offset as usize..model_header.mesh_offset as usize + model_header.mesh_count as usize]
     }
 
     pub fn meshes(&self, lod: usize) -> impl Iterator<Item = MdlMesh> {

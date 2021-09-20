@@ -12,7 +12,7 @@ async fn mdl_test() -> Result<()> {
     let pack = SqPackReaderExtractedFile::new(provider);
 
     let mdl = Mdl::new(&pack, "chara/equipment/e0100/model/c1101e0100_top.mdl").await?;
-    let buffer_item = mdl.buffer_items(0).next().unwrap().items().next().unwrap();
+    let buffer_item = mdl.buffer_items(0)[0].items().next().unwrap();
     assert!(buffer_item.item_type == BufferItemType::Float3);
     assert!(buffer_item.usage == BufferItemUsage::Position);
 
