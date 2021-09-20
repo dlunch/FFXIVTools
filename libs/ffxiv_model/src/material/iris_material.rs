@@ -1,4 +1,4 @@
-use alloc::sync::Arc;
+use alloc::{sync::Arc, vec::Vec};
 
 use hashbrown::HashMap;
 
@@ -13,7 +13,7 @@ impl IrisMaterial {
         renderer: &Renderer,
         context: &Context,
         mut textures: HashMap<&'static str, Arc<Texture>>,
-        uniforms: HashMap<&'static str, Arc<Buffer>>,
+        uniforms: &[(&'static str, alloc::sync::Arc<Buffer>)],
     ) -> Material {
         let shader = context.shader_holder.shader(ShaderType::Iris);
 
@@ -21,6 +21,6 @@ impl IrisMaterial {
             textures.insert("Diffuse", context.empty_texture.clone());
         }
 
-        Material::new(renderer, textures, uniforms, shader)
+        Material::new(renderer, &textures.into_iter().collect::<Vec<_>>(), uniforms, shader)
     }
 }

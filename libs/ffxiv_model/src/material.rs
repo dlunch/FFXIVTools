@@ -22,8 +22,7 @@ pub fn create_material(
     #[allow(unused_variables)] customization: &Customization,
     stain_id: u8,
 ) -> Material {
-    let mut uniforms = HashMap::new();
-    uniforms.insert("BoneTransformsUniform", bone_transform);
+    let uniforms = &[("BoneTransformsUniform", bone_transform)];
 
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
     let textures = gather_textures(mtrl, textures);
