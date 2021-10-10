@@ -21,9 +21,9 @@ struct bone_transform {
 };
 
 [[group(0), binding(0)]]
-var transform: transform;
+var<uniform> transform: transform;
 [[group(0), binding(1)]]
-var bone_transform: bone_transform;
+var<uniform> bone_transform: bone_transform;
 
 [[stage(vertex)]]
 fn vs_main(

@@ -1,5 +1,4 @@
-#![type_length_limit = "2097152"]
-
+use std::f32::consts::PI;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
@@ -18,7 +17,7 @@ use winit::{
 };
 
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
-use renderer::{Camera, Renderer, Scene};
+use renderer::{ArcballCameraController, Camera, Renderer, Scene};
 use sqpack::{Result, SqPackPackage};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
@@ -68,6 +67,7 @@ struct App {
     context: Context,
     package: Arc<BatchedPackage>,
     scene: Scene,
+    camera: Camera<ArcballCameraController>,
 }
 
 impl App {
@@ -100,14 +100,16 @@ impl App {
         let renderer = Renderer::new(window, size.width, size.height).await;
         let context = Context::new(&renderer, &*package).await.unwrap();
 
-        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        let scene = Scene::new(camera);
+        let controller = ArcballCameraController::new(Point3::new(0.0, 0.8, 0.0), 2.5);
+        let camera = Camera::new(45.0 * PI / 180.0, size.width as f32 / size.height as f32, 0.1, 100.0, controller);
+        let scene = Scene::new();
 
         Self {
             renderer,
             context,
             package,
             scene,
+            camera,
         }
     }
 
@@ -127,6 +129,6 @@ impl App {
     }
 
     pub fn render(&mut self) {
-        self.renderer.render(&self.scene);
+        self.renderer.render(&self.camera, &self.scene);
     }
 }

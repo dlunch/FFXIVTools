@@ -1,15 +1,18 @@
+use core::f32::consts::PI;
+
 use hashbrown::HashMap;
 use nalgebra::Point3;
 use winit::window::Window;
 
 use common::{regions, WasmPackage};
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
-use renderer::{Camera, Renderer, Scene};
+use renderer::{ArcballCameraController, Camera, Renderer, Scene};
 
 pub struct Content {
     renderer: Renderer,
     window: Window,
     scene: Scene,
+    camera: Camera<ArcballCameraController>,
 }
 
 impl Content {
@@ -19,8 +22,9 @@ impl Content {
         let size = window.inner_size();
         let renderer = Renderer::new(&window, size.width, size.height).await;
 
-        let camera = Camera::new(Point3::new(0.0, 0.8, 2.5), Point3::new(0.0, 0.8, 0.0));
-        let mut scene = Scene::new(camera);
+        let controller = ArcballCameraController::new(Point3::new(0.0, 0.8, 0.0), 2.5);
+        let camera = Camera::new(45.0 * PI / 180.0, size.width as f32 / size.height as f32, 0.1, 100.0, controller);
+        let mut scene = Scene::new();
         let context = Context::new(&renderer, &package).await.unwrap();
 
         let mut equipments = HashMap::new();
@@ -35,11 +39,16 @@ impl Content {
 
         scene.add(character);
 
-        Self { renderer, window, scene }
+        Self {
+            renderer,
+            window,
+            scene,
+            camera,
+        }
     }
 
     pub fn redraw(&mut self) {
-        self.renderer.render(&self.scene);
+        self.renderer.render(&self.camera, &self.scene);
     }
 
     pub fn request_redraw(&self) {
