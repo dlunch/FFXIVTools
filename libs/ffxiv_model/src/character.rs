@@ -61,7 +61,7 @@ impl Character {
 }
 
 impl Renderable for Character {
-    fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
+    fn render<'a>(&'a self, render_context: &mut RenderContext<'a>) {
         for part in &self.parts {
             part.render(render_context);
         }
