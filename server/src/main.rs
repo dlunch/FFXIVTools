@@ -75,12 +75,12 @@ fn insert_headers<'a>(response: &'a mut Response, allowed_origin: &'a str) {
     response.set_header(Header::new("Vary", "Origin, Accept-Encoding"));
 }
 
-fn attach_cors<'b, 'r>(req: &'r Request<'_>, mut res: &'b mut Response<'r>) -> BoxFuture<'b, ()> {
+fn attach_cors<'b, 'r>(req: &'r Request<'_>, res: &'b mut Response<'r>) -> BoxFuture<'b, ()> {
     Box::pin(async move {
         let source_origin = req.headers().get_one("Origin");
         let allowed_origin = get_allowed_origin(source_origin);
 
-        insert_headers(&mut res, allowed_origin);
+        insert_headers(res, allowed_origin);
     })
 }
 
