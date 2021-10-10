@@ -158,7 +158,7 @@ impl CharacterPart {
 impl Renderable for CharacterPart {
     fn render<'a>(&'a self, mut render_context: &mut RenderContext<'a>) {
         for model in &self.models {
-            model.0.render(&mut render_context);
+            model.0.render(render_context);
         }
     }
 }
