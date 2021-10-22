@@ -31,7 +31,7 @@ impl Character {
         let read_futures = equipments
             .into_iter()
             .map(|(equipment_part, equipment)| ModelReader::read_equipment(renderer, package, &customization, equipment_part, equipment, context));
-        let mut parts = read_futures
+        let parts_fut = read_futures
             .map(|x| {
                 x.map(|data| {
                     Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(CharacterPart::with_equipment_model(
@@ -44,16 +44,32 @@ impl Character {
                 })
             })
             .collect::<FuturesUnordered<_>>()
-            .try_collect::<Vec<_>>()
-            .await?;
+            .try_collect::<Vec<_>>();
 
-        // chaining part model futures and equipment read futures causes compiler issue https://github.com/rust-lang/rust/issues/64650
-        let face_part_model = ModelReader::read_face(renderer, package, &customization, context).await?;
-        let face_part = Box::new(CharacterPart::with_model(renderer, face_part_model, &bone_transforms, context, &customization).await);
+        // chaining part model futures and equipment read futures requires boxed future, emits strange compile error https://github.com/rust-lang/rust/issues/64650
+        let face_part_fut = ModelReader::read_face(renderer, package, &customization, context).map(|x| {
+            Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(CharacterPart::with_model(
+                renderer,
+                x?,
+                &bone_transforms,
+                context,
+                &customization,
+            )))
+        });
+
+        let hair_part_fut = ModelReader::read_hair(renderer, package, &customization, context).map(|x| {
+            Ok::<Box<dyn Renderable>, SqPackReaderError>(Box::new(CharacterPart::with_model(
+                renderer,
+                x?,
+                &bone_transforms,
+                context,
+                &customization,
+            )))
+        });
+
+        let (mut parts, face_part, hair_part) = futures::future::try_join3(parts_fut, face_part_fut, hair_part_fut).await?;
+
         parts.push(face_part);
-
-        let hair_part_model = ModelReader::read_hair(renderer, package, &customization, context).await?;
-        let hair_part = Box::new(CharacterPart::with_model(renderer, hair_part_model, &bone_transforms, context, &customization).await);
         parts.push(hair_part);
 
         Ok(Self { parts })
