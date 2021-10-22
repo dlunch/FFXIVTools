@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:experimental
 
-FROM dlunch/rust:1.54.0-stretch as builder
+FROM dlunch/rust:1.56.0-stretch as builder
 
 WORKDIR /src
 COPY . .
