@@ -18,7 +18,7 @@ pub struct CharacterPart {
 }
 
 impl CharacterPart {
-    pub async fn with_model(
+    pub fn with_model(
         renderer: &Renderer,
         model_data: ModelData,
         bone_transforms: &HashMap<String, Matrix4<f32>>,
