@@ -1,4 +1,3 @@
-[[block]]
 struct point_light {
 	position: vec4<f32>;
 	ambient: vec4<f32>;
