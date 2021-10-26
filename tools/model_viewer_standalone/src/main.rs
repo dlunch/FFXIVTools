@@ -9,7 +9,7 @@ use hashbrown::HashMap;
 use log::debug;
 use nalgebra::Point3;
 use winit::{
-    dpi::LogicalSize,
+    dpi::PhysicalSize,
     event,
     event::WindowEvent,
     event_loop::{ControlFlow, EventLoop},
@@ -28,7 +28,7 @@ async fn main() {
     let event_loop = EventLoop::new();
 
     let mut builder = winit::window::WindowBuilder::new();
-    builder = builder.with_title("test").with_inner_size(LogicalSize::new(1920, 1080));
+    builder = builder.with_title("test").with_inner_size(PhysicalSize::new(1920, 1080));
     let window = builder.build(&event_loop).unwrap();
 
     let mut app = App::new(&window).await;
