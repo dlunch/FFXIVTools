@@ -94,15 +94,12 @@ impl CharacterPart {
                     buffer_items
                         .map(|x| VertexFormatItem::new(x.usage.as_str(), Self::convert_buffer_type(x.item_type), x.offset as usize))
                         .collect::<Vec<_>>(),
+                    mesh_data.mesh_info.strides[buffer_index] as usize,
                 )
             })
             .collect::<Vec<_>>();
 
-        let strides = (0..mesh_data.mesh_info.buffer_count as usize)
-            .map(|i| mesh_data.mesh_info.strides[i] as usize)
-            .collect::<Vec<_>>();
-
-        Mesh::new(renderer, &mesh_data.buffers, &strides, mesh_data.indices, vertex_formats)
+        Mesh::new(renderer, &mesh_data.buffers, mesh_data.indices, vertex_formats)
     }
 
     fn get_mesh_parts(mdl: &Mdl, mesh_data: &MdlMesh<'_>, visibility_mask: usize, hidden_attributes: &HashSet<&str>) -> Vec<Range<u32>> {
