@@ -2539,7 +2539,7 @@ checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 [[package]]
 name = "renderer"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#8f46ad39072d6a2152ec3e758761e42793fc6b3f"
+source = "git+https://github.com/dlunch/renderer#c99f868425c7b7713847e5e906498f0e0079e556"
 dependencies = [
  "futures",
  "hashbrown 0.11.2",
