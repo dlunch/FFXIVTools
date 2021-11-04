@@ -1,6 +1,6 @@
 #![cfg(feature = "test_local")]
 
-#[async_std::test]
+#[tokio::test]
 #[cfg(unix)]
 async fn read_as_compressed_test() -> sqpack::Result<()> {
     use std::path::Path;

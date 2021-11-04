@@ -1,6 +1,6 @@
 #![cfg(feature = "test_local")]
 
-#[async_std::test]
+#[tokio::test]
 #[cfg(unix)]
 async fn read_file_test() -> sqpack::Result<()> {
     use std::path::Path;
@@ -47,7 +47,7 @@ async fn read_file_test() -> sqpack::Result<()> {
     Ok(())
 }
 
-#[async_std::test]
+#[tokio::test]
 #[cfg(feature = "std")]
 async fn read_web_test() -> sqpack::Result<()> {
     use sqpack::Package;

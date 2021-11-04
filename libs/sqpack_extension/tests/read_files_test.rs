@@ -1,4 +1,4 @@
-#[async_std::test]
+#[tokio::test]
 #[cfg(feature = "std")]
 async fn read_files_test() -> sqpack::Result<()> {
     use sqpack::SqPackFileReference;
