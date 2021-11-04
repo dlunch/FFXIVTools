@@ -2,7 +2,7 @@ use ffxiv_parser::{Ex, Language};
 use sqpack::Result;
 use sqpack_extension::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
-#[async_std::test]
+#[tokio::test]
 async fn exd_test() -> Result<()> {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack"), log::LevelFilter::Debug)
@@ -39,7 +39,7 @@ async fn exd_test() -> Result<()> {
     Ok(())
 }
 
-#[async_std::test]
+#[tokio::test]
 async fn exd_multi_test() -> Result<()> {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack"), log::LevelFilter::Debug)

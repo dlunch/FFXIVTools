@@ -3,11 +3,10 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-use async_std::fs;
-use async_std::task;
 use hashbrown::HashMap;
 use log::debug;
 use nalgebra::Point3;
+use tokio::{fs, task, time};
 use winit::{
     dpi::PhysicalSize,
     event,
@@ -21,7 +20,7 @@ use renderer::{ArcballCameraController, Camera, Renderer, Scene};
 use sqpack::{Result, SqPackPackage};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     let _ = pretty_env_logger::init_timed();
 
@@ -89,10 +88,10 @@ impl App {
 
         // TODO We can't put add_character in task::spawn (rust issue #64650), so BatchedPackage::poll can't be in app.update() or somewhere.
         let package2 = package.clone();
-        task::spawn_local(async move {
+        task::spawn(async move {
             loop {
                 package2.poll().await.unwrap();
-                task::sleep(Duration::from_millis(16)).await;
+                time::sleep(Duration::from_millis(16)).await;
             }
         });
 

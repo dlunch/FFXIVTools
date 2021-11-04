@@ -16,6 +16,6 @@ sqpack = { version = "^0.1", default-features = false, git = "https://github.com
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
 
 [dev-dependencies]
-async-std = { version = "^1.9", features = ["attributes", "tokio1"] }
-pretty_env_logger = { version = "^0.4", default-features = false }
-sqpack_extension = { version = "^0.1", default-features = false, path = "../sqpack_extension" }
+tokio = { version = "^1.13", features = ["full"] }
+pretty_env_logger = { version = "^0.4" }
+sqpack_extension = { version = "^0.1", path = "../sqpack_extension" }

@@ -3,7 +3,7 @@ use havok_parser::HavokBinaryTagFileReader;
 use sqpack::Result;
 use sqpack_extension::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
-#[async_std::test]
+#[tokio::test]
 async fn read_test() -> Result<()> {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack"), log::LevelFilter::Debug)

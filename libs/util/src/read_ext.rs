@@ -1,10 +1,10 @@
 use std::io;
 use std::io::SeekFrom;
 
-use async_std::fs::File;
-use async_std::io::prelude::ReadExt as async_std_read_ext;
-use async_std::io::prelude::SeekExt;
 use async_trait::async_trait;
+use tokio::fs::File;
+use tokio::io::prelude::ReadExt as async_std_read_ext;
+use tokio::io::prelude::SeekExt;
 
 #[async_trait]
 pub trait ReadExt {

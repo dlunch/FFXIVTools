@@ -55,6 +55,15 @@ dependencies = [
 
 [[package]]
 name = "ansi_term"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
+name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
@@ -99,16 +108,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-attributes"
-version = "1.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3203e79f4dd9bdda415ed03cf14dae5a2bf775c683a00f94e9cd1faf0f596e5"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "async-channel"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -147,7 +146,6 @@ dependencies = [
  "futures-lite",
  "num_cpus",
  "once_cell",
- "tokio",
 ]
 
 [[package]]
@@ -210,7 +208,6 @@ version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8056f1455169ab86dd47b47391e4ab0cbd25410a70e9fe675544f49bafaf952"
 dependencies = [
- "async-attributes",
  "async-channel",
  "async-global-executor",
  "async-io",
@@ -456,9 +453,13 @@ version = "2.33.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37e58ac78573c40708d45522f0d80fa2f01cc4f9b4e2bf749807255454312002"
 dependencies = [
+ "ansi_term 0.11.0",
+ "atty",
  "bitflags",
+ "strsim 0.8.0",
  "textwrap",
  "unicode-width",
+ "vec_map",
 ]
 
 [[package]]
@@ -769,7 +770,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "strsim",
+ "strsim 0.9.3",
  "syn",
 ]
 
@@ -968,12 +969,12 @@ dependencies = [
 name = "ffxiv_ex"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "ffxiv_parser",
  "log",
  "pretty_env_logger",
  "sqpack",
  "sqpack_extension",
+ "tokio",
 ]
 
 [[package]]
@@ -997,7 +998,6 @@ dependencies = [
 name = "ffxiv_parser"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "futures",
  "hashbrown 0.11.2",
  "log",
@@ -1008,6 +1008,7 @@ dependencies = [
  "serde_repr",
  "sqpack",
  "sqpack_extension",
+ "tokio",
  "util",
 ]
 
@@ -1352,7 +1353,6 @@ dependencies = [
 name = "havok_parser"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "bitflags",
  "ffxiv_parser",
  "hashbrown 0.11.2",
@@ -1360,6 +1360,7 @@ dependencies = [
  "pretty_env_logger",
  "sqpack",
  "sqpack_extension",
+ "tokio",
  "util",
 ]
 
@@ -1798,7 +1799,6 @@ dependencies = [
 name = "model_viewer_standalone"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "ffxiv_model",
  "futures",
  "hashbrown 0.11.2",
@@ -1808,6 +1808,7 @@ dependencies = [
  "renderer",
  "sqpack",
  "sqpack_extension",
+ "tokio",
  "winit",
 ]
 
@@ -2539,7 +2540,7 @@ checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 [[package]]
 name = "renderer"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#8f46ad39072d6a2152ec3e758761e42793fc6b3f"
+source = "git+https://github.com/dlunch/renderer#c99f868425c7b7713847e5e906498f0e0079e556"
 dependencies = [
  "futures",
  "hashbrown 0.11.2",
@@ -2995,7 +2996,6 @@ dependencies = [
 name = "sqpack_extension"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "async-trait",
  "bytes",
  "cfg-if 1.0.0",
@@ -3007,6 +3007,7 @@ dependencies = [
  "reqwest",
  "spinning_top",
  "sqpack",
+ "tokio",
  "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -3017,11 +3018,11 @@ dependencies = [
 name = "sqpack_extractor"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "clap",
  "futures",
  "sqpack",
  "sqpack_extension",
+ "tokio",
 ]
 
 [[package]]
@@ -3108,6 +3109,12 @@ name = "stdweb-internal-runtime"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "213701ba3370744dcd1a12960caa4843b3d68b4d1c0a5d575e0d65b2ee9d16c0"
+
+[[package]]
+name = "strsim"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
 name = "strsim"
@@ -3254,9 +3261,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2c2416fdedca8443ae44b4527de1ea633af61d8f7169ffa6e72c5b53d24efcc"
+checksum = "588b2d10a336da58d877567cd8fb8a14b463e2104910f8132cd054b4b96e29ee"
 dependencies = [
  "autocfg",
  "bytes",
@@ -3265,6 +3272,7 @@ dependencies = [
  "mio",
  "num_cpus",
  "once_cell",
+ "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
  "tokio-macros",
@@ -3391,7 +3399,7 @@ version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e0d2eaa99c3c2e41547cfa109e910a68ea03823cccad4a0525dcbc9b01e8c71"
 dependencies = [
- "ansi_term",
+ "ansi_term 0.12.1",
  "chrono",
  "lazy_static",
  "matchers",
@@ -3524,9 +3532,9 @@ dependencies = [
 name = "util"
 version = "0.1.0"
 dependencies = [
- "async-std",
  "async-trait",
  "cfg-if 1.0.0",
+ "tokio",
 ]
 
 [[package]]
@@ -3544,6 +3552,12 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vec_map"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "version_check"

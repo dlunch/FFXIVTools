@@ -7,9 +7,9 @@ edition = "2021"
 [features]
 
 [dependencies]
-futures = { version = "^0.3", features = ["alloc"], default-features = false }
-clap = { version = "^2.33", default-features = false }
-async-std = { version = "^1.6", features = ["default", "attributes"], default-features = false }
+futures = { version = "^0.3" }
+clap = { version = "^2.33" }
+tokio = { version = "^1.13", features = ["full"] }
 
 sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", path = "../../libs/sqpack_extension" }

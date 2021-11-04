@@ -4,7 +4,7 @@ use sqpack::Result;
 use sqpack_extension::{ExtractedFileProviderWeb, SqPackReaderExtractedFile};
 
 #[allow(clippy::float_cmp)]
-#[async_std::test]
+#[tokio::test]
 async fn skeleton_test() -> Result<()> {
     let _ = pretty_env_logger::formatted_timed_builder()
         .filter(Some("sqpack"), log::LevelFilter::Debug)

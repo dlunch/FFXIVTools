@@ -1,17 +1,17 @@
 use std::io;
 use std::path::Path;
 
-use async_std::fs;
 use clap::{App, Arg};
 use futures::{
     future,
     stream::{FuturesUnordered, TryStreamExt},
 };
+use tokio::fs;
 
 use sqpack::{SqPackArchiveId, SqPackPackage};
 use sqpack_extension::ExtractedSqPackRawFile;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> io::Result<()> {
     let matches = App::new("sqpack_extractor")
         .arg(Arg::with_name("base_path").takes_value(true).required(true))

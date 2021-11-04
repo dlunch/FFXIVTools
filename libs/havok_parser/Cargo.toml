@@ -15,9 +15,9 @@ hashbrown = { version = "^0.11", features = ["ahash", "inline-more"], default-fe
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 [dev-dependencies]
-async-std = { version = "^1.6", features = ["attributes", "tokio1"], default-features = false }
-pretty_env_logger = { version = "^0.4", default-features = false }
+tokio = { version = "^1.13", features = ["full"] }
+pretty_env_logger = { version = "^0.4" }
 
 sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }
-ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
-sqpack_extension = { version = "^0.1", default-features = false, path = "../sqpack_extension" }
+ffxiv_parser = { version = "^0.1", path = "../ffxiv_parser" }
+sqpack_extension = { version = "^0.1", path = "../sqpack_extension" }
