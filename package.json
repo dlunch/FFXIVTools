@@ -27,7 +27,7 @@
     "html-entry-loader": "git+https://github.com/dlunch/html-entry-loader.git",
     "less": "^4.1",
     "less-loader": "^10",
-    "mini-css-extract-plugin": "^2.1",
+    "mini-css-extract-plugin": "^2.4",
     "prettier": "^2.1",
     "style-loader": "^3.2",
     "ts-loader": "^9.2",
