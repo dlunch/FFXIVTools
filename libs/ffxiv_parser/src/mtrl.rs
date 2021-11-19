@@ -27,18 +27,6 @@ pub enum MtrlParameterType {
     Catchlight = 0xFEA0_F3D2,
 }
 
-impl MtrlParameterType {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            MtrlParameterType::Normal => "Normal",
-            MtrlParameterType::Mask => "Mask",
-            MtrlParameterType::Diffuse => "Diffuse",
-            MtrlParameterType::Specular => "Specular",
-            MtrlParameterType::Catchlight => "Catchlight",
-        }
-    }
-}
-
 #[repr(C)]
 pub struct MtrlParameter {
     pub parameter_type: MtrlParameterType,

@@ -5,8 +5,8 @@ use hashbrown::{HashMap, HashSet};
 use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
-use ffxiv_parser::{BufferItemChunk, BufferItemType, Mdl, MdlMesh};
-use renderer::{Buffer, Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
+use eng::render::{Buffer, Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
+use ffxiv_parser::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
 
 use crate::context::Context;
 use crate::customization::Customization;
@@ -92,7 +92,13 @@ impl CharacterPart {
                 let buffer_items = buffer_item.items().filter(move |x| x.buffer as usize == buffer_index);
                 VertexFormat::new(
                     buffer_items
-                        .map(|x| VertexFormatItem::new(x.usage.as_str(), Self::convert_buffer_type(x.item_type), x.offset as usize))
+                        .map(|x| {
+                            VertexFormatItem::new(
+                                Self::buffer_usage_to_shader_name(&x.usage),
+                                Self::convert_buffer_type(x.item_type),
+                                x.offset as usize,
+                            )
+                        })
                         .collect::<Vec<_>>(),
                     mesh_data.mesh_info.strides[buffer_index] as usize,
                 )
@@ -100,6 +106,19 @@ impl CharacterPart {
             .collect::<Vec<_>>();
 
         Mesh::new(renderer, &mesh_data.buffers, mesh_data.indices, vertex_formats)
+    }
+
+    fn buffer_usage_to_shader_name(buffer_usage: &BufferItemUsage) -> &'static str {
+        match buffer_usage {
+            BufferItemUsage::Position => "position",
+            BufferItemUsage::BoneWeight => "bone_weight",
+            BufferItemUsage::BoneIndex => "bone_index",
+            BufferItemUsage::Normal => "normal",
+            BufferItemUsage::TexCoord => "tex_coord",
+            BufferItemUsage::Tangent => "tangent",
+            BufferItemUsage::BiTangent => "bi_tangent",
+            BufferItemUsage::Color => "color",
+        }
     }
 
     fn get_mesh_parts(mdl: &Mdl, mesh_data: &MdlMesh<'_>, visibility_mask: usize, hidden_attributes: &HashSet<&str>) -> Vec<Range<u32>> {

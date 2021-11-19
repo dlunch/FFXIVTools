@@ -7,8 +7,8 @@ use alloc::sync::Arc;
 
 use hashbrown::HashMap;
 
-use ffxiv_parser::Mtrl;
-use renderer::{Buffer, Material, Renderer, Texture};
+use eng::render::{Buffer, Material, Renderer, Texture};
+use ffxiv_parser::{Mtrl, MtrlParameterType};
 
 use crate::context::Context;
 use crate::customization::Customization;
@@ -22,7 +22,7 @@ pub fn create_material(
     #[allow(unused_variables)] customization: &Customization,
     stain_id: u8,
 ) -> Material {
-    let uniforms = &[("BoneTransformsUniform", bone_transform)];
+    let uniforms = &[("bone_transform", bone_transform)];
 
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
     let textures = gather_textures(mtrl, textures);
@@ -40,6 +40,21 @@ pub fn create_material(
 pub fn gather_textures(mtrl: &Mtrl, textures: &[Arc<Texture>]) -> HashMap<&'static str, Arc<Texture>> {
     mtrl.parameters()
         .iter()
-        .map(|parameter| (parameter.parameter_type.as_str(), textures[parameter.texture_index as usize].clone()))
+        .map(|parameter| {
+            (
+                parameter_type_to_shader_name(&parameter.parameter_type),
+                textures[parameter.texture_index as usize].clone(),
+            )
+        })
         .collect::<HashMap<_, _>>()
+}
+
+fn parameter_type_to_shader_name(parameter_type: &MtrlParameterType) -> &'static str {
+    match parameter_type {
+        MtrlParameterType::Normal => "normal_tex",
+        MtrlParameterType::Mask => "mask_tex",
+        MtrlParameterType::Diffuse => "diffuse_tex",
+        MtrlParameterType::Specular => "specular_tex",
+        MtrlParameterType::Catchlight => "catchlight_tex",
+    }
 }

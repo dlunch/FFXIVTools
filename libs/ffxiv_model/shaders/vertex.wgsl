@@ -21,7 +21,7 @@ struct bone_transform {
 };
 
 [[group(0), binding(0)]]
-var<uniform> transform: transform;
+var<uniform> mvp: transform;
 [[group(0), binding(1)]]
 var<uniform> bone_transform: bone_transform;
 
@@ -62,7 +62,7 @@ fn vs_main(
 	out.tbn1 = vec4<f32>(tangent.y, normalized_bi_tangent.y, skinned_normal.y, 0.0);
 	out.tbn2 = vec4<f32>(tangent.z, normalized_bi_tangent.z, skinned_normal.z, 0.0);
 	out.tbn3 = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-	out.position = transform.mvp * skinned_position;
+	out.position = mvp.mvp * skinned_position;
 
 	return out;
 }

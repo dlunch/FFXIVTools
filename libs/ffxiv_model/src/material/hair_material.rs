@@ -2,7 +2,7 @@ use alloc::{sync::Arc, vec::Vec};
 
 use hashbrown::HashMap;
 
-use renderer::{Buffer, Material, Renderer, Texture};
+use eng::render::{Buffer, Material, Renderer, Texture};
 
 use crate::{shader_holder::ShaderType, Context};
 
@@ -17,8 +17,8 @@ impl HairMaterial {
     ) -> Material {
         let shader = context.shader_holder.shader(ShaderType::Hair);
 
-        if !textures.contains_key("Diffuse") {
-            textures.insert("Diffuse", context.empty_texture.clone());
+        if !textures.contains_key("diffuse_tex") {
+            textures.insert("diffuse_tex", context.empty_texture.clone());
         }
 
         Material::new(renderer, &textures.into_iter().collect::<Vec<_>>(), uniforms, shader)

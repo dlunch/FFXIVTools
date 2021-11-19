@@ -2,8 +2,8 @@ use alloc::{sync::Arc, vec::Vec};
 
 use hashbrown::HashMap;
 
+use eng::render::{Buffer, Material, Renderer, Texture, TextureFormat};
 use ffxiv_parser::{Mtrl, Stm};
-use renderer::{Buffer, Material, Renderer, Texture, TextureFormat};
 
 use crate::{shader_holder::ShaderType, Context};
 
@@ -22,13 +22,16 @@ impl CharacterMaterial {
         if !color_table_data.is_empty() {
             let color_table_texels = Self::apply_staining(color_table_data, stain_id, &context.staining_template);
             let color_table_tex = Texture::with_texels(renderer, 4, 16, &color_table_texels, TextureFormat::Rgba16Float);
-            textures.insert("ColorTable", Arc::new(color_table_tex));
+            textures.insert("color_table_tex", Arc::new(color_table_tex));
         } else {
-            textures.insert("ColorTable", context.empty_texture.clone());
+            textures.insert("color_table_tex", context.empty_texture.clone());
         }
 
-        if !textures.contains_key("Mask") {
-            textures.insert("Mask", context.empty_texture.clone());
+        if !textures.contains_key("mask_tex") {
+            textures.insert("mask_tex", context.empty_texture.clone());
+        }
+        if !textures.contains_key("specular_tex") {
+            textures.insert("specular_tex", context.empty_texture.clone());
         }
 
         let shader = context.shader_holder.shader(ShaderType::Character);

@@ -92,21 +92,6 @@ pub enum BufferItemUsage {
     Color = 7,
 }
 
-impl BufferItemUsage {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            BufferItemUsage::Position => "Position",
-            BufferItemUsage::BoneWeight => "BoneWeight",
-            BufferItemUsage::BoneIndex => "BoneIndex",
-            BufferItemUsage::Normal => "Normal",
-            BufferItemUsage::TexCoord => "TexCoord",
-            BufferItemUsage::Tangent => "Tangent",
-            BufferItemUsage::BiTangent => "BiTangent",
-            BufferItemUsage::Color => "Color",
-        }
-    }
-}
-
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct BufferItem {

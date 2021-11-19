@@ -15,7 +15,7 @@ pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
 hashbrown = { version = "^0.11"}
 
-renderer = { version = "^0.1", git = "https://github.com/dlunch/renderer" }
+eng = { version = "^0.1", git = "https://github.com/dlunch/eng" }
 sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../../libs/sqpack_extension" }
 ffxiv_model = { version = "^0.1", path = "../../libs/ffxiv_model" }

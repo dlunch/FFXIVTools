@@ -740,6 +740,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cty"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
+
+[[package]]
 name = "d3d12"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -901,6 +907,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "eng"
+version = "0.1.0"
+source = "git+https://github.com/dlunch/eng#3042a93b326864005391111cacce76b3f95ef0ad"
+dependencies = [
+ "futures",
+ "hashbrown 0.11.2",
+ "log",
+ "naga",
+ "nalgebra",
+ "raw-window-handle 0.3.3",
+ "spinning_top",
+ "squish",
+ "wgpu",
+ "zerocopy",
+]
+
+[[package]]
 name = "enum-iterator"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -981,14 +1004,14 @@ dependencies = [
 name = "ffxiv_model"
 version = "0.1.0"
 dependencies = [
+ "eng",
  "enum-iterator",
  "ffxiv_parser",
  "futures",
  "hashbrown 0.11.2",
  "log",
  "nalgebra",
- "raw-window-handle",
- "renderer",
+ "raw-window-handle 0.4.1",
  "spinning_top",
  "sqpack",
  "zerocopy",
@@ -1778,13 +1801,13 @@ dependencies = [
  "common",
  "console_error_panic_hook",
  "console_log",
+ "eng",
  "ffxiv_model",
  "futures",
  "hashbrown 0.11.2",
  "js-sys",
  "log",
  "nalgebra",
- "renderer",
  "util",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -1799,13 +1822,13 @@ dependencies = [
 name = "model_viewer_standalone"
 version = "0.1.0"
 dependencies = [
+ "eng",
  "ffxiv_model",
  "futures",
  "hashbrown 0.11.2",
  "log",
  "nalgebra",
  "pretty_env_logger",
- "renderer",
  "sqpack",
  "sqpack_extension",
  "tokio",
@@ -2452,6 +2475,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "raw-window-handle"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "503bdbfa9605024fdc97f845002e3690d14c5f553594f1cd0f819317a70de02c"
+dependencies = [
+ "cty",
+]
+
+[[package]]
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2536,22 +2568,6 @@ name = "renderdoc-sys"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
-
-[[package]]
-name = "renderer"
-version = "0.1.0"
-source = "git+https://github.com/dlunch/renderer#c99f868425c7b7713847e5e906498f0e0079e556"
-dependencies = [
- "futures",
- "hashbrown 0.11.2",
- "log",
- "nalgebra",
- "raw-window-handle",
- "spinning_top",
- "squish",
- "wgpu",
- "zerocopy",
-]
 
 [[package]]
 name = "reqwest"
@@ -3802,7 +3818,7 @@ dependencies = [
  "js-sys",
  "log",
  "parking_lot",
- "raw-window-handle",
+ "raw-window-handle 0.3.3",
  "smallvec",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -3827,7 +3843,7 @@ dependencies = [
  "naga",
  "parking_lot",
  "profiling",
- "raw-window-handle",
+ "raw-window-handle 0.3.3",
  "smallvec",
  "thiserror",
  "wgpu-hal",
@@ -3863,7 +3879,7 @@ dependencies = [
  "parking_lot",
  "profiling",
  "range-alloc",
- "raw-window-handle",
+ "raw-window-handle 0.3.3",
  "renderdoc-sys",
  "thiserror",
  "wasm-bindgen",
@@ -3946,7 +3962,7 @@ dependencies = [
  "objc",
  "parking_lot",
  "percent-encoding",
- "raw-window-handle",
+ "raw-window-handle 0.3.3",
  "scopeguard",
  "smithay-client-toolkit",
  "wasm-bindgen",

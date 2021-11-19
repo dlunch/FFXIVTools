@@ -6,7 +6,7 @@ use futures::{
 };
 use hashbrown::HashMap;
 
-use renderer::{RenderContext, Renderable, Renderer};
+use eng::render::{RenderContext, Renderable, Renderer};
 use sqpack::{Package, Result, SqPackReaderError};
 
 use crate::{

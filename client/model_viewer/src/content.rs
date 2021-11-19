@@ -5,8 +5,8 @@ use nalgebra::Point3;
 use winit::window::Window;
 
 use common::{regions, WasmPackage};
+use eng::render::{ArcballCameraController, Camera, Renderer, Scene};
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
-use renderer::{ArcballCameraController, Camera, Renderer, Scene};
 
 pub struct Content {
     renderer: Renderer,

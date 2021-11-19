@@ -2,7 +2,7 @@ use alloc::{sync::Arc, vec::Vec};
 
 use hashbrown::HashMap;
 
-use renderer::{Buffer, Material, Renderer, Texture};
+use eng::render::{Buffer, Material, Renderer, Texture};
 
 use crate::{shader_holder::ShaderType, Context};
 
