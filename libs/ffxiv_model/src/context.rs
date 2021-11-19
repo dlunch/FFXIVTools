@@ -8,8 +8,8 @@ use futures::{
 use hashbrown::HashMap;
 use nalgebra::Matrix4;
 
+use eng::render::{Renderer, Texture, TextureFormat};
 use ffxiv_parser::{Eqdp, Pbd, Stm};
-use renderer::{Renderer, Texture, TextureFormat};
 use sqpack::{Package, Result};
 
 use crate::constants::{BodyId, ModelPart};

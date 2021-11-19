@@ -2,8 +2,8 @@ use alloc::{format, string::String, sync::Arc, vec::Vec};
 
 use futures::{future, FutureExt};
 
+use eng::render::{Renderer, Texture};
 use ffxiv_parser::{Mdl, Mtrl};
-use renderer::{Renderer, Texture};
 use sqpack::{Package, Result, SqPackReaderError};
 
 use crate::constants::{BodyId, ModelPart};

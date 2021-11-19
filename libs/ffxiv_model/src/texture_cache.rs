@@ -4,8 +4,8 @@ use futures::channel::oneshot;
 use hashbrown::HashMap;
 use spinning_top::Spinlock;
 
+use eng::render::{CompressedTextureFormat, Renderer, Texture, TextureFormat};
 use ffxiv_parser::{Tex, TextureType};
-use renderer::{CompressedTextureFormat, Renderer, Texture, TextureFormat};
 use sqpack::{Package, Result};
 
 pub struct TextureCache {

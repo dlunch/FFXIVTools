@@ -3,7 +3,7 @@ use core::iter::FromIterator;
 
 use hashbrown::HashMap;
 
-use renderer::{Renderer, Shader, ShaderBinding, ShaderBindingType, ShaderStage};
+use eng::render::{Renderer, Shader};
 
 #[derive(Eq, PartialEq, Hash)]
 pub enum ShaderType {
@@ -45,121 +45,24 @@ impl ShaderHolder {
     fn load_character_shader(renderer: &Renderer) -> Shader {
         let shader = Self::compose_shader(include_str!("../shaders/character.wgsl"));
 
-        Shader::new(
-            renderer,
-            &shader,
-            "vs_main",
-            "fs_main",
-            &[
-                ("Mvp", ShaderBinding::new(ShaderStage::Vertex, 0, ShaderBindingType::UniformBuffer)),
-                (
-                    "BoneTransformsUniform",
-                    ShaderBinding::new(ShaderStage::Vertex, 1, ShaderBindingType::UniformBuffer),
-                ),
-                ("Sampler", ShaderBinding::new(ShaderStage::Fragment, 10, ShaderBindingType::Sampler)),
-                ("Normal", ShaderBinding::new(ShaderStage::Fragment, 11, ShaderBindingType::Texture2D)),
-                ("ColorTable", ShaderBinding::new(ShaderStage::Fragment, 12, ShaderBindingType::Texture2D)),
-                ("Mask", ShaderBinding::new(ShaderStage::Fragment, 13, ShaderBindingType::Texture2D)),
-            ],
-            &[
-                ("Position", 0),
-                ("BoneWeight", 1),
-                ("BoneIndex", 2),
-                ("Normal", 3),
-                ("TexCoord", 4),
-                ("BiTangent", 5),
-                ("Color", 6),
-            ],
-        )
+        Shader::new(renderer, &shader)
     }
 
     fn load_skin_shader(renderer: &Renderer) -> Shader {
         let shader = Self::compose_shader(include_str!("../shaders/skin.wgsl"));
 
-        Shader::new(
-            renderer,
-            &shader,
-            "vs_main",
-            "fs_main",
-            &[
-                ("Mvp", ShaderBinding::new(ShaderStage::Vertex, 0, ShaderBindingType::UniformBuffer)),
-                (
-                    "BoneTransformsUniform",
-                    ShaderBinding::new(ShaderStage::Vertex, 1, ShaderBindingType::UniformBuffer),
-                ),
-                ("Sampler", ShaderBinding::new(ShaderStage::Fragment, 10, ShaderBindingType::Sampler)),
-                ("Normal", ShaderBinding::new(ShaderStage::Fragment, 11, ShaderBindingType::Texture2D)),
-                ("Diffuse", ShaderBinding::new(ShaderStage::Fragment, 12, ShaderBindingType::Texture2D)),
-            ],
-            &[
-                ("Position", 0),
-                ("BoneWeight", 1),
-                ("BoneIndex", 2),
-                ("Normal", 3),
-                ("TexCoord", 4),
-                ("BiTangent", 5),
-                ("Color", 6),
-            ],
-        )
+        Shader::new(renderer, &shader)
     }
 
     fn load_iris_shader(renderer: &Renderer) -> Shader {
         let shader = Self::compose_shader(include_str!("../shaders/iris.wgsl"));
 
-        Shader::new(
-            renderer,
-            &shader,
-            "vs_main",
-            "fs_main",
-            &[
-                ("Mvp", ShaderBinding::new(ShaderStage::Vertex, 0, ShaderBindingType::UniformBuffer)),
-                (
-                    "BoneTransformsUniform",
-                    ShaderBinding::new(ShaderStage::Vertex, 1, ShaderBindingType::UniformBuffer),
-                ),
-                ("Sampler", ShaderBinding::new(ShaderStage::Fragment, 10, ShaderBindingType::Sampler)),
-                ("Normal", ShaderBinding::new(ShaderStage::Fragment, 11, ShaderBindingType::Texture2D)),
-                ("Diffuse", ShaderBinding::new(ShaderStage::Fragment, 12, ShaderBindingType::Texture2D)),
-            ],
-            &[
-                ("Position", 0),
-                ("BoneWeight", 1),
-                ("BoneIndex", 2),
-                ("Normal", 3),
-                ("TexCoord", 4),
-                ("BiTangent", 5),
-                ("Color", 6),
-            ],
-        )
+        Shader::new(renderer, &shader)
     }
 
     fn load_hair_shader(renderer: &Renderer) -> Shader {
         let shader = Self::compose_shader(include_str!("../shaders/hair.wgsl"));
 
-        Shader::new(
-            renderer,
-            &shader,
-            "vs_main",
-            "fs_main",
-            &[
-                ("Mvp", ShaderBinding::new(ShaderStage::Vertex, 0, ShaderBindingType::UniformBuffer)),
-                (
-                    "BoneTransformsUniform",
-                    ShaderBinding::new(ShaderStage::Vertex, 1, ShaderBindingType::UniformBuffer),
-                ),
-                ("Sampler", ShaderBinding::new(ShaderStage::Fragment, 10, ShaderBindingType::Sampler)),
-                ("Normal", ShaderBinding::new(ShaderStage::Fragment, 11, ShaderBindingType::Texture2D)),
-                ("Diffuse", ShaderBinding::new(ShaderStage::Fragment, 12, ShaderBindingType::Texture2D)),
-            ],
-            &[
-                ("Position", 0),
-                ("BoneWeight", 1),
-                ("BoneIndex", 2),
-                ("Normal", 3),
-                ("TexCoord", 4),
-                ("BiTangent", 5),
-                ("Color", 6),
-            ],
-        )
+        Shader::new(renderer, &shader)
     }
 }
