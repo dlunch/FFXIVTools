@@ -1005,7 +1005,7 @@ dependencies = [
  "hashbrown",
  "log",
  "nalgebra",
- "raw-window-handle 0.4.1",
+ "raw-window-handle 0.4.2",
  "spinning_top",
  "sqpack",
  "zerocopy",
@@ -2461,9 +2461,9 @@ dependencies = [
 
 [[package]]
 name = "raw-window-handle"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "503bdbfa9605024fdc97f845002e3690d14c5f553594f1cd0f819317a70de02c"
+checksum = "fba75eee94a9d5273a68c9e1e105d9cffe1ef700532325788389e5a83e2522b7"
 dependencies = [
  "cty",
 ]
