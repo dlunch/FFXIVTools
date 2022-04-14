@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 electron = []
 
 [dependencies]
-napi = { version = "^1.0" }
+napi = { version = "^2.3" }
 napi-derive = { version = "^1.0" }
 
 [build-dependencies]
