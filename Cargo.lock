@@ -1870,12 +1870,13 @@ dependencies = [
 
 [[package]]
 name = "napi"
-version = "1.7.11"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fd38e4945570d1fdc3052343410a5963c843e5797767009fabcd97dbe429bab"
+checksum = "2c43e69205d47ab5e43e5c98d63bd8a75d379d6631739b05dac26d5bcfb1a6ab"
 dependencies = [
+ "ctor",
+ "lazy_static",
  "napi-sys",
- "winapi",
 ]
 
 [[package]]
@@ -1897,9 +1898,12 @@ dependencies = [
 
 [[package]]
 name = "napi-sys"
-version = "1.1.2"
+version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67cf20e0081fea04e044aa4adf74cfea8ddc0324eec2894b1c700f4cafc72a56"
+checksum = "91c795d73a38586eadcb9bfda5be786b45620e3fe5fae04e5d3623d7d6abb3d0"
+dependencies = [
+ "libloading 0.7.2",
+]
 
 [[package]]
 name = "native"
