@@ -18,7 +18,7 @@ async fn read_files_test() -> sqpack::Result<()> {
     let references = vec![&reference1, &reference2, &reference3];
     let files = pack.read_files(&references).await?;
     {
-        let data = files.get(&references[0]).unwrap();
+        let data = files.get(references[0]).unwrap();
         assert_eq!(data[0], b'E');
         assert_eq!(data[1], b'X');
         assert_eq!(data[2], b'H');
@@ -27,13 +27,13 @@ async fn read_files_test() -> sqpack::Result<()> {
     }
 
     {
-        let data = files.get(&references[1]).unwrap();
+        let data = files.get(references[1]).unwrap();
         assert_eq!(data[0], 3u8);
         assert_eq!(data.len(), 27_348);
     }
 
     {
-        let data = files.get(&references[2]).unwrap();
+        let data = files.get(references[2]).unwrap();
         assert_eq!(data[0], 0u8);
         assert_eq!(data[1], 0u8);
         assert_eq!(data[2], 128u8);
