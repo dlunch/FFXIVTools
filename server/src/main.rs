@@ -1,43 +1,84 @@
-mod ffxiv_data;
+// mod ffxiv_data;
+use std::{error::Error, net::SocketAddr, time::Duration};
 
-use futures::future::BoxFuture;
-use rocket::{
-    fairing::AdHoc,
-    get,
-    http::Header,
-    launch,
-    request::{FromRequest, Outcome},
-    routes, Request, Responder, Response,
+use axum::{
+    extract::TypedHeader,
+    headers::{self, CacheControl, Header, HeaderName, HeaderValue},
+    response::IntoResponse,
+    routing::get,
+    Router,
 };
+use http::{header, Method};
+use tower_http::{cors::CorsLayer, set_header::SetResponseHeaderLayer};
 
-struct CloudFlareHeader {
-    dc: Option<String>,
-    ip_country: Option<String>,
+struct CfRay {
+    _id: String,
+    dc: String,
 }
 
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for CloudFlareHeader {
-    type Error = ();
+static CF_RAY: HeaderName = HeaderName::from_static("cf-ray");
+impl Header for CfRay {
+    fn name() -> &'static HeaderName {
+        &CF_RAY
+    }
 
-    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let dc = request.headers().get_one("CF_RAY").map(|x| x.split('-').nth(1).unwrap().to_owned());
-        let ip_country = request.headers().get_one("CF_IPCOUNTRY").map(|x| x.to_owned());
+    fn decode<'i, I>(values: &mut I) -> Result<Self, headers::Error>
+    where
+        I: Iterator<Item = &'i HeaderValue>,
+    {
+        let value = values.next().ok_or(headers::Error::invalid())?;
 
-        Outcome::Success(Self { dc, ip_country })
+        let split = value.to_str().map_err(|_| headers::Error::invalid())?.split('-').collect::<Vec<_>>();
+        if split.len() != 2 {
+            return Err(headers::Error::invalid());
+        }
+
+        Ok(Self {
+            _id: split[0].to_string(),
+            dc: split[1].to_string(),
+        })
+    }
+
+    fn encode<E>(&self, _: &mut E)
+    where
+        E: Extend<HeaderValue>,
+    {
+        unimplemented!()
     }
 }
 
-#[derive(Responder)]
-#[response(content_type = "text")]
-struct ProbeResponse {
-    body: &'static str,
-    header: Header<'static>,
+struct CfIpCountry(String);
+
+static CF_IPCOUNTRY: HeaderName = HeaderName::from_static("cf-ipcountry");
+impl Header for CfIpCountry {
+    fn name() -> &'static HeaderName {
+        &CF_IPCOUNTRY
+    }
+
+    fn decode<'i, I>(values: &mut I) -> Result<Self, headers::Error>
+    where
+        I: Iterator<Item = &'i HeaderValue>,
+    {
+        let value = values
+            .next()
+            .ok_or(headers::Error::invalid())?
+            .to_str()
+            .map_err(|_| headers::Error::invalid())?;
+
+        Ok(Self(value.to_string()))
+    }
+
+    fn encode<E>(&self, _: &mut E)
+    where
+        E: Extend<HeaderValue>,
+    {
+        unimplemented!()
+    }
 }
 
-#[get("/probe")]
-fn probe(header: CloudFlareHeader) -> ProbeResponse {
-    let enable_cf = if let (Some(dc), Some(ip_country)) = (header.dc, header.ip_country) {
-        !(ip_country == "KR" && dc != "ICN")
+async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHeader<CfIpCountry>>) -> impl IntoResponse {
+    let enable_cf = if let (Some(TypedHeader(cf_ray)), Some(TypedHeader(cf_ipcountry))) = (cf_ray, cf_ipcountry) {
+        !(cf_ipcountry.0 == "KR" && cf_ray.dc != "ICN")
     } else {
         true
     };
@@ -48,48 +89,30 @@ fn probe(header: CloudFlareHeader) -> ProbeResponse {
         "https://ffxiv-data-kr.dlunch.net"
     };
 
-    ProbeResponse {
-        body: response,
-        header: Header::new("Cache-Control", "max-age=31536000"),
-    }
+    (TypedHeader(CacheControl::new().with_max_age(Duration::from_secs(31536000))), response)
 }
 
-fn get_allowed_origin(source_origin: Option<&str>) -> &str {
-    const ALLOWD_ORIGINS: [&str; 2] = ["https://ffxiv-dev.dlunch.net", "http://localhost:8080"];
-
-    if let Some(origin) = source_origin {
-        if ALLOWD_ORIGINS.iter().any(|&x| x == origin) {
-            origin
-        } else {
-            "https://ffxiv.dlunch.net"
-        }
-    } else {
-        "https://ffxiv.dlunch.net"
-    }
-}
-
-fn insert_headers<'a>(response: &'a mut Response, allowed_origin: &'a str) {
-    response.set_header(Header::new("Access-Control-Allow-Origin", allowed_origin.to_owned()));
-    response.set_header(Header::new("Access-Control-Allow-Methods", "GET"));
-    response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
-    response.set_header(Header::new("Vary", "Origin, Accept-Encoding"));
-}
-
-fn attach_cors<'b, 'r>(req: &'r Request<'_>, res: &'b mut Response<'r>) -> BoxFuture<'b, ()> {
-    Box::pin(async move {
-        let source_origin = req.headers().get_one("Origin");
-        let allowed_origin = get_allowed_origin(source_origin);
-
-        insert_headers(res, allowed_origin);
-    })
-}
-
-#[launch]
-fn rocket() -> _ {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init_timed();
 
-    rocket::build()
-        .attach(AdHoc::on_response("CORS", attach_cors))
-        .attach(AdHoc::on_ignite("ffxiv_data", ffxiv_data::config))
-        .mount("/", routes![probe])
+    let origins = vec!["https://ffxiv-dev.dlunch.net".parse()?, "http://localhost:8080".parse()?];
+
+    let app = Router::new()
+        .route("/probe", get(probe))
+        .layer(
+            CorsLayer::new()
+                .allow_origin(origins)
+                .allow_methods(vec![Method::GET])
+                .allow_headers(vec![header::CONTENT_TYPE]),
+        )
+        .layer(SetResponseHeaderLayer::appending(
+            header::VARY,
+            HeaderValue::from_static("Origin, Accept-Encoding"),
+        ));
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    axum::Server::bind(&addr).serve(app.into_make_service()).await?;
+
+    Ok(())
 }

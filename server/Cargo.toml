@@ -4,17 +4,17 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2021"
 
-[features]
-default = []
-
-[dependencies]
-rocket = { version = ">=0.5.0-rc.1", default-features = false }
-futures = { version = "^0.3", default-features = false }
-itertools = { version = "^0.10", features = ["use_std"], default-features = false }
-log = { version = "^0.4", default-features = false }
-pretty_env_logger = { version = "^0.4", default-features = false }
-serde_json = {version = "^1.0", features = ["alloc"], default-features = false }
-serde = { version = "^1.0", default-features = false }
+[dependencies] 
+futures = { version = "^0.3" }
+itertools = { version = "^0.10" }
+log = { version = "^0.4" }
+pretty_env_logger = { version = "^0.4" }
+tokio = { version = "^1.0", features = ["full"] }
+axum = { version = "^0.5", features = ["headers"] }
+chrono = { version = "^0.4" }
+tower-http = { version = "0.3", features = ["cors", "set-header"] }
+http = { version = "^0.2" }
+hyper = { version = "^0.14" }
 
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../libs/ffxiv_parser" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../libs/sqpack_extension" }
