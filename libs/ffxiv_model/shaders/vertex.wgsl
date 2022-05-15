@@ -11,11 +11,9 @@ struct VertexOutput {
 	[[location(6)]] tbn3: vec4<f32>;
 };
 
-[[block]]
 struct transform {
     mvp: mat4x4<f32>;
 };
-[[block]]
 struct bone_transform {
     transforms: array<vec4<f32>, 192u>;
 };
