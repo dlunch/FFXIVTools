@@ -21,8 +21,8 @@ async fn exd_test() -> Result<()> {
         assert_eq!(row.int8(4), -1);
         assert_eq!(row.uint16(9), 100);
         assert_eq!(row.int32(28), 0);
-        assert_eq!(row.bool(44), false);
         assert_eq!(row.bool(45), false);
+        assert_eq!(row.bool(46), false);
     }
 
     {
@@ -32,8 +32,8 @@ async fn exd_test() -> Result<()> {
         assert_eq!(row.int8(4), 25);
         assert_eq!(row.uint16(9), 105);
         assert_eq!(row.int32(28), 0);
-        assert_eq!(row.bool(44), true);
-        assert_eq!(row.bool(45), false);
+        assert_eq!(row.bool(45), true);
+        assert_eq!(row.bool(46), false);
     }
 
     Ok(())
