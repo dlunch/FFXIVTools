@@ -1,4 +1,4 @@
-use alloc::{string::String, sync::Arc, vec::Vec};
+use alloc::{string::String, sync::Arc, vec, vec::Vec};
 use core::ops::Range;
 
 use hashbrown::{HashMap, HashSet};
@@ -140,7 +140,7 @@ impl CharacterPart {
 
     fn load_bone_transform(renderer: &Renderer, mdl: &Mdl, mesh_data: &MdlMesh<'_>, bone_transforms: &HashMap<String, Matrix4<f32>>) -> Arc<Buffer> {
         let bone_names = mdl.bone_names(mesh_data.mesh_info.bone_index);
-        let mut bone_transform_data = Vec::with_capacity(bone_names.size_hint().0 * 4 * 3 * core::mem::size_of::<f32>());
+        let mut bone_transform_data = vec![0; 64 * 3 * 4 * core::mem::size_of::<f32>()];
         for bone_name in bone_names {
             if let Some(x) = bone_transforms.get(bone_name) {
                 // nalgebra's as_slice uses column_major, so we have to transpose it
