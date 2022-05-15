@@ -22,7 +22,7 @@ use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExt
 
 #[tokio::main]
 async fn main() {
-    let _ = pretty_env_logger::init_timed();
+    pretty_env_logger::init_timed();
 
     let event_loop = EventLoop::new();
 
