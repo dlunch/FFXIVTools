@@ -15,7 +15,7 @@ use winit::{
     window::Window,
 };
 
-use eng::render::{ArcballCameraController, Camera, Renderer, Scene};
+use eng::render::{ArcballCameraController, PerspectiveCamera, Renderer, Scene};
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
 use sqpack::{Result, SqPackPackage};
 use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExtractedFile};
@@ -66,7 +66,7 @@ struct App {
     context: Context,
     package: Arc<BatchedPackage>,
     scene: Scene,
-    camera: Camera<ArcballCameraController>,
+    camera: PerspectiveCamera<ArcballCameraController>,
 }
 
 impl App {
@@ -100,7 +100,7 @@ impl App {
         let context = Context::new(&renderer, &*package).await.unwrap();
 
         let controller = ArcballCameraController::new(Point3::new(0.0, 0.8, 0.0), 2.5);
-        let camera = Camera::new(45.0 * PI / 180.0, size.width as f32 / size.height as f32, 0.1, 100.0, controller);
+        let camera = PerspectiveCamera::new(45.0 * PI / 180.0, size.width as f32 / size.height as f32, 0.1, 100.0, controller);
         let scene = Scene::new();
 
         Self {
