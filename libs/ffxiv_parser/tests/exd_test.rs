@@ -21,8 +21,8 @@ async fn exd_test() -> Result<()> {
         assert_eq!(row.int8(4), -1);
         assert_eq!(row.uint16(9), 100);
         assert_eq!(row.int32(28), 0);
-        assert_eq!(row.bool(45), false);
-        assert_eq!(row.bool(46), false);
+        assert!(!row.bool(45));
+        assert!(!row.bool(46));
     }
 
     {
@@ -32,8 +32,8 @@ async fn exd_test() -> Result<()> {
         assert_eq!(row.int8(4), 25);
         assert_eq!(row.uint16(9), 105);
         assert_eq!(row.int32(28), 0);
-        assert_eq!(row.bool(45), true);
-        assert_eq!(row.bool(46), false);
+        assert!(row.bool(45));
+        assert!(!row.bool(46));
     }
 
     Ok(())
@@ -52,7 +52,7 @@ async fn exd_multi_test() -> Result<()> {
 
     let row = ex.index_multi(262144, 0, Language::None).unwrap();
     assert_eq!(row.int32(0), 4594);
-    assert_eq!(row.bool(1), false);
+    assert!(!row.bool(1));
 
     Ok(())
 }
