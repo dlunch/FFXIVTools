@@ -21,7 +21,7 @@ use sqpack_extension::SqPackReaderExtractedFile;
 
 use context::Context;
 
-async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String, StatusCode> {
+async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<serde_json::Value, StatusCode> {
     let ex = Ex::new(package, ex_name).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
     let languages = if let Some(language) = language {
@@ -42,7 +42,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
             .into_iter()
             .map(|x| (x as u32, ex.all(x).unwrap().collect::<BTreeMap<_, _>>()))
             .collect::<BTreeMap<_, _>>();
-        Ok(serde_json::to_string(&result).unwrap())
+        Ok(serde_json::to_value(&result).unwrap())
     } else {
         let result = languages
             .into_iter()
@@ -56,7 +56,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
                 )
             })
             .collect::<BTreeMap<_, _>>();
-        Ok(serde_json::to_string(&result).unwrap())
+        Ok(serde_json::to_value(&result).unwrap())
     }
 }
 
@@ -65,14 +65,17 @@ fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackRea
 }
 
 /// routes
-async fn get_exl(context: Extension<Context>, Path(version): Path<String>) -> Result<Json<String>, StatusCode> {
+async fn get_exl(context: Extension<Context>, Path(version): Path<String>) -> Result<Json<Vec<String>>, StatusCode> {
     let package = find_package(&context, &version)?;
     let exl = ExList::new(package).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
-    Ok(Json(serde_json::to_string(&exl.ex_names).unwrap()))
+    Ok(Json(exl.ex_names))
 }
 
-async fn get_ex(context: Extension<Context>, Path((version, language, ex_name)): Path<(String, u16, String)>) -> Result<Json<String>, StatusCode> {
+async fn get_ex(
+    context: Extension<Context>,
+    Path((version, language, ex_name)): Path<(String, u16, String)>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
     let package = find_package(&context, &version)?;
     let result = ex_to_json(package, Some(Language::from_raw(language)), &ex_name).await?;
 
@@ -82,7 +85,7 @@ async fn get_ex(context: Extension<Context>, Path((version, language, ex_name)):
 async fn get_ex_bulk(
     context: Extension<Context>,
     Path((version, language, ex_names)): Path<(String, u16, String)>,
-) -> Result<Json<String>, StatusCode> {
+) -> Result<Json<BTreeMap<String, serde_json::Value>>, StatusCode> {
     let language = Language::from_raw(language);
 
     let package = find_package(&context, &version)?;
@@ -90,25 +93,10 @@ async fn get_ex_bulk(
         .split('.')
         .map(|ex_name| ex_to_json(package, Some(language), ex_name).map(move |data| Ok::<_, StatusCode>((ex_name.to_owned(), data?))))
         .collect::<FuturesUnordered<_>>()
-        .try_collect::<Vec<_>>()
+        .try_collect::<BTreeMap<_, _>>()
         .await?;
 
-    // 20 = ex_name + json separator
-    let length = ex_jsons.iter().map(|x| x.1.len() + 20).sum();
-
-    let mut result = String::with_capacity(length);
-    result.push_str("{\"");
-    for (i, (ex_name, ex_json)) in ex_jsons.into_iter().enumerate() {
-        if i != 0 {
-            result.push_str(",\"");
-        }
-        result.push_str(&ex_name);
-        result.push_str("\":");
-        result.push_str(&ex_json);
-    }
-    result.push('}');
-
-    Ok(Json(result))
+    Ok(Json(ex_jsons))
 }
 
 #[derive(Serialize)]
