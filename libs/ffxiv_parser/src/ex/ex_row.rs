@@ -65,14 +65,13 @@ impl<'a> ExRow<'a> {
 
         debug_assert!(ExFieldType::from_raw(self.columns[index].field_type.get()) == ExFieldType::Bool || field_type_value >= packed_bool_offset);
 
-        let data;
-        if field_type_value >= packed_bool_offset {
+        let data = if field_type_value >= packed_bool_offset {
             // packed bool
             let packed_data = self.data_slice(index).to_int_be::<u8>();
             let index = field_type_value - packed_bool_offset;
-            data = (packed_data & (1 << index)) as u8;
+            (packed_data & (1 << index)) as u8
         } else {
-            data = self.data_slice(index)[0];
+            self.data_slice(index)[0]
         };
 
         match data {
