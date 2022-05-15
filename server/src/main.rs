@@ -1,4 +1,5 @@
-// mod ffxiv_data;
+mod ffxiv_data;
+
 use std::{error::Error, net::SocketAddr, time::Duration};
 
 use axum::{
@@ -110,6 +111,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             header::VARY,
             HeaderValue::from_static("Origin, Accept-Encoding"),
         ));
+
+    let app = app.merge(ffxiv_data::router());
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
     axum::Server::bind(&addr).serve(app.into_make_service()).await?;

@@ -2627,6 +2627,8 @@ dependencies = [
  "itertools",
  "log",
  "pretty_env_logger",
+ "serde",
+ "serde_json",
  "sqpack",
  "sqpack_extension",
  "tokio",
