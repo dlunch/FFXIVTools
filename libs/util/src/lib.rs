@@ -9,13 +9,6 @@ mod str_ext;
 pub use slice_ext::SliceByteOrderExt;
 pub use str_ext::StrExt;
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "std")] {
-        mod read_ext;
-        pub use read_ext::ReadExt;
-    }
-}
-
 pub fn cast<T>(data: &[u8]) -> &T {
     unsafe { &*(data.as_ptr() as *const T) }
 }
