@@ -15,6 +15,8 @@ chrono = { version = "^0.4" }
 tower-http = { version = "0.3", features = ["cors", "set-header"] }
 http = { version = "^0.2" }
 hyper = { version = "^0.14" }
+serde = { version = "^1.0" }
+serde_json = { version = "^1.0" }
 
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../libs/ffxiv_parser" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../libs/sqpack_extension" }

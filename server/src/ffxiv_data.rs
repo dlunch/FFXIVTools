@@ -1,16 +1,17 @@
 mod context;
 
-use std::{collections::BTreeMap, path::PathBuf};
+use std::collections::BTreeMap;
 
+use axum::{
+    extract::{Extension, Path},
+    http::StatusCode,
+    routing::get,
+    Json, Router,
+};
 use futures::{
     future,
     future::FutureExt,
     stream::{FuturesUnordered, TryStreamExt},
-};
-use rocket::{
-    get,
-    response::{content, status},
-    routes, Rocket, State,
 };
 use serde::Serialize;
 
@@ -20,15 +21,15 @@ use sqpack_extension::SqPackReaderExtractedFile;
 
 use context::Context;
 
-async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String, status::NotFound<&'static str>> {
-    let ex = Ex::new(package, ex_name).await.map_err(|_| status::NotFound("Not found"))?;
+async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<String, StatusCode> {
+    let ex = Ex::new(package, ex_name).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
     let languages = if let Some(language) = language {
         if ex.languages()[0] == Language::None {
             vec![Language::None]
         } else {
             if !ex.languages().iter().any(|&x| x == language) {
-                return Err(status::NotFound("No such language"));
+                return Err(StatusCode::NOT_FOUND);
             }
             vec![language]
         }
@@ -59,46 +60,35 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
     }
 }
 
-fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackReaderExtractedFile, status::NotFound<&'static str>> {
-    context.packages.get(version).ok_or(status::NotFound("No such package"))
+fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackReaderExtractedFile, StatusCode> {
+    context.packages.get(version).ok_or(StatusCode::NOT_FOUND)
 }
 
 /// routes
+async fn get_exl(context: Extension<Context>, Path(version): Path<String>) -> Result<Json<String>, StatusCode> {
+    let package = find_package(&context, &version)?;
+    let exl = ExList::new(package).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
-#[get("/parsed/exl/<version>")]
-async fn get_exl(context: &State<Context>, version: String) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(context, &version)?;
-    let exl = ExList::new(package).await.map_err(|_| status::NotFound("Not found"))?;
-
-    Ok(content::Json(serde_json::to_string(&exl.ex_names).unwrap()))
+    Ok(Json(serde_json::to_string(&exl.ex_names).unwrap()))
 }
 
-#[get("/parsed/ex/<version>/<language>/<ex_name>")]
-async fn get_ex(
-    context: &State<Context>,
-    version: String,
-    language: u16,
-    ex_name: String,
-) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(context, &version)?;
+async fn get_ex(context: Extension<Context>, Path((version, language, ex_name)): Path<(String, u16, String)>) -> Result<Json<String>, StatusCode> {
+    let package = find_package(&context, &version)?;
     let result = ex_to_json(package, Some(Language::from_raw(language)), &ex_name).await?;
 
-    Ok(content::Json(result))
+    Ok(Json(result))
 }
 
-#[get("/parsed/ex/bulk/<version>/<language>/<ex_names>")]
 async fn get_ex_bulk(
-    context: &State<Context>,
-    version: String,
-    language: u16,
-    ex_names: String,
-) -> Result<content::Json<String>, status::NotFound<&'static str>> {
+    context: Extension<Context>,
+    Path((version, language, ex_names)): Path<(String, u16, String)>,
+) -> Result<Json<String>, StatusCode> {
     let language = Language::from_raw(language);
 
-    let package = find_package(context, &version)?;
+    let package = find_package(&context, &version)?;
     let ex_jsons = ex_names
         .split('.')
-        .map(|ex_name| ex_to_json(package, Some(language), ex_name).map(move |data| Ok::<_, _>((ex_name.to_owned(), data?))))
+        .map(|ex_name| ex_to_json(package, Some(language), ex_name).map(move |data| Ok::<_, StatusCode>((ex_name.to_owned(), data?))))
         .collect::<FuturesUnordered<_>>()
         .try_collect::<Vec<_>>()
         .await?;
@@ -118,66 +108,56 @@ async fn get_ex_bulk(
     }
     result.push('}');
 
-    Ok(content::Json(result))
+    Ok(Json(result))
 }
 
-#[get("/parsed/lvb/<version>/<path..>")]
-async fn get_lvb(context: &State<Context>, version: String, path: PathBuf) -> Result<content::Json<String>, status::NotFound<&'static str>> {
-    let package = find_package(context, &version)?;
+#[derive(Serialize)]
+struct JsonLvb {
+    layers: BTreeMap<String, Lgb>,
+}
 
-    let lvb = Lvb::new(package, path.to_str().unwrap())
-        .await
-        .map_err(|_| status::NotFound("Not found"))?;
+async fn get_lvb(context: Extension<Context>, Path((version, path)): Path<(String, String)>) -> Result<Json<JsonLvb>, StatusCode> {
+    let package = find_package(&context, &version)?;
+
+    let lvb = Lvb::new(package, &path).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
     let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(package, lgb_path)))
         .await
-        .map_err(|_| status::NotFound("Not found"))?
+        .map_err(|_| StatusCode::NOT_FOUND)?
         .into_iter()
         .map(|x| (x.name().to_owned(), x))
         .collect::<BTreeMap<_, _>>();
 
-    #[derive(Serialize)]
-    struct JsonLvb {
-        layers: BTreeMap<String, Lgb>,
-    }
-
-    Ok(content::Json(serde_json::to_string(&JsonLvb { layers }).unwrap()))
+    Ok(Json(JsonLvb { layers }))
 }
 
-#[get("/compressed/<version>/<folder_hash>/<file_hash>/<path_hash>")]
 async fn get_compressed(
-    context: &State<Context>,
-    version: String,
-    folder_hash: u32,
-    file_hash: u32,
-    path_hash: u32,
-) -> Result<Vec<u8>, status::NotFound<&'static str>> {
-    let package = find_package(context, &version)?;
+    context: Extension<Context>,
+    Path((version, folder_hash, file_hash, path_hash)): Path<(String, u32, u32, u32)>,
+) -> Result<Vec<u8>, StatusCode> {
+    let package = find_package(&context, &version)?;
 
     let result = package
         .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
         .await
-        .map_err(|_| status::NotFound("Not found"))?;
+        .map_err(|_| StatusCode::NOT_FOUND)?;
 
     Ok(result)
 }
 
-#[get("/compressed/<version>/bulk/<paths..>", rank = 0)]
-async fn get_compressed_bulk(context: &State<Context>, version: String, paths: PathBuf) -> Result<Vec<u8>, status::NotFound<&'static str>> {
-    let package = find_package(context, &version)?;
+async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths)): Path<(String, String)>) -> Result<Vec<u8>, StatusCode> {
+    let package = find_package(&context, &version)?;
 
     let hashes = paths
-        .to_str()
-        .unwrap()
         .split('.')
         .map(|path| {
             let splitted = path
                 .split('-')
                 .map(|x| u32::from_str_radix(x, 16))
                 .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| status::NotFound("Invalid path"))?;
+                .map_err(|_| StatusCode::NOT_FOUND)?;
             if splitted.len() != 3 {
-                Err(status::NotFound("Invalid path"))
+                Err(StatusCode::NOT_FOUND)
             } else {
                 Ok(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]))
             }
@@ -190,7 +170,7 @@ async fn get_compressed_bulk(context: &State<Context>, version: String, paths: P
         .map(|hash| {
             package.read_compressed_size_by_hash(hash).map(|x| match x {
                 Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
-                None => Err(status::NotFound("No such file")),
+                None => Err(StatusCode::NOT_FOUND),
             })
         })
         .collect::<FuturesUnordered<_>>()
@@ -201,7 +181,7 @@ async fn get_compressed_bulk(context: &State<Context>, version: String, paths: P
 
     let mut result = Vec::with_capacity(total_size as usize);
 
-    let package = find_package(context, &version).unwrap();
+    let package = find_package(&context, &version).unwrap();
     for hash in hashes {
         let mut data = package.read_as_compressed_by_hash(&hash).await.unwrap();
 
@@ -218,8 +198,15 @@ async fn get_compressed_bulk(context: &State<Context>, version: String, paths: P
     Ok(result)
 }
 
-pub async fn config(rocket: Rocket<rocket::Build>) -> Rocket<rocket::Build> {
-    rocket
-        .mount("/", routes![get_exl, get_ex, get_ex_bulk, get_lvb, get_compressed, get_compressed_bulk])
-        .manage(Context::new().unwrap())
+pub fn router() -> Router {
+    let context = Context::new().unwrap();
+
+    Router::new()
+        .route("/compressed/:version/:folder_hash/:file_hash/:path_hash", get(get_compressed))
+        .route("/compressed/:version/bulk/*paths", get(get_compressed_bulk))
+        .route("/parsed/exl/:version", get(get_exl))
+        .route("/parsed/ex/:version/:language/:ex_name", get(get_ex))
+        .route("/parsed/ex/bulk/:version/:language/:ex_names", get(get_ex_bulk))
+        .route("/parsed/lvb/:version/*path", get(get_lvb))
+        .layer(Extension(context))
 }
