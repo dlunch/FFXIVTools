@@ -63,7 +63,7 @@ impl ModelReader {
             face_id = customization.face_id
         );
 
-        Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
+        Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
             format!(
                 "chara/human/c{body_id:04}/obj/face/f{face_id:04}/material/mt_c{body_id:04}f{face_id:04}{path}",
                 body_id = customization.body_id as u16,
@@ -71,7 +71,7 @@ impl ModelReader {
                 path = &material_path[14..]
             )
         })
-        .await?)
+        .await
     }
 
     pub async fn read_hair(renderer: &Renderer, package: &dyn Package, customization: &Customization, context: &Context) -> Result<ModelData> {
@@ -81,7 +81,7 @@ impl ModelReader {
             hair_id = customization.hair_id
         );
 
-        Ok(Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
+        Self::read_mdl(renderer, package, &mdl_path, context, |material_path| {
             format!(
                 "chara/human/c{body_id:04}/obj/hair/h{hair_id:04}/material/v{hair_variant_id:04}/mt_c{body_id:04}h{hair_id:04}{path}",
                 body_id = customization.body_id as u16,
@@ -90,7 +90,7 @@ impl ModelReader {
                 path = &material_path[14..]
             )
         })
-        .await?)
+        .await
     }
 
     async fn read_mdl<F>(renderer: &Renderer, package: &dyn Package, mdl_path: &str, context: &Context, material_path_fetcher: F) -> Result<ModelData>

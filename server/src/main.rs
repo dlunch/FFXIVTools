@@ -27,7 +27,7 @@ impl Header for CfRay {
     where
         I: Iterator<Item = &'i HeaderValue>,
     {
-        let value = values.next().ok_or(headers::Error::invalid())?;
+        let value = values.next().ok_or_else(headers::Error::invalid)?;
 
         let split = value.to_str().map_err(|_| headers::Error::invalid())?.split('-').collect::<Vec<_>>();
         if split.len() != 2 {
@@ -62,7 +62,7 @@ impl Header for CfIpCountry {
     {
         let value = values
             .next()
-            .ok_or(headers::Error::invalid())?
+            .ok_or_else(headers::Error::invalid)?
             .to_str()
             .map_err(|_| headers::Error::invalid())?;
 
