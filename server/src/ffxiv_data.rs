@@ -2,6 +2,7 @@ mod context;
 
 use std::collections::BTreeMap;
 
+use anyhow::anyhow;
 use axum::{
     extract::{Extension, Path},
     http::StatusCode,
@@ -17,19 +18,18 @@ use serde::Serialize;
 
 use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
 use sqpack::{Package, SqPackFileHash};
-use sqpack_extension::SqPackReaderExtractedFile;
 
 use context::Context;
 
-async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> Result<serde_json::Value, StatusCode> {
-    let ex = Ex::new(package, ex_name).await.map_err(|_| StatusCode::NOT_FOUND)?;
+async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> anyhow::Result<serde_json::Value> {
+    let ex = Ex::new(package, ex_name).await?;
 
     let languages = if let Some(language) = language {
         if ex.languages()[0] == Language::None {
             vec![Language::None]
         } else {
             if !ex.languages().iter().any(|&x| x == language) {
-                return Err(StatusCode::NOT_FOUND);
+                return Err(anyhow!("Language not found"));
             }
             vec![language]
         }
@@ -60,13 +60,9 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
     }
 }
 
-fn find_package<'a>(context: &'a Context, version: &str) -> Result<&'a SqPackReaderExtractedFile, StatusCode> {
-    context.packages.get(version).ok_or(StatusCode::NOT_FOUND)
-}
-
 /// routes
 async fn get_exl(context: Extension<Context>, Path(version): Path<String>) -> Result<Json<Vec<String>>, StatusCode> {
-    let package = find_package(&context, &version)?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
     let exl = ExList::new(package).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
     Ok(Json(exl.ex_names))
@@ -76,8 +72,10 @@ async fn get_ex(
     context: Extension<Context>,
     Path((version, language, ex_name)): Path<(String, u16, String)>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
-    let package = find_package(&context, &version)?;
-    let result = ex_to_json(package, Some(Language::from_raw(language)), &ex_name).await?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
+    let result = ex_to_json(package, Some(Language::from_raw(language)), &ex_name)
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
 
     Ok(Json(result))
 }
@@ -88,10 +86,13 @@ async fn get_ex_bulk(
 ) -> Result<Json<BTreeMap<String, serde_json::Value>>, StatusCode> {
     let language = Language::from_raw(language);
 
-    let package = find_package(&context, &version)?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
     let ex_jsons = ex_names
         .split('.')
-        .map(|ex_name| ex_to_json(package, Some(language), ex_name).map(move |data| Ok::<_, StatusCode>((ex_name.to_owned(), data?))))
+        .map(|ex_name| {
+            ex_to_json(package, Some(language), ex_name)
+                .map(move |data| Ok::<_, StatusCode>((ex_name.to_owned(), data.map_err(|_| StatusCode::NOT_FOUND)?)))
+        })
         .collect::<FuturesUnordered<_>>()
         .try_collect::<BTreeMap<_, _>>()
         .await?;
@@ -105,7 +106,7 @@ struct JsonLvb {
 }
 
 async fn get_lvb(context: Extension<Context>, Path((version, path)): Path<(String, String)>) -> Result<Json<JsonLvb>, StatusCode> {
-    let package = find_package(&context, &version)?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
 
     let lvb = Lvb::new(package, &path[1..]).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
@@ -123,7 +124,7 @@ async fn get_compressed(
     context: Extension<Context>,
     Path((version, folder_hash, file_hash, path_hash)): Path<(String, u32, u32, u32)>,
 ) -> Result<Vec<u8>, StatusCode> {
-    let package = find_package(&context, &version)?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
 
     let result = package
         .read_as_compressed_by_hash(&SqPackFileHash::from_raw_hash(path_hash, folder_hash, file_hash))
@@ -134,7 +135,7 @@ async fn get_compressed(
 }
 
 async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths)): Path<(String, String)>) -> Result<Vec<u8>, StatusCode> {
-    let package = find_package(&context, &version)?;
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
 
     let hashes = paths[1..]
         .split('.')
@@ -169,7 +170,7 @@ async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths))
 
     let mut result = Vec::with_capacity(total_size as usize);
 
-    let package = find_package(&context, &version).unwrap();
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
     for hash in hashes {
         let mut data = package.read_as_compressed_by_hash(&hash).await.unwrap();
 
