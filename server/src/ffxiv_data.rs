@@ -107,7 +107,7 @@ struct JsonLvb {
 async fn get_lvb(context: Extension<Context>, Path((version, path)): Path<(String, String)>) -> Result<Json<JsonLvb>, StatusCode> {
     let package = find_package(&context, &version)?;
 
-    let lvb = Lvb::new(package, &path).await.map_err(|_| StatusCode::NOT_FOUND)?;
+    let lvb = Lvb::new(package, &path[1..]).await.map_err(|_| StatusCode::NOT_FOUND)?;
 
     let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(package, lgb_path)))
         .await
@@ -136,7 +136,7 @@ async fn get_compressed(
 async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths)): Path<(String, String)>) -> Result<Vec<u8>, StatusCode> {
     let package = find_package(&context, &version)?;
 
-    let hashes = paths
+    let hashes = paths[1..]
         .split('.')
         .map(|path| {
             let splitted = path
