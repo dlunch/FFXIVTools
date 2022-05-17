@@ -144,9 +144,9 @@ async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths))
                 .split('-')
                 .map(|x| u32::from_str_radix(x, 16))
                 .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| StatusCode::NOT_FOUND)?;
+                .map_err(|_| StatusCode::BAD_REQUEST)?;
             if splitted.len() != 3 {
-                Err(StatusCode::NOT_FOUND)
+                Err(StatusCode::BAD_REQUEST)
             } else {
                 Ok(SqPackFileHash::from_raw_hash(splitted[2], splitted[0], splitted[1]))
             }
