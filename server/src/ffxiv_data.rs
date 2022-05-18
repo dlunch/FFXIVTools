@@ -192,10 +192,9 @@ async fn get_compressed_bulk(context: Extension<Context>, Path((version, paths))
     let total_size = hashes
         .iter()
         .map(|hash| {
-            package.read_compressed_size_by_hash(hash).map(|x| match x {
-                Some(x) => Ok(x + BULK_ITEM_HEADER_SIZE as u64),
-                None => Err(StatusCode::NOT_FOUND),
-            })
+            package
+                .read_compressed_size_by_hash(hash)
+                .map(|x| x.map(|x| x + BULK_ITEM_HEADER_SIZE as u64).ok_or(StatusCode::NOT_FOUND))
         })
         .collect::<FuturesUnordered<_>>()
         .try_collect::<Vec<_>>()
