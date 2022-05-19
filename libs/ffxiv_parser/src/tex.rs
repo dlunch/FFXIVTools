@@ -13,6 +13,7 @@ pub enum TextureType {
     DXT3 = 0x3430,
     DXT5 = 0x3431,
     BGRA = 0x1450,
+    RGBA5551 = 0x1441,
 }
 
 #[repr(C)]

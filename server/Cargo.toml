@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
 edition = "2021"
 
-[dependencies] 
+[dependencies]
 futures = { version = "^0.3" }
 itertools = { version = "^0.10" }
 log = { version = "^0.4" }
@@ -18,7 +18,10 @@ hyper = { version = "^0.14" }
 serde = { version = "^1.0" }
 serde_json = { version = "^1.0" }
 anyhow = { version = "^1.0" }
+image = { version = "^0.24" }
+squish = { version = "^1.0" }
 
-ffxiv_parser = { version = "^0.1", default-features = false, path = "../libs/ffxiv_parser" }
+ffxiv_parser = { version = "^0.1", path = "../libs/ffxiv_parser" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../libs/sqpack_extension" }
 sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }
+util = { version = "^0.1", path = "../libs/util" }
