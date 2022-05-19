@@ -114,7 +114,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let app = app.merge(ffxiv_data::router());
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     axum::Server::bind(&addr).serve(app.into_make_service()).await?;
 
     Ok(())
