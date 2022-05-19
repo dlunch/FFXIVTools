@@ -8,10 +8,10 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM base AS builder
 COPY --from=planner /src/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json --package server
 
 COPY . .
-RUN cargo install --path server --locked --bins --root build
+RUN cargo install --path server --bins --root build
 
 FROM debian:stretch-slim
 COPY --from=builder /src/build/bin /server
