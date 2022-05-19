@@ -1,11 +1,17 @@
-#syntax=docker/dockerfile:experimental
-
-FROM dlunch/rust:1.60.0-stretch as builder
-
+FROM dlunch/rust:1.60.0-stretch as base
+RUN cargo install cargo-chef --locked
 WORKDIR /src
-COPY . .
 
-RUN --mount=type=cache,target=/src/target cargo install --path server --locked --bins --root build
+FROM base as planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM base AS builder
+COPY --from=planner /src/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+COPY . .
+RUN cargo install --path server --locked --bins --root build
 
 FROM debian:stretch-slim
 COPY --from=builder /src/build/bin /server
