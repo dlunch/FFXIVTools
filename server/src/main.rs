@@ -1,4 +1,5 @@
 mod ffxiv_data;
+mod tex;
 
 use std::{error::Error, net::SocketAddr, time::Duration};
 

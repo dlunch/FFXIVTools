@@ -5,9 +5,11 @@ use std::collections::BTreeMap;
 use anyhow::anyhow;
 use axum::{
     extract::{Extension, Path},
+    headers::ContentType,
     http::StatusCode,
+    response::IntoResponse,
     routing::get,
-    Json, Router,
+    Json, Router, TypedHeader,
 };
 use futures::{
     future,
@@ -16,9 +18,10 @@ use futures::{
 };
 use serde::Serialize;
 
-use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb};
+use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb, Tex};
 use sqpack::{Package, SqPackFileHash};
 
+use crate::tex;
 use context::Context;
 
 async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> anyhow::Result<serde_json::Value> {
@@ -144,6 +147,18 @@ async fn get_lvb(context: Extension<Context>, Path((version, path)): Path<(Strin
     Ok(Json(JsonLvb { layers }))
 }
 
+async fn get_tex(context: Extension<Context>, Path((version, path)): Path<(String, String)>) -> Result<impl IntoResponse, StatusCode> {
+    let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
+
+    let tex = Tex::new(package, format!("{}.tex", &path[1..]))
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
+
+    let png = tex::tex_to_png(&tex);
+
+    Ok((TypedHeader(ContentType::png()), png))
+}
+
 async fn get_compressed_all(
     context: Extension<Context>,
     Path((folder_hash, file_hash, path_hash)): Path<(u32, u32, u32)>,
@@ -236,5 +251,6 @@ pub fn router() -> Router {
         .route("/parsed/ex/bulk/:a/:b/:c", get(get_ex_bulk))
         .route("/parsed/ex/bulk/:a/:b", get(get_ex_bulk_all))
         .route("/parsed/lvb/:version/*path", get(get_lvb))
+        .route("/parsed/tex/:version/*path", get(get_tex))
         .layer(Extension(context))
 }
