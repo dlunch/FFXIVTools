@@ -3,11 +3,10 @@ mod ffxiv_data;
 use std::{error::Error, net::SocketAddr, time::Duration};
 
 use axum::{
-    extract::TypedHeader,
     headers::{self, CacheControl, Header, HeaderName, HeaderValue},
     response::IntoResponse,
     routing::get,
-    Router,
+    Router, TypedHeader,
 };
 use http::{header, Method};
 use tower_http::{cors::CorsLayer, set_header::SetResponseHeaderLayer};
