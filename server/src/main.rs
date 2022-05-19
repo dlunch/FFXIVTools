@@ -1,11 +1,10 @@
 mod ffxiv_data;
 mod tex;
 
-use std::{error::Error, net::SocketAddr, time::Duration};
+use std::{error::Error, net::SocketAddr};
 
 use axum::{
-    headers::{self, CacheControl, Header, HeaderName, HeaderValue},
-    response::IntoResponse,
+    headers::{self, Header, HeaderName, HeaderValue},
     routing::get,
     Router, TypedHeader,
 };
@@ -77,20 +76,18 @@ impl Header for CfIpCountry {
     }
 }
 
-async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHeader<CfIpCountry>>) -> impl IntoResponse {
+async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHeader<CfIpCountry>>) -> &'static str {
     let enable_cf = if let (Some(TypedHeader(cf_ray)), Some(TypedHeader(cf_ipcountry))) = (cf_ray, cf_ipcountry) {
         !(cf_ipcountry.0 == "KR" && cf_ray.dc != "ICN")
     } else {
         true
     };
 
-    let response = if enable_cf {
+    if enable_cf {
         "https://ffxiv-data.dlunch.net"
     } else {
         "https://ffxiv-data-kr.dlunch.net"
-    };
-
-    (TypedHeader(CacheControl::new().with_max_age(Duration::from_secs(31536000))), response)
+    }
 }
 
 #[tokio::main]
@@ -110,6 +107,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .layer(SetResponseHeaderLayer::appending(
             header::VARY,
             HeaderValue::from_static("Origin, Accept-Encoding"),
+        ))
+        .layer(SetResponseHeaderLayer::appending(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public,max-age=31536000"),
         ));
 
     let app = app.merge(ffxiv_data::router());
