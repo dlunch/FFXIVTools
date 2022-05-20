@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
+use alloc::{borrow::ToOwned, string::String, vec::Vec};
 use core::mem::size_of;
 
 use sqpack::{Package, Result};
@@ -33,7 +33,7 @@ pub struct Lvb {
 
 impl Lvb {
     pub async fn new(package: &dyn Package, path: &str) -> Result<Self> {
-        let data = package.read_file(&format!("bg/{}.lvb", path)).await?;
+        let data = package.read_file(path).await?;
 
         let _ = cast::<LvbHeader>(&data);
         let entries = cast::<LvbEntries>(&data[size_of::<LvbHeader>()..]);

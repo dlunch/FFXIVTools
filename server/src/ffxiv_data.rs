@@ -136,7 +136,9 @@ struct JsonLvb {
 async fn get_lvb(context: Extension<Context>, Path((version, path)): Path<(String, String)>) -> Result<Json<JsonLvb>, StatusCode> {
     let package = context.packages.get(&version).ok_or(StatusCode::NOT_FOUND)?;
 
-    let lvb = Lvb::new(package, &path[1..]).await.map_err(|_| StatusCode::NOT_FOUND)?;
+    let lvb = Lvb::new(package, &format!("bg/{}.lvb", &path[1..]))
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
 
     let layers = future::try_join_all(lvb.lgb_paths.into_iter().map(|lgb_path| Lgb::new(package, lgb_path)))
         .await
