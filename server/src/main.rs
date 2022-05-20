@@ -98,6 +98,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let app = Router::new()
         .route("/probe", get(probe))
+        .merge(ffxiv_data::router())
         .layer(
             CorsLayer::new()
                 .allow_origin(origins)
@@ -108,12 +109,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             header::VARY,
             HeaderValue::from_static("Origin, Accept-Encoding"),
         ))
-        .layer(SetResponseHeaderLayer::appending(
+        .layer(SetResponseHeaderLayer::if_not_present(
             header::CACHE_CONTROL,
             HeaderValue::from_static("public,max-age=31536000"),
         ));
-
-    let app = app.merge(ffxiv_data::router());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     axum::Server::bind(&addr).serve(app.into_make_service()).await?;
