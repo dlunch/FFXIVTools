@@ -5,3 +5,4 @@ target
 data
 screenshots
 Dockerfile*
+.git
