@@ -1,6 +1,7 @@
 mod context;
 
 use std::collections::BTreeMap;
+use std::io::Cursor;
 
 use anyhow::anyhow;
 use axum::{
@@ -16,12 +17,12 @@ use futures::{
     future::FutureExt,
     stream::{FuturesUnordered, TryStreamExt},
 };
+use image::RgbaImage;
 use serde::Serialize;
 
 use ffxiv_parser::{Ex, ExList, ExRowType, Language, Lgb, Lvb, Tex};
 use sqpack::{Package, SqPackFileHash};
 
-use crate::tex;
 use context::Context;
 
 async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: &str) -> anyhow::Result<serde_json::Value> {
@@ -154,9 +155,13 @@ async fn get_tex(context: Extension<Context>, Path((version, path)): Path<(Strin
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
 
-    let png = tex::tex_to_png(&tex);
+    let data = Vec::new();
+    let mut writer = Cursor::new(data);
 
-    Ok((TypedHeader(ContentType::png()), png))
+    let image = RgbaImage::from_raw(tex.width() as u32, tex.height() as u32, tex.data_rgba(0)).unwrap();
+    image.write_to(&mut writer, image::ImageOutputFormat::Png).unwrap();
+
+    Ok((TypedHeader(ContentType::png()), writer.into_inner()))
 }
 
 async fn get_compressed_all(

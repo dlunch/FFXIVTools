@@ -1,9 +1,9 @@
-use alloc::vec::Vec;
+use alloc::{vec, vec::Vec};
 use core::mem::size_of;
 
 use sqpack::{Package, Result};
 
-use util::{cast, SliceByteOrderExt};
+use util::{cast, cast_array, SliceByteOrderExt};
 
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -80,6 +80,19 @@ impl Tex {
         &self.data[mipmap_begin..mipmap_end]
     }
 
+    pub fn data_rgba(&self, mipmap_index: u16) -> Vec<u8> {
+        let data = self.data(mipmap_index);
+
+        match self.texture_type() {
+            TextureType::RGBA5551 => Self::convert_5551_to_rgba(data),
+            TextureType::DXT1 | TextureType::DXT3 | TextureType::DXT5 => {
+                Self::decode_dxtn(self.texture_type(), data, self.width() as usize, self.height() as usize)
+            }
+
+            _ => unimplemented!(),
+        }
+    }
+
     fn read_mipmap_offset(&self, mipmap_index: u16) -> usize {
         let mipmap_index = mipmap_index as usize;
         let mipmap_offsets_begin = size_of::<TexHeader>();
@@ -87,5 +100,34 @@ impl Tex {
         let mipmap_offset_data = &mipmap_data[mipmap_index * size_of::<u32>()..(mipmap_index + 1) * size_of::<u32>()];
 
         mipmap_offset_data.to_int_le::<u32>() as usize
+    }
+
+    fn convert_5551_to_rgba(raw: &[u8]) -> Vec<u8> {
+        let raw = cast_array::<u16>(raw);
+
+        raw.iter()
+            .flat_map(|i| {
+                let b = ((i & 0x1f) * 8) as u8;
+                let g = (((i >> 5) & 0x1f) * 8) as u8;
+                let r = (((i >> 10) & 0x1f) * 8) as u8;
+                let a = (((i >> 15) & 0x1) * 255) as u8;
+
+                [r, g, b, a]
+            })
+            .collect()
+    }
+
+    fn decode_dxtn(format: TextureType, raw: &[u8], width: usize, height: usize) -> Vec<u8> {
+        let format = match format {
+            TextureType::DXT1 => squish::Format::Bc1,
+            TextureType::DXT3 => squish::Format::Bc2,
+            TextureType::DXT5 => squish::Format::Bc3,
+            _ => unreachable!(),
+        };
+
+        let mut result = vec![0; width * height * 4];
+        format.decompress(raw, width, height, &mut result);
+
+        result
     }
 }

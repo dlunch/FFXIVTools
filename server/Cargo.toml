@@ -19,7 +19,6 @@ serde = { version = "^1.0" }
 serde_json = { version = "^1.0" }
 anyhow = { version = "^1.0" }
 image = { version = "^0.24", default-features = false, features = ["png"] }
-squish = { version = "^1.0" }
 
 ffxiv_parser = { version = "^0.1", path = "../libs/ffxiv_parser" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../libs/sqpack_extension" }
