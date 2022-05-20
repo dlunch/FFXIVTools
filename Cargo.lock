@@ -717,6 +717,7 @@ dependencies = [
  "serde_repr",
  "sqpack",
  "sqpack_extension",
+ "squish",
  "tokio",
  "util",
 ]
@@ -2287,7 +2288,6 @@ dependencies = [
  "serde_json",
  "sqpack",
  "sqpack_extension",
- "squish",
  "tokio",
  "tower-http",
  "util",

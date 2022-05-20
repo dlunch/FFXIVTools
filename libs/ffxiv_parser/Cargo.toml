@@ -19,6 +19,7 @@ hashbrown = { version = "^0.12", features = ["ahash", "inline-more"], default-fe
 phf = { version = "^0.10", features = ["macros"], default-features = false }
 log = { version = "^0.4", default-features = false }
 nalgebra = { version = "^0.29", default-features = false }
+squish = { version = "^1.0" }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 util = { version = "^0.1", default-features = false, path = "../util" }
