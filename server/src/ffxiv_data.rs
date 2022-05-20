@@ -155,7 +155,7 @@ async fn get_tex(context: Extension<Context>, Path((version, path)): Path<(Strin
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
 
-    let data = Vec::new();
+    let data = Vec::with_capacity((tex.width() * tex.height() / 4) as usize);
     let mut writer = Cursor::new(data);
 
     let image = RgbaImage::from_raw(tex.width() as u32, tex.height() as u32, tex.data_rgba(0)).unwrap();
