@@ -11,7 +11,7 @@ async fn lvb_test() -> Result<()> {
     let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/all/");
     let pack = SqPackReaderExtractedFile::new(provider);
 
-    let lvb = Lvb::new(&pack, "ffxiv/sea_s1/twn/s1t1/level/s1t1").await?;
+    let lvb = Lvb::new(&pack, "bg/ffxiv/sea_s1/twn/s1t1/level/s1t1.lvb").await?;
     assert!(lvb.lgb_paths.iter().any(|x| x == "bg/ffxiv/sea_s1/twn/s1t1/level/bg.lgb"));
 
     Ok(())
