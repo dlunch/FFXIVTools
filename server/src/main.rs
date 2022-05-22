@@ -8,7 +8,7 @@ use axum::{
     Router, TypedHeader,
 };
 use http::{header, Method};
-use tower_http::{cors::CorsLayer, set_header::SetResponseHeaderLayer};
+use tower_http::{catch_panic::CatchPanicLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer};
 
 struct CfRay {
     _id: String,
@@ -111,7 +111,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .layer(SetResponseHeaderLayer::if_not_present(
             header::CACHE_CONTROL,
             HeaderValue::from_static("public,max-age=31536000"),
-        ));
+        ))
+        .layer(CatchPanicLayer::new());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     axum::Server::bind(&addr).serve(app.into_make_service()).await?;
