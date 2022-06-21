@@ -61,23 +61,26 @@ impl<'a> ExRow<'a> {
 
     pub fn bool(&self, index: usize) -> bool {
         let packed_bool_offset = ExFieldType::PackedBool as u16;
-        let field_type_value = ExFieldType::from_raw(self.columns[index].field_type.get()) as u16;
+        let field_type_value = self.columns[index].field_type.get();
 
         debug_assert!(ExFieldType::from_raw(self.columns[index].field_type.get()) == ExFieldType::Bool || field_type_value >= packed_bool_offset);
 
-        let data = if field_type_value >= packed_bool_offset {
+        if field_type_value >= packed_bool_offset {
             // packed bool
             let packed_data = self.data_slice(index).to_int_be::<u8>();
             let index = field_type_value - packed_bool_offset;
-            (packed_data & (1 << index)) as u8
-        } else {
-            self.data_slice(index)[0]
-        };
 
-        match data {
-            0 => false,
-            1 => true,
-            _ => panic!(),
+            #[allow(clippy::match_like_matches_macro)]
+            match (packed_data & (1 << index)) as u8 {
+                0 => false,
+                _ => true,
+            }
+        } else {
+            match self.data_slice(index)[0] {
+                0 => false,
+                1 => true,
+                _ => panic!(),
+            }
         }
     }
 
