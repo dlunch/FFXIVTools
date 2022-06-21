@@ -84,6 +84,7 @@ impl<'a> FfxivString<'a> {
             }
             _ => {
                 let payload = &self.data[*cursor..*cursor + markup_size];
+                *cursor += markup_size;
                 format!("<Unknown type=\"{}\" payload=\"{:?}\" />", markup_type, payload)
             }
         };
@@ -98,5 +99,23 @@ impl<'a> FfxivString<'a> {
 impl<'a> From<FfxivString<'a>> for String {
     fn from(s: FfxivString<'a>) -> String {
         s.decode()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::FfxivString;
+
+    #[test]
+    fn test_string() {
+        let raw = [
+            73, 110, 99, 114, 101, 97, 115, 101, 115, 32, 69, 88, 80, 32, 101, 97, 114, 110, 101, 100, 32, 102, 114, 111, 109, 32, 98, 97, 116, 116,
+            108, 101, 44, 32, 99, 114, 97, 102, 116, 105, 110, 103, 44, 32, 97, 110, 100, 32, 103, 97, 116, 104, 101, 114, 105, 110, 103, 32, 119,
+            104, 101, 110, 32, 108, 101, 118, 101, 108, 32, 49, 48, 32, 111, 114, 32, 98, 101, 108, 111, 119, 46, 2, 16, 1, 3, 2, 72, 4, 242, 1, 248,
+            3, 2, 73, 4, 242, 1, 249, 3, 69, 88, 80, 32, 66, 111, 110, 117, 115, 58, 2, 73, 2, 1, 3, 2, 72, 2, 1, 3, 32, 43, 50, 48, 37, 0,
+        ];
+        let ffxiv_string = FfxivString::new(&raw);
+        let result = ffxiv_string.decode();
+        assert_eq!(result, "Increases EXP earned from battle, crafting, and gathering when level 10 or below.\n<Unknown type=\"72\" payload=\"[242, 1, 248]\" /><Unknown type=\"73\" payload=\"[242, 1, 249]\" />EXP Bonus:<Unknown type=\"73\" payload=\"[1]\" /><Unknown type=\"72\" payload=\"[1]\" /> +20%");
     }
 }
