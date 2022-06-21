@@ -161,7 +161,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         match base_type {
             HavokValueType::STRING => (0..array_len).map(|_| HavokValue::String(self.read_string())).collect::<Vec<_>>(),
             HavokValueType::STRUCT => {
-                let target_type = self.find_type(&*member.class_name.as_ref().unwrap());
+                let target_type = self.find_type(member.class_name.as_ref().unwrap());
                 let data_existence = self.read_bit_field(target_type.member_count());
 
                 let mut result_objects = Vec::new();
