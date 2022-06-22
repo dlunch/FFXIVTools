@@ -7,7 +7,7 @@ pub trait TreeData: std::clone::Clone + std::cmp::PartialEq {
     fn render(&self) -> Html;
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct TreeItem<K: std::clone::Clone + std::cmp::PartialEq + std::hash::Hash, V: TreeData> {
     pub key: K,
     pub value: V,
