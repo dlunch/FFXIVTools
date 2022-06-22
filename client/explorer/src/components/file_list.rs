@@ -5,7 +5,7 @@ use wasm_bindgen_futures::spawn_local;
 use super::tree::{Tree, TreeData, TreeItem};
 use crate::context::Context;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Item {
     text: String,
 }

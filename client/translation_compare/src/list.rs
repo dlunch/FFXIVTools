@@ -8,7 +8,7 @@ pub struct List {
 
 pub enum Msg {}
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone, PartialEq, Eq)]
 pub struct Props {
     pub data: BTreeMap<u32, Vec<String>>,
 }
