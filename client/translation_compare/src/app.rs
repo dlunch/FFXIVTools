@@ -9,7 +9,7 @@ use sqpack::Result;
 
 use crate::list::List;
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone, PartialEq, Eq)]
 pub struct Props {
     pub base_url: String,
 }
