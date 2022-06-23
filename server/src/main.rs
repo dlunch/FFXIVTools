@@ -94,7 +94,11 @@ async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHea
 async fn main() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init_timed();
 
-    let origins = vec!["https://ffxiv.dlunch.net".parse()?"https://ffxiv-dev.dlunch.net".parse()?, "http://localhost:8080".parse()?];
+    let origins = vec![
+        "https://ffxiv.dlunch.net".parse()?,
+        "https://ffxiv-dev.dlunch.net".parse()?,
+        "http://localhost:8080".parse()?,
+    ];
 
     let app = Router::new().route("/probe", get(probe)).merge(ffxiv_data::router()).layer(
         ServiceBuilder::new()
