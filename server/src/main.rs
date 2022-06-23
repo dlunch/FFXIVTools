@@ -114,10 +114,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .allow_methods(vec![Method::GET])
                     .allow_headers(vec![header::CONTENT_TYPE]),
             )
-            .layer(SetResponseHeaderLayer::appending(
-                header::VARY,
-                HeaderValue::from_static("Origin, Accept-Encoding"),
-            ))
             .layer(SetResponseHeaderLayer::if_not_present(
                 header::CACHE_CONTROL,
                 HeaderValue::from_static("public,max-age=31536000"),
