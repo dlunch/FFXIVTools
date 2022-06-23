@@ -93,7 +93,7 @@ async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHea
         "https://ffxiv-data-kr.dlunch.net"
     };
 
-    (url, AppendHeaders([(VARY, "CF-ray, CF-IPCountry")]))
+    (AppendHeaders([(VARY, "CF-ray, CF-IPCountry")]), url)
 }
 
 #[tokio::main]
