@@ -2289,6 +2289,7 @@ dependencies = [
  "sqpack",
  "sqpack_extension",
  "tokio",
+ "tower",
  "tower-http",
  "util",
 ]
