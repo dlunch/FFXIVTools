@@ -8,6 +8,7 @@ use axum::{
     Router, TypedHeader,
 };
 use http::{header, Method};
+use tower::ServiceBuilder;
 use tower_http::{catch_panic::CatchPanicLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer};
 
 struct CfRay {
@@ -95,24 +96,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let origins = vec!["https://ffxiv-dev.dlunch.net".parse()?, "http://localhost:8080".parse()?];
 
-    let app = Router::new()
-        .route("/probe", get(probe))
-        .merge(ffxiv_data::router())
-        .layer(
-            CorsLayer::new()
-                .allow_origin(origins)
-                .allow_methods(vec![Method::GET])
-                .allow_headers(vec![header::CONTENT_TYPE]),
-        )
-        .layer(SetResponseHeaderLayer::appending(
-            header::VARY,
-            HeaderValue::from_static("Origin, Accept-Encoding"),
-        ))
-        .layer(SetResponseHeaderLayer::if_not_present(
-            header::CACHE_CONTROL,
-            HeaderValue::from_static("public,max-age=31536000"),
-        ))
-        .layer(CatchPanicLayer::new());
+    let app = Router::new().route("/probe", get(probe)).merge(ffxiv_data::router()).layer(
+        ServiceBuilder::new()
+            .layer(
+                CorsLayer::new()
+                    .allow_origin(origins)
+                    .allow_methods(vec![Method::GET])
+                    .allow_headers(vec![header::CONTENT_TYPE]),
+            )
+            .layer(SetResponseHeaderLayer::appending(
+                header::VARY,
+                HeaderValue::from_static("Origin, Accept-Encoding"),
+            ))
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static("public,max-age=31536000"),
+            ))
+            .layer(CatchPanicLayer::new()),
+    );
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     axum::Server::bind(&addr).serve(app.into_make_service()).await?;
