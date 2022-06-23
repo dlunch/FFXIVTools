@@ -4,10 +4,14 @@ use std::{error::Error, net::SocketAddr};
 
 use axum::{
     headers::{self, Header, HeaderName, HeaderValue},
+    response::{AppendHeaders, IntoResponse},
     routing::get,
     Router, TypedHeader,
 };
-use http::{header, Method};
+use http::{
+    header::{self, VARY},
+    Method,
+};
 use tower::ServiceBuilder;
 use tower_http::{catch_panic::CatchPanicLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer};
 
@@ -76,18 +80,20 @@ impl Header for CfIpCountry {
     }
 }
 
-async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHeader<CfIpCountry>>) -> &'static str {
+async fn probe(cf_ray: Option<TypedHeader<CfRay>>, cf_ipcountry: Option<TypedHeader<CfIpCountry>>) -> impl IntoResponse {
     let enable_cf = if let (Some(TypedHeader(cf_ray)), Some(TypedHeader(cf_ipcountry))) = (cf_ray, cf_ipcountry) {
         !(cf_ipcountry.0 == "KR" && cf_ray.dc != "ICN")
     } else {
         true
     };
 
-    if enable_cf {
+    let url = if enable_cf {
         "https://ffxiv-data.dlunch.net"
     } else {
         "https://ffxiv-data-kr.dlunch.net"
-    }
+    };
+
+    (url, AppendHeaders([(VARY, "CF-ray, CF-IPCountry")]))
 }
 
 #[tokio::main]
