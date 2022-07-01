@@ -103,6 +103,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let origins = vec![
         "https://ffxiv.dlunch.net".parse()?,
         "https://ffxiv-dev.dlunch.net".parse()?,
+        "https://ffxiv-new.dlunch.net".parse()?,
+        "https://ffxiv-new-dev.dlunch.net".parse()?,
         "http://localhost:8080".parse()?,
     ];
 
