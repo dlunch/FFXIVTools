@@ -29,6 +29,7 @@ impl Component for App {
         }
     }
 
+    #[allow(clippy::let_unit_value)]
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div>

@@ -9,6 +9,7 @@ use sqpack::Result;
 
 use crate::list::List;
 
+#[allow(dead_code)]
 #[derive(Properties, Clone, PartialEq, Eq)]
 pub struct Props {
     pub base_url: String,
