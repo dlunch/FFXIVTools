@@ -1,9 +1,9 @@
-use yew::prelude::{html, Callback, Component, ComponentLink, Html, Properties, ShouldRender};
+use yew::prelude::{html, Callback, Component, Context, Html, Properties};
 
 use wasm_bindgen_futures::spawn_local;
 
 use super::tree::{Tree, TreeData, TreeItem};
-use crate::context::Context;
+use crate::context::AppContext;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Item {
@@ -27,23 +27,21 @@ pub struct Props {
     pub file_select_callback: Callback<String>,
 }
 
-pub struct FileList {
-    link: ComponentLink<Self>,
-}
+pub struct FileList {}
 
 impl Component for FileList {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {}
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::FetchTreeData((key, callback)) => {
                 spawn_local(async move {
-                    let context = Context::get();
+                    let context = AppContext::get();
                     let files = context.file_list.get_files(&key).await.unwrap();
 
                     let result = files
@@ -66,14 +64,10 @@ impl Component for FileList {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="file-list-component">
-                <Tree<String, Item> item_key="" data_request_callback=self.link.callback(Msg::FetchTreeData) />
+                <Tree<String, Item> item_key="" data_request_callback={ctx.link().callback(Msg::FetchTreeData)} />
             </div>
         }
     }

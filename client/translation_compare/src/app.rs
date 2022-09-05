@@ -1,7 +1,7 @@
 use alloc::collections::BTreeMap;
 
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
+use yew::prelude::{html, Component, Context, Html, Properties};
 
 use common::{regions, Region, WasmPackage};
 use ffxiv_ex::{Action, BNpcName, ClassJob, CraftAction, ENpcResident, Item, NamedExRow, PlaceName, Quest, WrappedEx};
@@ -15,8 +15,6 @@ pub struct Props {
 }
 
 pub struct App {
-    props: Props,
-    link: ComponentLink<Self>,
     data: BTreeMap<u32, Vec<String>>,
     progress: (usize, usize),
 }
@@ -31,19 +29,17 @@ impl Component for App {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {
-            props,
-            link,
             data: BTreeMap::new(),
             progress: (0, 0),
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Load(x) => {
-                self.load(x);
+                self.load(ctx, x);
                 true
             }
             Msg::OnDataReady(x) => {
@@ -57,11 +53,7 @@ impl Component for App {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         let buttons = [
             "classjob",
             "item",
@@ -75,7 +67,7 @@ impl Component for App {
         .iter()
         .map(|x| {
             html! {
-                <button onclick=self.link.callback(move |_| Msg::Load(x))>{ x }</button>
+                <button onclick={ctx.link().callback(move |_| Msg::Load(x))}>{ x }</button>
             }
         })
         .collect::<Html>();
@@ -95,7 +87,7 @@ impl Component for App {
                     }
                 }
                 </p>
-                <List data = self.data.clone()>
+                <List data={self.data.clone()}>
                 </List>
             </div>
         }
@@ -103,11 +95,11 @@ impl Component for App {
 }
 
 impl App {
-    fn load(&self, name: &'static str) {
-        let progress_callback = self.link.callback(Msg::Progress);
-        let ready_callback = self.link.callback(Msg::OnDataReady);
+    fn load(&self, ctx: &Context<Self>, name: &'static str) {
+        let progress_callback = ctx.link().callback(Msg::Progress);
+        let ready_callback = ctx.link().callback(Msg::OnDataReady);
 
-        let base_url = self.props.base_url.clone();
+        let base_url = ctx.props().base_url.clone();
         spawn_local(async move {
             let regions = regions();
             let mut result = BTreeMap::new();
