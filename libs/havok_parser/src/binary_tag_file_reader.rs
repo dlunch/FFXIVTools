@@ -107,7 +107,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
         // fill object references
         for object in &self.objects {
-            self.fill_object_reference(&mut *object.borrow_mut());
+            self.fill_object_reference(&mut object.borrow_mut());
         }
 
         HavokRootObject::new(self.remembered_objects[1].clone())
@@ -127,7 +127,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                 let value = if data_existence[index] {
                     self.read_object_member_value(member)
                 } else {
-                    self.default_value(member.type_)
+                    Self::default_value(member.type_)
                 };
                 (index, value)
             })
@@ -323,9 +323,9 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         }
     }
 
-    fn default_value(&self, type_: HavokValueType) -> HavokValue {
+    fn default_value(type_: HavokValueType) -> HavokValue {
         if type_.is_vec() {
-            HavokValue::Array((0..type_.vec_size()).map(|_| self.default_value(type_.base_type())).collect::<Vec<_>>())
+            HavokValue::Array((0..type_.vec_size()).map(|_| Self::default_value(type_.base_type())).collect::<Vec<_>>())
         } else if type_.is_array() || type_.is_tuple() {
             HavokValue::Array(Vec::new())
         } else {
