@@ -7,7 +7,7 @@ use alloc::sync::Arc;
 
 use hashbrown::HashMap;
 
-use eng::render::{Buffer, Material, Renderer, Texture};
+use eng::render::{Buffer, Material, Renderer, Resource, Texture};
 use ffxiv_parser::{Mtrl, MtrlParameterType};
 
 use crate::context::Context;
@@ -22,28 +22,26 @@ pub fn create_material(
     #[allow(unused_variables)] customization: &Customization,
     stain_id: u8,
 ) -> Material {
-    let uniforms = &[("bone_transform", bone_transform)];
-
     // we can't move textures because of https://github.com/rust-lang/rust/issues/63033
-    let textures = gather_textures(mtrl, textures);
+    let mut resources = gather_textures(mtrl, textures);
+    resources.insert("bone_transform", bone_transform);
+
     match mtrl.shader_name() {
-        "character.shpk" | "characterglass.shpk" => {
-            character_material::CharacterMaterial::create(renderer, context, mtrl, stain_id, textures, uniforms)
-        }
-        "hair.shpk" => hair_material::HairMaterial::create(renderer, context, textures, uniforms),
-        "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, textures, uniforms),
-        "skin.shpk" => skin_material::SkinMaterial::create(renderer, context, textures, uniforms),
+        "character.shpk" | "characterglass.shpk" => character_material::CharacterMaterial::create(renderer, context, mtrl, stain_id, resources),
+        "hair.shpk" => hair_material::HairMaterial::create(renderer, context, resources),
+        "iris.shpk" => iris_material::IrisMaterial::create(renderer, context, resources),
+        "skin.shpk" => skin_material::SkinMaterial::create(renderer, context, resources),
         _ => panic!(),
     }
 }
 
-pub fn gather_textures(mtrl: &Mtrl, textures: &[Arc<Texture>]) -> HashMap<&'static str, Arc<Texture>> {
+pub fn gather_textures(mtrl: &Mtrl, textures: &[Arc<Texture>]) -> HashMap<&'static str, Arc<dyn Resource>> {
     mtrl.parameters()
         .iter()
         .map(|parameter| {
             (
                 parameter_type_to_shader_name(&parameter.parameter_type),
-                textures[parameter.texture_index as usize].clone(),
+                textures[parameter.texture_index as usize].clone() as Arc<dyn Resource>,
             )
         })
         .collect::<HashMap<_, _>>()

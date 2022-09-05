@@ -1,37 +1,39 @@
 struct VertexOutput {
-    [[builtin(position)]] position: vec4<f32>;
-    [[location(0)]] tex_coord: vec2<f32>;
-	[[location(1)]] normal: vec4<f32>;
-	[[location(2)]] world_position: vec4<f32>;
+    @builtin(position) position: vec4<f32>,
+    @location(0) tex_coord: vec2<f32>,
+	@location(1) normal: vec4<f32>,
+	@location(2) world_position: vec4<f32>,
 
 	// naga bug? we can't interpolate mat4x4
-	[[location(3)]] tbn0: vec4<f32>;
-	[[location(4)]] tbn1: vec4<f32>;
-	[[location(5)]] tbn2: vec4<f32>;
-	[[location(6)]] tbn3: vec4<f32>;
+	@location(3) tbn0: vec4<f32>,
+	@location(4) tbn1: vec4<f32>,
+	@location(5) tbn2: vec4<f32>,
+	@location(6) tbn3: vec4<f32>,
 };
 
 struct transform {
-    mvp: mat4x4<f32>;
+    model: mat4x4<f32>,
+    view: mat4x4<f32>,
+    projection: mat4x4<f32>,
 };
 struct bone_transform {
-    transforms: array<vec4<f32>, 192u>;
+    transforms: array<vec4<f32>, 192u>,
 };
 
-[[group(0), binding(0)]]
-var<uniform> mvp: transform;
-[[group(0), binding(1)]]
+@group(0) @binding(0)
+var<uniform> transform: transform;
+@group(0) @binding(1)
 var<uniform> bone_transform: bone_transform;
 
-[[stage(vertex)]]
+@vertex
 fn vs_main(
-	[[location(0)]] position: vec4<f32>,
-	[[location(1)]] bone_weight: vec4<u32>,
-	[[location(2)]] bone_index: vec4<u32>,
-	[[location(3)]] normal: vec4<f32>,
-	[[location(4)]] tex_coord: vec4<f32>,
-	[[location(5)]] bi_tangent: vec4<u32>,
-	[[location(6)]] color: vec4<u32>
+	@location(0) position: vec4<f32>,
+	@location(1) bone_weight: vec4<u32>,
+	@location(2) bone_index: vec4<u32>,
+	@location(3) normal: vec4<f32>,
+	@location(4) tex_coord: vec4<f32>,
+	@location(5) bi_tangent: vec4<u32>,
+	@location(6) color: vec4<u32>
 ) -> VertexOutput {
 	var skinned_position: vec4<f32> = vec4<f32>(0.0);
 	var skinned_normal: vec4<f32> = vec4<f32>(0.0);
@@ -60,7 +62,7 @@ fn vs_main(
 	out.tbn1 = vec4<f32>(tangent.y, normalized_bi_tangent.y, skinned_normal.y, 0.0);
 	out.tbn2 = vec4<f32>(tangent.z, normalized_bi_tangent.z, skinned_normal.z, 0.0);
 	out.tbn3 = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-	out.position = mvp.mvp * skinned_position;
+	out.position = transform.projection * transform.view * transform.model * skinned_position;
 
 	return out;
 }

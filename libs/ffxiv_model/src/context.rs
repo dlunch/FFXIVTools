@@ -1,12 +1,11 @@
 use alloc::{format, string::String, sync::Arc};
 
-use enum_iterator::IntoEnumIterator;
 use futures::{
     stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
 };
+use glam::Mat4;
 use hashbrown::HashMap;
-use nalgebra::Matrix4;
 
 use eng::render::{Renderer, Texture, TextureFormat};
 use ffxiv_parser::{Eqdp, Pbd, Stm};
@@ -42,7 +41,7 @@ impl Context {
         })
     }
 
-    pub fn get_body_deform_matrices(&self, from_id: BodyId, to_id: BodyId) -> HashMap<String, Matrix4<f32>> {
+    pub fn get_body_deform_matrices(&self, from_id: BodyId, to_id: BodyId) -> HashMap<String, Mat4> {
         self.prebone_deformer.get_deform_matrices(from_id as u16, to_id as u16)
     }
 
@@ -84,7 +83,7 @@ impl Context {
     }
 
     async fn create_equipment_deformer_parameters(package: &dyn Package) -> Result<HashMap<BodyId, Eqdp>> {
-        BodyId::into_enum_iter()
+        enum_iterator::all::<BodyId>()
             .map(|body_id| {
                 Eqdp::new(
                     package,

@@ -2,7 +2,7 @@ use alloc::{sync::Arc, vec::Vec};
 
 use hashbrown::HashMap;
 
-use eng::render::{Buffer, Material, Renderer, Texture, TextureFormat};
+use eng::render::{Material, Renderer, Resource, Texture, TextureFormat};
 use ffxiv_parser::{Mtrl, Stm};
 
 use crate::{shader_holder::ShaderType, Context};
@@ -15,28 +15,27 @@ impl CharacterMaterial {
         context: &'a Context,
         mtrl: &'a Mtrl,
         stain_id: u8,
-        mut textures: HashMap<&'static str, Arc<Texture>>,
-        uniforms: &[(&'static str, alloc::sync::Arc<Buffer>)],
+        mut resources: HashMap<&'static str, Arc<dyn Resource>>,
     ) -> Material {
         let color_table_data = mtrl.color_table();
         if !color_table_data.is_empty() {
             let color_table_texels = Self::apply_staining(color_table_data, stain_id, &context.staining_template);
             let color_table_tex = Texture::with_texels(renderer, 4, 16, &color_table_texels, TextureFormat::Rgba16Float);
-            textures.insert("color_table_tex", Arc::new(color_table_tex));
+            resources.insert("color_table_tex", Arc::new(color_table_tex));
         } else {
-            textures.insert("color_table_tex", context.empty_texture.clone());
+            resources.insert("color_table_tex", context.empty_texture.clone());
         }
 
-        if !textures.contains_key("mask_tex") {
-            textures.insert("mask_tex", context.empty_texture.clone());
+        if !resources.contains_key("mask_tex") {
+            resources.insert("mask_tex", context.empty_texture.clone());
         }
-        if !textures.contains_key("specular_tex") {
-            textures.insert("specular_tex", context.empty_texture.clone());
+        if !resources.contains_key("specular_tex") {
+            resources.insert("specular_tex", context.empty_texture.clone());
         }
 
         let shader = context.shader_holder.shader(ShaderType::Character);
 
-        Material::new(renderer, &textures.into_iter().collect::<Vec<_>>(), uniforms, shader)
+        Material::with_custom_shader(renderer, &resources.into_iter().collect::<Vec<_>>(), shader)
     }
 
     fn apply_staining(color_table_data: &[u8], stain_id: u8, staining_template: &Stm) -> Vec<u8> {
