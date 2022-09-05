@@ -7,15 +7,15 @@ edition = "2021"
 [features]
 
 [dependencies]
-winit = { version = "^0.26", features = ["wayland", "x11"] }
+winit = { version = "^0.27", features = ["wayland", "x11"] }
 tokio = { version = "^1.13", features = ["full"] }
-futures = {version = "^0.3" }
-nalgebra = { version = "^0.30" }
+futures = { version = "^0.3" }
+glam = { version = "^0.21" }
 pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
 hashbrown = { version = "^0.12"}
 
-eng = { version = "^0.1", git = "https://github.com/dlunch/eng", rev = "2f657c1" }
+eng = { version = "^0.1", git = "https://github.com/dlunch/eng"}
 sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../../libs/sqpack_extension" }
 ffxiv_model = { version = "^0.1", path = "../../libs/ffxiv_model" }

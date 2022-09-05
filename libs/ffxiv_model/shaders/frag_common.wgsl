@@ -1,12 +1,12 @@
 struct point_light {
-	position: vec4<f32>;
-	ambient: vec4<f32>;
-	diffuse: vec4<f32>;
-	specular: vec4<f32>;
+	position: vec4<f32>,
+	ambient: vec4<f32>,
+	diffuse: vec4<f32>,
+	specular: vec4<f32>,
 
-	constant: f32;
-	linear: f32;
-	quadratic: f32;
+	constant_term: f32,
+	linear_term: f32,
+	quadratic_term: f32,
 };
 
 // lighting codes are from https://learnopengl.com/Lighting/Multiple-lights (CC BY-NC 4.0)
@@ -21,7 +21,7 @@ fn calc_point_light(light: point_light, frag_pos: vec3<f32>, view_dir: vec3<f32>
 	var spec: f32 = pow(max(dot(view_dir, reflect_dir), 0.0), shininess);
 	// attenuation
 	var dist: f32 = length(light.position.xyz - frag_pos);
-	var attenuation: f32 = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+	var attenuation: f32 = 1.0 / (light.constant_term + light.linear_term * dist + light.quadratic_term * (dist * dist));
 	// combine results
 	var result_ambient: vec3<f32> = light.ambient.rgb * diffuse;
 	var result_diffuse: vec3<f32> = light.diffuse.rgb * diff * diffuse;
@@ -33,13 +33,13 @@ fn calc_point_light(light: point_light, frag_pos: vec3<f32>, view_dir: vec3<f32>
 fn calculate_light(position: vec4<f32>, tbn: mat4x4<f32>, diffuse_map: vec4<f32>, normal_map: vec4<f32>, specular_map: vec4<f32>, shininess: f32) -> vec3<f32> {
     // TODO WIP hardcode
     var key_light: point_light;
-	key_light.position = vec4<f32>(-4.0, 4.0, 4.0, 1.0); key_light.ambient = vec4<f32>(0.1, 0.1, 0.1, 1.0); key_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); key_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); key_light.constant = 1.0; key_light.linear = 0.026; key_light.quadratic = 0.028;
+	key_light.position = vec4<f32>(-4.0, 4.0, 4.0, 1.0); key_light.ambient = vec4<f32>(0.1, 0.1, 0.1, 1.0); key_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); key_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); key_light.constant_term = 1.0; key_light.linear_term = 0.026; key_light.quadratic_term = 0.028;
 
     var fill_light: point_light;
-	fill_light.position = vec4<f32>(2.0, 2.0, 3.0, 1.0); fill_light.ambient = vec4<f32>(0.0, 0.0, 0.0, 1.0); fill_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); fill_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); fill_light.constant = 1.0; fill_light.linear = 0.14; fill_light.quadratic = 0.07;
+	fill_light.position = vec4<f32>(2.0, 2.0, 3.0, 1.0); fill_light.ambient = vec4<f32>(0.0, 0.0, 0.0, 1.0); fill_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); fill_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); fill_light.constant_term = 1.0; fill_light.linear_term = 0.14; fill_light.quadratic_term = 0.07;
 
     var back_light: point_light;
-	back_light.position = vec4<f32>(0.0, 3.0, -3.0, 1.0); back_light.ambient = vec4<f32>(0.0, 0.0, 0.0, 1.0); back_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); back_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); back_light.constant = 1.0; back_light.linear = 0.045; back_light.quadratic = 0.0075;
+	back_light.position = vec4<f32>(0.0, 3.0, -3.0, 1.0); back_light.ambient = vec4<f32>(0.0, 0.0, 0.0, 1.0); back_light.diffuse = vec4<f32>(1.0, 1.0, 1.0, 1.0); back_light.specular = vec4<f32>(0.0, 0.0, 0.0, 1.0); back_light.constant_term = 1.0; back_light.linear_term = 0.045; back_light.quadratic_term = 0.0075;
     var eye_position: vec4<f32> = vec4<f32>(0.0, 0.8, 2.5, 1.0);
     // hardcode end
 

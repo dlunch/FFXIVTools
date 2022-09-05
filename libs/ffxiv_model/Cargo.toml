@@ -10,15 +10,14 @@ doctest = false
 [features]
 
 [dependencies]
-raw-window-handle = { version = "^0.4", default-features = false }
 futures = { version = "^0.3", features = ["alloc"], default-features = false }
 hashbrown = { version = "^0.12", features = ["ahash", "inline-more"], default-features = false }
 spinning_top = { version = "^0.2", default-features = false }
 log = { version = "^0.4", default-features = false }
-enum-iterator = { version = "^0.7", default-features = false }
+enum-iterator = { version = "^1.2", default-features = false }
 zerocopy = { version = "^0.6", default-features = false }
-nalgebra = { version = "^0.29", default-features = false }
+glam = { version = "^0.21", features = ["libm"], default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }
-eng = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/eng", rev = "2f657c1" }
+eng = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/eng" }

@@ -1,8 +1,8 @@
 use alloc::{borrow::ToOwned, string::String, vec::Vec};
 use core::mem::size_of;
 
+use glam::Mat4;
 use hashbrown::HashMap;
-use nalgebra::Matrix4;
 
 use sqpack::{Package, Result};
 use util::{cast, cast_array, StrExt};
@@ -40,7 +40,7 @@ impl Pbd {
         Ok(Self { data })
     }
 
-    pub fn get_deform_matrices(&self, from_id: u16, to_id: u16) -> HashMap<String, Matrix4<f32>> {
+    pub fn get_deform_matrices(&self, from_id: u16, to_id: u16) -> HashMap<String, Mat4> {
         if from_id == to_id {
             return HashMap::new();
         }
@@ -79,12 +79,12 @@ impl Pbd {
                 let bone_name = str::from_null_terminated_utf8(&self.data[string_offset..]).unwrap();
                 let matrix = matrices[i];
 
-                let entry = result.entry(bone_name.to_owned()).or_insert_with(Matrix4::identity);
+                let entry = result.entry(bone_name.to_owned()).or_insert(Mat4::IDENTITY);
 
-                *entry *= Matrix4::new(
+                *entry *= Mat4::from_cols_array(&[
                     matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6], matrix[7], matrix[8], matrix[9], matrix[10],
                     matrix[11], 0., 0., 0., 1.,
-                );
+                ]);
             }
 
             next = &links[next.next_index as usize];

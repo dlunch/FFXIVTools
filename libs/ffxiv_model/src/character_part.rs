@@ -1,11 +1,11 @@
 use alloc::{string::String, sync::Arc, vec::Vec};
 use core::ops::Range;
 
+use glam::Mat4;
 use hashbrown::{HashMap, HashSet};
-use nalgebra::Matrix4;
 use zerocopy::AsBytes;
 
-use eng::render::{Buffer, Mesh, Model, RenderContext, Renderable, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
+use eng::render::{Buffer, Mesh, RenderComponent, Renderer, Transform, VertexFormat, VertexFormatItem, VertexItemType};
 use ffxiv_parser::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
 
 use crate::context::Context;
@@ -13,45 +13,44 @@ use crate::customization::Customization;
 use crate::material::create_material;
 use crate::model_reader::{EquipmentModelData, ModelData};
 
-pub struct CharacterPart {
-    models: Vec<(Model, Vec<Range<u32>>)>,
-}
+pub struct CharacterPart {}
 
 impl CharacterPart {
-    pub fn with_model(
+    pub fn load_model(
         renderer: &Renderer,
         model_data: ModelData,
-        bone_transforms: &HashMap<String, Matrix4<f32>>,
+        bone_transforms: &HashMap<String, Mat4>,
         context: &Context,
         customization: &Customization,
-    ) -> Self {
+    ) -> Vec<RenderComponent> {
         let mdl = model_data.mdl;
 
         let visibility_mask = 0;
         let hidden_attributes = HashSet::new();
         let lod = 0;
 
-        let mut models = Vec::with_capacity(mdl.mesh_count(lod));
-        for ((mesh_data, buffer_item), (mtrl, texs)) in mdl.meshes(lod).zip(mdl.buffer_items(lod)).zip(model_data.mtrls) {
-            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
-            let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
-            let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, bone_transforms);
+        mdl.meshes(lod)
+            .zip(mdl.buffer_items(lod))
+            .zip(model_data.mtrls)
+            .map(|((mesh_data, buffer_item), (mtrl, texs))| {
+                let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
+                let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
+                let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, bone_transforms);
 
-            let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
+                let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
-            models.push((Model::new(renderer, mesh, material), mesh_parts));
-        }
-
-        Self { models }
+                RenderComponent::with_range(mesh, material, &mesh_parts, Transform::new())
+            })
+            .collect::<Vec<_>>()
     }
 
-    pub fn with_equipment_model(
+    pub fn load_equipment_model(
         renderer: &Renderer,
         equipment_model_data: EquipmentModelData,
-        _bone_transforms: &HashMap<String, Matrix4<f32>>,
+        _bone_transforms: &HashMap<String, Mat4>,
         context: &Context,
         customization: &Customization,
-    ) -> Self {
+    ) -> Vec<RenderComponent> {
         log::debug!(
             "original {:?} deformed {:?}",
             equipment_model_data.original_body_id as u16,
@@ -64,26 +63,27 @@ impl CharacterPart {
         let hidden_attributes = HashSet::new();
         let lod = 0;
 
-        let mut models = Vec::with_capacity(mdl.mesh_count(lod));
-        for ((mesh_data, buffer_item), (mtrl, texs)) in mdl.meshes(lod).zip(mdl.buffer_items(lod)).zip(equipment_model_data.model_data.mtrls) {
-            let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
-            let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
-            let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, &prebone_deformer);
+        mdl.meshes(lod)
+            .zip(mdl.buffer_items(lod))
+            .zip(equipment_model_data.model_data.mtrls)
+            .map(|((mesh_data, buffer_item), (mtrl, texs))| {
+                let mesh = Self::load_mesh(renderer, &mesh_data, buffer_item);
+                let mesh_parts = Self::get_mesh_parts(&mdl, &mesh_data, visibility_mask, &hidden_attributes);
+                let bone_transform = Self::load_bone_transform(renderer, &mdl, &mesh_data, &prebone_deformer);
 
-            let material = create_material(
-                renderer,
-                context,
-                &mtrl,
-                &texs,
-                bone_transform,
-                customization,
-                equipment_model_data.stain_id,
-            );
+                let material = create_material(
+                    renderer,
+                    context,
+                    &mtrl,
+                    &texs,
+                    bone_transform,
+                    customization,
+                    equipment_model_data.stain_id,
+                );
 
-            models.push((Model::new(renderer, mesh, material), mesh_parts));
-        }
-
-        Self { models }
+                RenderComponent::with_range(mesh, material, &mesh_parts, Transform::new())
+            })
+            .collect::<Vec<_>>()
     }
 
     fn load_mesh(renderer: &Renderer, mesh_data: &MdlMesh<'_>, buffer_item: &BufferItemChunk) -> Mesh {
@@ -138,13 +138,12 @@ impl CharacterPart {
             .collect::<Vec<_>>()
     }
 
-    fn load_bone_transform(renderer: &Renderer, mdl: &Mdl, mesh_data: &MdlMesh<'_>, bone_transforms: &HashMap<String, Matrix4<f32>>) -> Arc<Buffer> {
+    fn load_bone_transform(renderer: &Renderer, mdl: &Mdl, mesh_data: &MdlMesh<'_>, bone_transforms: &HashMap<String, Mat4>) -> Arc<Buffer> {
         let bone_names = mdl.bone_names(mesh_data.mesh_info.bone_index);
         let mut bone_transform_data = Vec::with_capacity(64 * 3 * 4 * core::mem::size_of::<f32>());
         for bone_name in bone_names {
             if let Some(x) = bone_transforms.get(bone_name) {
-                // nalgebra's as_slice uses column_major, so we have to transpose it
-                bone_transform_data.extend(x.transpose().as_slice()[..12].as_bytes());
+                bone_transform_data.extend(x.to_cols_array()[..12].as_bytes());
             } else {
                 let identity = [1.0f32, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.];
                 bone_transform_data.extend(identity.as_bytes());
@@ -153,8 +152,8 @@ impl CharacterPart {
 
         bone_transform_data.resize(64 * 3 * 4 * core::mem::size_of::<f32>(), 0); // to match uniform size with shader. do we really require this?
 
-        let bone_transform = Arc::new(renderer.buffer_pool.alloc(bone_transform_data.len()));
-        bone_transform.write(&bone_transform_data);
+        let bone_transform = Arc::new(renderer.buffer_pool.alloc(bone_transform_data.len() as u64));
+        bone_transform.write(0, &bone_transform_data);
 
         bone_transform
     }
@@ -169,14 +168,6 @@ impl CharacterPart {
             BufferItemType::Half2 => VertexItemType::Half2,
             BufferItemType::Half4 => VertexItemType::Half4,
             _ => panic!(),
-        }
-    }
-}
-
-impl Renderable for CharacterPart {
-    fn render<'a>(&'a self, render_context: &mut RenderContext<'a>) {
-        for model in &self.models {
-            model.0.render(render_context);
         }
     }
 }

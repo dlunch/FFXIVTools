@@ -1,16 +1,16 @@
-[[group(0), binding(10)]]
+@group(0) @binding(10)
 var textureSampler: sampler;
-[[group(0), binding(11)]]
+@group(0) @binding(11)
 var normal_tex: texture_2d<f32>;
-[[group(0), binding(12)]]
+@group(0) @binding(12)
 var color_table_tex: texture_2d<f32>;
-[[group(0), binding(13)]]
+@group(0) @binding(13)
 var mask_tex: texture_2d<f32>;
-[[group(0), binding(14)]]
+@group(0) @binding(14)
 var specular_tex: texture_2d<f32>;
 
-[[stage(fragment)]]
-fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+@fragment
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     var normal_map: vec4<f32> = textureSample(normal_tex, textureSampler, in.tex_coord);
 
     var normal_size: vec2<i32> = textureDimensions(normal_tex, 0);
