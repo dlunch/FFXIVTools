@@ -1,10 +1,8 @@
 use alloc::collections::BTreeMap;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
+use yew::prelude::{html, Component, Context, Html, Properties};
 
-pub struct List {
-    props: Props,
-}
+pub struct List {}
 
 pub enum Msg {}
 
@@ -17,29 +15,20 @@ impl Component for List {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {}
     }
 
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
         true
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        if self.props != props {
-            self.props = props;
-            true
-        } else {
-            false
-        }
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <ul>
                 {
-                    self
-                        .props
+                    ctx
+                        .props()
                         .data
                         .iter()
                         .map(|(k, v)| html! { <li>{ format!("{}: {}", k, v.join(", ")) }</li> })

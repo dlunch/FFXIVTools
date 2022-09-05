@@ -4,14 +4,14 @@ use common::{regions, WasmPackage};
 
 use crate::file_list::FileList;
 
-static mut INSTANCE: Option<Context> = None;
+static mut INSTANCE: Option<AppContext> = None;
 
-pub struct Context {
+pub struct AppContext {
     pub package: Rc<WasmPackage>,
     pub file_list: FileList,
 }
 
-impl Context {
+impl AppContext {
     pub fn get() -> &'static Self {
         return unsafe { INSTANCE.as_ref() }.unwrap();
     }

@@ -1,13 +1,11 @@
-use yew::prelude::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::prelude::{html, Component, Context, Html};
 
 use log::debug;
 
 use crate::components::content::Content;
 use crate::components::file_list::FileList;
 
-pub struct App {
-    link: ComponentLink<Self>,
-}
+pub struct App {}
 
 pub enum Msg {
     FileSelected(String),
@@ -17,11 +15,11 @@ impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {}
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::FileSelected(x) => {
                 debug!("{}", x);
@@ -31,14 +29,10 @@ impl Component for App {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div>
-                <FileList file_select_callback=self.link.callback(Msg::FileSelected) />
+                <FileList file_select_callback={ctx.link().callback(Msg::FileSelected)} />
                 <Content />
             </div>
         }

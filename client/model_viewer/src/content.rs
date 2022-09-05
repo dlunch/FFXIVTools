@@ -30,7 +30,7 @@ impl Content {
         world.spawn().with(CameraComponent { camera: Box::new(camera) });
 
         let renderer = world.resource::<Renderer>().unwrap();
-        let context = Context::new(&renderer, &package).await.unwrap();
+        let context = Context::new(renderer, &package).await.unwrap();
 
         let mut equipments = HashMap::new();
         equipments.insert(ModelPart::Met, Equipment::new(6016, 1, 0));

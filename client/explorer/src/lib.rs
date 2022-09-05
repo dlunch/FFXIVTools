@@ -17,7 +17,7 @@ pub fn start(base_url: String) {
     console_log::init_with_level(log::Level::Trace).unwrap();
 
     spawn_local(async move {
-        context::Context::init(&base_url).await;
+        context::AppContext::init(&base_url).await;
     });
 
     yew::start_app::<app::App>();
