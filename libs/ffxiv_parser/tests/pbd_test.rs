@@ -18,10 +18,10 @@ async fn pbd_test() -> Result<()> {
     assert_eq!(result.len(), 0);
 
     let result = pbd.get_deform_matrices(201, 101);
-    assert_eq!(result["n_hara"][0], 0.9627);
+    assert_eq!(result["n_hara"].to_cols_array()[0], 0.9627);
 
     let result = pbd.get_deform_matrices(601, 101);
-    assert_eq!(result["j_ago"][0], 0.89393127);
+    assert_eq!(result["j_ago"].to_cols_array()[0], 0.89393127);
 
     Ok(())
 }
