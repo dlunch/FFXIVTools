@@ -651,7 +651,7 @@ dependencies = [
 [[package]]
 name = "eng"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/eng#f95425d267a0043767a9e2cd2c604d5d8878ba2b"
+source = "git+https://github.com/dlunch/eng#ef54c2c1fb9dadd31dc5c8dbbd69ae50287bb2f8"
 dependencies = [
  "futures",
  "glam",
