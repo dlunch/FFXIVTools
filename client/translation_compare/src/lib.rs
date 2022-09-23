@@ -5,9 +5,6 @@ mod list;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 #[wasm_bindgen]
 pub fn start(base_url: &str) {
     #[cfg(debug_assertions)]
