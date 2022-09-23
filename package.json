@@ -10,7 +10,7 @@
     "start": "webpack serve --config webpack/webpack.config.dev.js"
   },
   "dependencies": {
-    "electron": "^6.1.12",
+    "electron": "^20.2.0",
     "file-loader": "^6.2.0"
   },
   "devDependencies": {
