@@ -15,9 +15,16 @@ use winit::{
 #[wasm_bindgen(start)]
 pub fn main() {
     #[cfg(debug_assertions)]
-    console_error_panic_hook::set_once();
-    #[cfg(debug_assertions)]
-    console_log::init_with_level(log::Level::Debug).unwrap();
+    {
+        console_error_panic_hook::set_once();
+
+        fern::Dispatch::new()
+            .level(log::LevelFilter::Trace)
+            .level_for("wgpu", log::LevelFilter::Info)
+            .chain(fern::Output::call(console_log::log))
+            .apply()
+            .unwrap();
+    }
 
     let app = yew::start_app::<app::App>();
 
