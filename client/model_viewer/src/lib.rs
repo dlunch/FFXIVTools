@@ -1,7 +1,5 @@
 extern crate alloc;
 
-use alloc::rc::Rc;
-
 mod app;
 mod content;
 
@@ -22,10 +20,9 @@ pub fn main() {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
     #[cfg(debug_assertions)]
-    console_log::init_with_level(log::Level::Trace).unwrap();
+    console_log::init_with_level(log::Level::Debug).unwrap();
 
-    yew::initialize();
-    let scope = Rc::new(yew::App::<app::App>::new().mount_to_body());
+    let app = yew::start_app::<app::App>();
 
     let event_loop = EventLoop::new();
     #[allow(unused_mut)]
@@ -35,18 +32,18 @@ pub fn main() {
         use web_sys::HtmlCanvasElement;
         use winit::platform::web::WindowBuilderExtWebSys;
 
-        builder = builder.with_canvas(scope.get_component().unwrap().canvas.cast::<HtmlCanvasElement>());
+        builder = builder.with_canvas(app.get_component().unwrap().canvas.cast::<HtmlCanvasElement>());
     }
 
     let window = builder.build(&event_loop).unwrap();
 
-    let scope2 = scope.clone();
+    let app2 = app.clone();
     spawn_local(async move {
-        scope2.get_component().unwrap().start(window).await;
+        app2.get_component().unwrap().start(window).await;
     });
 
     event_loop.run(move |event, _, control_flow| {
-        let app = scope.get_component().unwrap();
+        let app = app.get_component().unwrap();
         *control_flow = ControlFlow::Poll;
 
         match event {

@@ -1,7 +1,7 @@
 use core::cell::RefCell;
 
 use winit::window::Window;
-use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
+use yew::prelude::{html, Component, Context, Html, NodeRef};
 
 pub struct App {
     pub canvas: NodeRef,
@@ -16,24 +16,20 @@ impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         App {
             canvas: NodeRef::default(),
             content: RefCell::new(None),
         }
     }
 
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
-            <canvas ref=self.canvas.clone() />
+            <canvas ref={self.canvas.clone()} />
         }
     }
 }
