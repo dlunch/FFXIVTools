@@ -631,9 +631,8 @@ dependencies = [
 [[package]]
 name = "eng"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/eng#f95425d267a0043767a9e2cd2c604d5d8878ba2b"
+source = "git+https://github.com/dlunch/eng#33912f20eeaaaf208c056f0ea359f348ab8a3e6a"
 dependencies = [
- "futures",
  "glam",
  "hashbrown",
  "lazy_static",
