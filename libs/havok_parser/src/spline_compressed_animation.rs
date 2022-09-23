@@ -274,11 +274,11 @@ impl HavokSplineCompressedAnimation {
         let missing_index = (((data[1] & 0x8000) >> 14) | ((data[0] & 0x8000) >> 15)) as usize;
         let mut vals = [0x3fff, 0x3fff, 0x3fff, 0x3fff];
 
-        let mut index = if missing_index == 0 { 1 } else { 0 };
+        let mut index = usize::from(missing_index == 0);
         vals[index] = item1;
-        index += 1 + (if missing_index == index + 1 { 1 } else { 0 });
+        index += 1 + (usize::from(missing_index == index + 1));
         vals[index] = item2;
-        index += 1 + (if missing_index == index + 1 { 1 } else { 0 });
+        index += 1 + (usize::from(missing_index == index + 1));
         vals[index] = item3;
 
         let mut result = [0., 0., 0., 1.];
