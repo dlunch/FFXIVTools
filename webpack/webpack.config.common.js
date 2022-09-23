@@ -17,7 +17,7 @@ const configuration = {
     explorer: 'client/explorer/explorer.html',
   },
   experiments: {
-    asyncWebAssembly: true,
+    futureDefaults: true,
   },
   output: {
     path: dist,
@@ -57,9 +57,6 @@ const configuration = {
 
     plugins: [new TsconfigPathsPlugin()],
   },
-  devServer: {
-    contentBase: dist,
-  },
   plugins: [
     new HtmlEntryLoader.EntryExtractPlugin(),
     new webpack.DefinePlugin({
@@ -70,16 +67,19 @@ const configuration = {
       crateDirectory: path.resolve(root, 'client/model_viewer'),
       outDir: path.resolve(root, 'client/model_viewer/pkg'),
       outName: 'index',
+      extraArgs: '--target web',
     }),
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/translation_compare'),
       outDir: path.resolve(root, 'client/translation_compare/pkg'),
       outName: 'index',
+      extraArgs: '--target web',
     }),
     new WasmPackPlugin({
       crateDirectory: path.resolve(root, 'client/explorer'),
       outDir: path.resolve(root, 'client/explorer/pkg'),
       outName: 'index',
+      extraArgs: '--target web',
     }),
     new CopyPlugin({
       patterns: [{ from: 'client/index.html' }],
