@@ -5,7 +5,7 @@ use glam::Mat4;
 use hashbrown::{HashMap, HashSet};
 use zerocopy::AsBytes;
 
-use eng::render::{Buffer, Mesh, RenderComponent, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
+use eng::render::{Buffer, Mesh, RenderBundle, Renderer, Transform, VertexFormat, VertexFormatItem, VertexItemType};
 use ffxiv_parser::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
 
 use crate::context::Context;
@@ -22,7 +22,7 @@ impl CharacterPart {
         bone_transforms: &HashMap<String, Mat4>,
         context: &Context,
         customization: &Customization,
-    ) -> Vec<RenderComponent> {
+    ) -> Vec<RenderBundle> {
         let mdl = model_data.mdl;
 
         let visibility_mask = 0;
@@ -39,10 +39,11 @@ impl CharacterPart {
 
                 let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
-                RenderComponent {
+                RenderBundle {
                     mesh,
                     material,
-                    ranges: mesh_parts,
+                    ranges: Some(mesh_parts),
+                    transform: Transform::new(),
                 }
             })
             .collect::<Vec<_>>()
@@ -54,7 +55,7 @@ impl CharacterPart {
         _bone_transforms: &HashMap<String, Mat4>,
         context: &Context,
         customization: &Customization,
-    ) -> Vec<RenderComponent> {
+    ) -> Vec<RenderBundle> {
         log::debug!(
             "original {:?} deformed {:?}",
             equipment_model_data.original_body_id as u16,
@@ -85,10 +86,11 @@ impl CharacterPart {
                     equipment_model_data.stain_id,
                 );
 
-                RenderComponent {
+                RenderBundle {
                     mesh,
                     material,
-                    ranges: mesh_parts,
+                    ranges: Some(mesh_parts),
+                    transform: Transform::new(),
                 }
             })
             .collect::<Vec<_>>()

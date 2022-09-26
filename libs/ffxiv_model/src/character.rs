@@ -8,7 +8,7 @@ use hashbrown::HashMap;
 
 use eng::{
     ecs::{HierarchyExt, World},
-    render::{RenderComponent, Renderer},
+    render::{RenderBundle, Renderer},
 };
 use sqpack::{Package, Result, SqPackReaderError};
 
@@ -39,7 +39,7 @@ impl Character {
         let parts_fut = read_futures
             .map(|x| {
                 x.map(|data| {
-                    Ok::<Vec<RenderComponent>, SqPackReaderError>(CharacterPart::load_equipment_model(
+                    Ok::<Vec<RenderBundle>, SqPackReaderError>(CharacterPart::load_equipment_model(
                         renderer,
                         data?,
                         &bone_transforms,
@@ -52,13 +52,11 @@ impl Character {
             .try_collect::<Vec<_>>();
 
         // chaining part model futures and equipment read futures requires boxed future, emits strange compile error https://github.com/rust-lang/rust/issues/64650
-        let face_part_fut = ModelReader::read_face(renderer, package, &customization, context).map(|x| {
-            Ok::<Vec<RenderComponent>, SqPackReaderError>(CharacterPart::load_model(renderer, x?, &bone_transforms, context, &customization))
-        });
+        let face_part_fut = ModelReader::read_face(renderer, package, &customization, context)
+            .map(|x| Ok::<Vec<RenderBundle>, SqPackReaderError>(CharacterPart::load_model(renderer, x?, &bone_transforms, context, &customization)));
 
-        let hair_part_fut = ModelReader::read_hair(renderer, package, &customization, context).map(|x| {
-            Ok::<Vec<RenderComponent>, SqPackReaderError>(CharacterPart::load_model(renderer, x?, &bone_transforms, context, &customization))
-        });
+        let hair_part_fut = ModelReader::read_hair(renderer, package, &customization, context)
+            .map(|x| Ok::<Vec<RenderBundle>, SqPackReaderError>(CharacterPart::load_model(renderer, x?, &bone_transforms, context, &customization)));
 
         let (parts, face_part, hair_part) = futures::future::try_join3(parts_fut, face_part_fut, hair_part_fut).await?;
 
@@ -66,14 +64,14 @@ impl Character {
             let part_entity = world.spawn().entity();
             world.add_child(entity, part_entity);
 
-            for component in part {
-                let part_child_entity = world.spawn().with(component).entity();
+            for bundle in part {
+                let part_child_entity = world.spawn_bundle(bundle);
                 world.add_child(part_entity, part_child_entity);
             }
         }
 
-        for component in face_part.into_iter().chain(hair_part.into_iter()) {
-            let part_entity = world.spawn().with(component).entity();
+        for bundle in face_part.into_iter().chain(hair_part.into_iter()) {
+            let part_entity = world.spawn_bundle(bundle);
             world.add_child(entity, part_entity);
         }
 
