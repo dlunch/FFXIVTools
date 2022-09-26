@@ -29,5 +29,4 @@ module.exports = merge(common, {
       },
     ],
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()],
 });
