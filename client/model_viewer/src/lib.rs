@@ -19,7 +19,8 @@ pub fn main() {
         console_error_panic_hook::set_once();
 
         fern::Dispatch::new()
-            .level(log::LevelFilter::Info)
+            .level(log::LevelFilter::Debug)
+            .level_for("wgpu_core", log::LevelFilter::Info)
             .chain(fern::Output::call(console_log::log))
             .apply()
             .unwrap();
