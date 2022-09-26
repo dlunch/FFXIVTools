@@ -19,6 +19,8 @@ use sqpack_extension::{BatchedPackage, ExtractedFileProviderWeb, SqPackReaderExt
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init_timed();
+
     App::new().await.setup(setup).await.run()
 }
 
