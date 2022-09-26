@@ -5,7 +5,7 @@ use glam::Mat4;
 use hashbrown::{HashMap, HashSet};
 use zerocopy::AsBytes;
 
-use eng::render::{Buffer, Mesh, RenderComponent, Renderer, Transform, VertexFormat, VertexFormatItem, VertexItemType};
+use eng::render::{Buffer, Mesh, RenderComponent, Renderer, VertexFormat, VertexFormatItem, VertexItemType};
 use ffxiv_parser::{BufferItemChunk, BufferItemType, BufferItemUsage, Mdl, MdlMesh};
 
 use crate::context::Context;
@@ -39,7 +39,11 @@ impl CharacterPart {
 
                 let material = create_material(renderer, context, &mtrl, &texs, bone_transform, customization, 0);
 
-                RenderComponent::with_range(mesh, material, &mesh_parts, Transform::new())
+                RenderComponent {
+                    mesh,
+                    material,
+                    ranges: mesh_parts,
+                }
             })
             .collect::<Vec<_>>()
     }
@@ -81,7 +85,11 @@ impl CharacterPart {
                     equipment_model_data.stain_id,
                 );
 
-                RenderComponent::with_range(mesh, material, &mesh_parts, Transform::new())
+                RenderComponent {
+                    mesh,
+                    material,
+                    ranges: mesh_parts,
+                }
             })
             .collect::<Vec<_>>()
     }
