@@ -15,4 +15,4 @@ std = ["tokio"]
 cfg-if = { version = "^1.0", default-features = false }
 async-trait = { version = "^0.1.24", default-features = false }
 
-tokio = { version = "^1.13", features = ["full"], optional = true }
+tokio = { version = "^1.21", features = ["full"], optional = true }

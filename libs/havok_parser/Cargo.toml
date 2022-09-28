@@ -15,7 +15,7 @@ hashbrown = { version = "^0.12", features = ["ahash", "inline-more"], default-fe
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 [dev-dependencies]
-tokio = { version = "^1.13", features = ["full"] }
+tokio = { version = "^1.21", features = ["full"] }
 pretty_env_logger = { version = "^0.4" }
 
 sqpack = { version = "^0.1", git = "https://github.com/dlunch/sqpack" }

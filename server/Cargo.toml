@@ -9,7 +9,7 @@ futures = { version = "^0.3" }
 itertools = { version = "^0.10" }
 log = { version = "^0.4" }
 pretty_env_logger = { version = "^0.4" }
-tokio = { version = "^1.0", features = ["full"] }
+tokio = { version = "^1.21", features = ["full"] }
 axum = { version = "^0.5", features = ["headers"] }
 chrono = { version = "^0.4" }
 tower-http = { version = "0.3", features = ["cors", "set-header", "catch-panic"] }

@@ -25,7 +25,7 @@ sqpack = { version = "^0.1", default-features = false, git = "https://github.com
 util = { version = "^0.1", default-features = false, path = "../util" }
 
 [dev-dependencies]
-tokio = { version = "^1.13", features = ["full"] }
+tokio = { version = "^1.21", features = ["full"] }
 pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
 sqpack_extension = { version = "^0.1", path = "../sqpack_extension" }
