@@ -631,7 +631,7 @@ dependencies = [
 [[package]]
 name = "eng"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/eng#451e2ec0a7d731654b0da5e43f96a319d47c2807"
+source = "git+https://github.com/dlunch/eng#dd66a59a96fff5a41984b1a693b03947cccb97fa"
 dependencies = [
  "glam",
  "hashbrown",
