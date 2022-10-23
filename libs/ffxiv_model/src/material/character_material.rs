@@ -88,7 +88,7 @@ impl CharacterMaterial {
             stain_id as usize - 1
         };
 
-        let begin = 2 * (last + count * data_offset) as usize;
+        let begin = 2 * (last + count * data_offset);
         let end = begin + count * 2;
         row.copy_from_slice(&table_data[begin..end]);
     }
