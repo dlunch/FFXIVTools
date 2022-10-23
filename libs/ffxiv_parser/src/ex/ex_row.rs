@@ -71,7 +71,7 @@ impl<'a> ExRow<'a> {
             let index = field_type_value - packed_bool_offset;
 
             #[allow(clippy::match_like_matches_macro)]
-            match (packed_data & (1 << index)) as u8 {
+            match packed_data & (1 << index) {
                 0 => false,
                 _ => true,
             }
