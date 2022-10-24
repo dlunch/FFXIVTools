@@ -1,4 +1,4 @@
-FROM dlunch/rust-builder:1.61.0-stretch as base
+FROM dlunch/rust-builder:1.64.0-stretch as base
 WORKDIR /src
 
 FROM base as planner
