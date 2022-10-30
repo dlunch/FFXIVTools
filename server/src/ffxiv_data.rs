@@ -46,7 +46,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
             .into_iter()
             .map(|x| (x as u32, ex.all(x).unwrap().collect::<BTreeMap<_, _>>()))
             .collect::<BTreeMap<_, _>>();
-        Ok(serde_json::to_value(&result).unwrap())
+        Ok(serde_json::to_value(result).unwrap())
     } else {
         let result = languages
             .into_iter()
@@ -60,7 +60,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
                 )
             })
             .collect::<BTreeMap<_, _>>();
-        Ok(serde_json::to_value(&result).unwrap())
+        Ok(serde_json::to_value(result).unwrap())
     }
 }
 
