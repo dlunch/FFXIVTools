@@ -16,7 +16,7 @@ spinning_top = { version = "^0.2", default-features = false }
 log = { version = "^0.4", default-features = false }
 enum-iterator = { version = "^1.2", default-features = false }
 zerocopy = { version = "^0.6", default-features = false }
-glam = { version = "^0.21", features = ["libm"], default-features = false }
+glam = { version = "^0.22", features = ["libm"], default-features = false }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }
 ffxiv_parser = { version = "^0.1", default-features = false, path = "../ffxiv_parser" }

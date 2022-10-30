@@ -18,7 +18,7 @@ serde_repr = { version = "^0.1", default-features = false }
 hashbrown = { version = "^0.12", features = ["ahash", "inline-more"], default-features = false }
 phf = { version = "^0.11", features = ["macros"], default-features = false }
 log = { version = "^0.4", default-features = false }
-glam = { version = "^0.21", features = ["libm"], default-features = false }
+glam = { version = "^0.22", features = ["libm"], default-features = false }
 squish = { version = "^1.0" }
 
 sqpack = { version = "^0.1", default-features = false, git = "https://github.com/dlunch/sqpack" }

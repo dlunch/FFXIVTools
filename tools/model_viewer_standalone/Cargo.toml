@@ -10,7 +10,7 @@ edition = "2021"
 winit = { version = "^0.27", features = ["wayland", "x11"] }
 tokio = { version = "^1.13", features = ["full"] }
 futures = { version = "^0.3" }
-glam = { version = "^0.21" }
+glam = { version = "^0.22" }
 pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
 hashbrown = { version = "^0.12"}

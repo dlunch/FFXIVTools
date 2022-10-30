@@ -20,7 +20,7 @@ console_error_panic_hook = { version = "^0.1", default-features = false }
 winit = { version = "^0.27", default-features = false }
 log = { version = "0.4", default-features = false }
 console_log = { version = "0.2", features = ["color"], default-features = false }
-glam = { version = "^0.21" }
+glam = { version = "^0.22" }
 hashbrown = { version = "^0.12", default-features = false }
 
 eng = { version = "^0.1", git = "https://github.com/dlunch/eng" }
