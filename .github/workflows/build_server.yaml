@@ -14,10 +14,10 @@ jobs:
         targets:
           - tag: "amd64"
             platform: "linux/amd64"
-          - tag: "armv7"
-            platform: "linux/arm/v7"
-          - tag: "arm64"
-            platform: "linux/arm64"
+          #- tag: "armv7"
+          #  platform: "linux/arm/v7"
+          #- tag: "arm64"
+          #  platform: "linux/arm64"
 
     steps:
       - name: Cancel Previous Runs
@@ -77,11 +77,8 @@ jobs:
           DOCKER_CLI_EXPERIMENTAL: enabled
         run: |
           docker manifest create ghcr.io/dlunch/ffxivtools_server:latest \
-            ghcr.io/dlunch/ffxivtools_server:latest-amd64 \
-            ghcr.io/dlunch/ffxivtools_server:latest-armv7 \
-            ghcr.io/dlunch/ffxivtools_server:latest-arm64
+            ghcr.io/dlunch/ffxivtools_server:latest-amd64
           docker manifest push ghcr.io/dlunch/ffxivtools_server:latest
-
       - name: Clear
         if: always()
         run: |
