@@ -11,9 +11,9 @@ async fn read_files_test() -> sqpack::Result<()> {
     let provider = ExtractedFileProviderWeb::new("https://ffxiv-data.dlunch.net/compressed/global_520/");
     let pack = SqPackReaderExtractedFile::new(provider);
     let (reference1, reference2, reference3) = (
-        SqPackFileReference::new("exd/item.exh"),
-        SqPackFileReference::new("chara/accessory/a0001/model/c0101a0001_ear.mdl"),
-        SqPackFileReference::new("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex"),
+        SqPackFileReference::new("exd/item.exh")?,
+        SqPackFileReference::new("chara/accessory/a0001/model/c0101a0001_ear.mdl")?,
+        SqPackFileReference::new("chara/accessory/a0001/texture/v01_c0101a0001_ear_d.tex")?,
     );
     let references = vec![&reference1, &reference2, &reference3];
     let files = pack.read_files(&references).await?;
