@@ -18,9 +18,9 @@ async fn main() -> io::Result<()> {
         .arg(Arg::with_name("root").takes_value(true).required(true))
         .get_matches();
 
-    let package = SqPackPackage::new(Path::new(matches.value_of("base_path").unwrap()))?;
+    let package = SqPackPackage::new(Path::new(matches.value_of("base_path").unwrap())).unwrap();
 
-    let archive_id = SqPackArchiveId::from_file_path(matches.value_of("root").unwrap());
+    let archive_id = SqPackArchiveId::from_file_path(matches.value_of("root").unwrap()).unwrap();
     let archive = package.archive(archive_id).await?;
 
     archive
