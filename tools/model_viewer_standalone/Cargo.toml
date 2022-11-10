@@ -13,7 +13,7 @@ futures = { version = "^0.3" }
 glam = { version = "^0.21" }
 pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
-hashbrown = { version = "^0.12"}
+hashbrown = { version = "^0.13"}
 
 eng = { version = "^0.1", git = "https://github.com/dlunch/eng"}
 sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
