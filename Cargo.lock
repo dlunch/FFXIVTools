@@ -669,9 +669,10 @@ dependencies = [
 [[package]]
 name = "eng"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/eng#b2f652ced14ad608f67dd47897bdcc6735468a3e"
+source = "git+https://github.com/dlunch/eng#d2e2ed8b5dac480e47864eb42cfe3bdc62f77b78"
 dependencies = [
- "glam",
+ "futures",
+ "glam 0.22.0",
  "hashbrown",
  "lazy_static",
  "log",
@@ -679,6 +680,7 @@ dependencies = [
  "num-traits",
  "spinning_top",
  "squish",
+ "tokio",
  "wgpu",
  "winit",
  "zerocopy",
@@ -782,7 +784,7 @@ dependencies = [
  "enum-iterator",
  "ffxiv_parser",
  "futures",
- "glam",
+ "glam 0.21.3",
  "hashbrown",
  "log",
  "spinning_top",
@@ -795,7 +797,7 @@ name = "ffxiv_parser"
 version = "0.1.0"
 dependencies = [
  "futures",
- "glam",
+ "glam 0.21.3",
  "hashbrown",
  "log",
  "phf",
@@ -1022,6 +1024,15 @@ name = "glam"
 version = "0.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "518faa5064866338b013ff9b2350dc318e14cc4fcd6cb8206d7e7c9886c98815"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "glam"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 dependencies = [
  "num-traits",
 ]
@@ -1633,7 +1644,7 @@ dependencies = [
  "fern",
  "ffxiv_model",
  "futures",
- "glam",
+ "glam 0.21.3",
  "hashbrown",
  "js-sys",
  "log",
@@ -1653,7 +1664,7 @@ dependencies = [
  "eng",
  "ffxiv_model",
  "futures",
- "glam",
+ "glam 0.21.3",
  "hashbrown",
  "log",
  "pretty_env_logger",
