@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: ffxivtools-server
-          image: ghcr.io/dlunch/ffxivtools_server:latest
+          image: ghcr.io/dlunch/ffxivtools:latest-server
           ports:
             - containerPort: 8000
           volumeMounts:
