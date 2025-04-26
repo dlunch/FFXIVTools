@@ -1,7 +1,7 @@
-FROM dlunch/rust-builder:1.61.0-stretch as base
+FROM lukemathwalker/cargo-chef:latest-rust-1 AS base
 WORKDIR /src
 
-FROM base as planner
+FROM base AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
