@@ -49,7 +49,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.targets.tag }}-buildx-
 
       - name: Docker Login
-        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
       - name: Docker Build
         run: |
@@ -58,7 +58,7 @@ jobs:
             --cache-to "type=local,dest=/tmp/.buildx-cache,mode=max" \
             --platform ${{ matrix.targets.platform }} \
             --push \
-            --tag ghcr.io/dlunch/ffxivtools_server:latest-${{ matrix.targets.tag }} \
+            --tag ghcr.io/dlunch/ffxivtools:latest-server-${{ matrix.targets.tag }} \
             --file Dockerfile.server \
             .
 
@@ -72,14 +72,14 @@ jobs:
 
     steps:
       - name: Docker Login
-        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
       - env:
           DOCKER_CLI_EXPERIMENTAL: enabled
         run: |
-          docker manifest create ghcr.io/dlunch/ffxivtools_server:latest \
-            ghcr.io/dlunch/ffxivtools_server:latest-amd64
-          docker manifest push ghcr.io/dlunch/ffxivtools_server:latest
+          docker manifest create ghcr.io/dlunch/ffxivtools:latest-server \
+            ghcr.io/dlunch/ffxivtools:latest-server-amd64
+          docker manifest push ghcr.io/dlunch/ffxivtools:latest-server
       - name: Clear
         if: always()
         run: |
