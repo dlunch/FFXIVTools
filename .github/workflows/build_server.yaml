@@ -77,9 +77,9 @@ jobs:
       - env:
           DOCKER_CLI_EXPERIMENTAL: enabled
         run: |
-          docker manifest create ghcr.io/dlunch/ffxivtools:latest-server \
+          docker buildx imagetools create -t \
+            ghcr.io/dlunch/ffxivtools:latest-server \
             ghcr.io/dlunch/ffxivtools:latest-server-amd64
-          docker manifest push ghcr.io/dlunch/ffxivtools:latest-server
       - name: Clear
         if: always()
         run: |
