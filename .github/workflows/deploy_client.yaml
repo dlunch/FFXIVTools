@@ -6,20 +6,19 @@ on:
 
 name: Deploy Client
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   deploy:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.4.1
-        with:
-          access_token: ${{ github.token }}
-
       - uses: actions/checkout@v3
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Cache cargo registry
         uses: actions/cache@v3
@@ -58,7 +57,7 @@ jobs:
       - name: install wasm-pack
         uses: jetli/wasm-pack-action@v0.2.0
         with:
-          version: "latest"
+          version: 'latest'
 
       - name: npm install
         run: npm install

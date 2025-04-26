@@ -6,6 +6,10 @@ on:
 
 name: Build server image
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   build_server:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
@@ -13,22 +17,17 @@ jobs:
     strategy:
       matrix:
         targets:
-          - tag: "amd64"
-            platform: "linux/amd64"
+          - tag: 'amd64'
+            platform: 'linux/amd64'
           #- tag: "armv7"
           #  platform: "linux/arm/v7"
           #- tag: "arm64"
           #  platform: "linux/arm64"
 
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.4.1
-        with:
-          access_token: ${{ github.token }}
-
       - uses: actions/checkout@v3
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
