@@ -1,4 +1,4 @@
-use alloc::{boxed::Box, sync::Arc, vec::Vec};
+use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use core::cell::RefCell;
 
 use crate::{animation::HavokAnimation, object::HavokObject, spline_compressed_animation::HavokSplineCompressedAnimation};
@@ -26,7 +26,7 @@ pub struct HavokAnimationBinding {
 }
 
 impl HavokAnimationBinding {
-    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+    pub fn new(object: Rc<RefCell<HavokObject>>) -> Self {
         let root = object.borrow();
 
         let raw_transform_track_to_bone_indices = root.get("transformTrackToBoneIndices").as_array();

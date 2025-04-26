@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, string::String, sync::Arc, vec::Vec};
+use alloc::{borrow::ToOwned, rc::Rc, string::String, vec::Vec};
 use core::cell::RefCell;
 
 use crate::{object::HavokObject, transform::HavokTransform};
@@ -10,7 +10,7 @@ pub struct HavokSkeleton {
 }
 
 impl HavokSkeleton {
-    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+    pub fn new(object: Rc<RefCell<HavokObject>>) -> Self {
         let root = object.borrow();
         let bones = root.get("bones").as_array();
         let bone_names = bones

@@ -6,6 +6,7 @@ use crate::file_list::FileList;
 
 static mut INSTANCE: Option<AppContext> = None;
 
+#[allow(dead_code)]
 pub struct AppContext {
     pub package: Rc<WasmPackage>,
     pub file_list: FileList,
@@ -13,7 +14,8 @@ pub struct AppContext {
 
 impl AppContext {
     pub fn get() -> &'static Self {
-        return unsafe { INSTANCE.as_ref() }.unwrap();
+        #[allow(static_mut_refs)]
+        unsafe { INSTANCE.as_ref() }.unwrap()
     }
 
     pub async fn init(base_url: &str) {

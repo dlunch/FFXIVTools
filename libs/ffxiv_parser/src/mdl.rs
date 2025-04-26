@@ -243,7 +243,7 @@ impl Mdl {
         let mesh_info_offset = cursor;
         let mesh_info_count = model_headers.iter().map(|x| x.mesh_count as usize).sum::<usize>();
         let mesh_infos = &cast_array::<MeshInfo>(&data[cursor..])[..mesh_info_count];
-        cursor += mesh_infos.len() * size_of::<MeshInfo>();
+        cursor += core::mem::size_of_val(mesh_infos);
 
         let attributes_offset = cursor;
         cursor += (mdl_header.attribute_count as usize) * size_of::<u32>();

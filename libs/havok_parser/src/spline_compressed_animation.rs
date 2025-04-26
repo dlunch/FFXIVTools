@@ -1,4 +1,4 @@
-use alloc::{sync::Arc, vec, vec::Vec};
+use alloc::{rc::Rc, vec, vec::Vec};
 use core::{cell::RefCell, cmp};
 use std::f32;
 
@@ -90,7 +90,7 @@ pub struct HavokSplineCompressedAnimation {
 }
 
 impl HavokSplineCompressedAnimation {
-    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+    pub fn new(object: Rc<RefCell<HavokObject>>) -> Self {
         let root = object.borrow();
 
         let duration = root.get("duration").as_real();

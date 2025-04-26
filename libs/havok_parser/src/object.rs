@@ -1,4 +1,4 @@
-use alloc::{str, sync::Arc, vec::Vec};
+use alloc::{rc::Rc, str, vec::Vec};
 use core::cell::RefCell;
 
 use bitflags::bitflags;
@@ -82,10 +82,10 @@ pub type HavokReal = f32;
 pub enum HavokValue {
     Integer(HavokInteger),
     Real(HavokReal),
-    String(Arc<str>),
+    String(Rc<str>),
     Vec(Vec<HavokReal>),
     Array(Vec<HavokValue>),
-    Object(Arc<RefCell<HavokObject>>),
+    Object(Rc<RefCell<HavokObject>>),
 
     ObjectReference(usize),
 }
@@ -98,7 +98,7 @@ impl HavokValue {
         }
     }
 
-    pub fn as_object(&self) -> Arc<RefCell<HavokObject>> {
+    pub fn as_object(&self) -> Rc<RefCell<HavokObject>> {
         match self {
             Self::Object(x) => x.clone(),
             _ => panic!(),
@@ -135,15 +135,15 @@ impl HavokValue {
 }
 
 pub struct HavokRootObject {
-    object: Arc<RefCell<HavokObject>>,
+    object: Rc<RefCell<HavokObject>>,
 }
 
 impl HavokRootObject {
-    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+    pub fn new(object: Rc<RefCell<HavokObject>>) -> Self {
         Self { object }
     }
 
-    pub fn find_object_by_type(&self, type_name: &'static str) -> Arc<RefCell<HavokObject>> {
+    pub fn find_object_by_type(&self, type_name: &'static str) -> Rc<RefCell<HavokObject>> {
         let root_obj = self.object.borrow();
         let named_variants = root_obj.get("namedVariants");
 
@@ -158,14 +158,14 @@ impl HavokRootObject {
 }
 
 pub struct HavokObjectTypeMember {
-    pub name: Arc<str>,
+    pub name: Rc<str>,
     pub type_: HavokValueType,
     pub tuple_size: u32,
-    pub class_name: Option<Arc<str>>,
+    pub class_name: Option<Rc<str>>,
 }
 
 impl HavokObjectTypeMember {
-    pub fn new(name: Arc<str>, type_: HavokValueType, tuple_size: u32, type_name: Option<Arc<str>>) -> Self {
+    pub fn new(name: Rc<str>, type_: HavokValueType, tuple_size: u32, type_name: Option<Rc<str>>) -> Self {
         Self {
             name,
             type_,
@@ -176,13 +176,13 @@ impl HavokObjectTypeMember {
 }
 
 pub struct HavokObjectType {
-    pub name: Arc<str>,
-    parent: Option<Arc<HavokObjectType>>,
+    pub name: Rc<str>,
+    parent: Option<Rc<HavokObjectType>>,
     members: Vec<HavokObjectTypeMember>,
 }
 
 impl HavokObjectType {
-    pub fn new(name: Arc<str>, parent: Option<Arc<HavokObjectType>>, members: Vec<HavokObjectTypeMember>) -> Self {
+    pub fn new(name: Rc<str>, parent: Option<Rc<HavokObjectType>>, members: Vec<HavokObjectTypeMember>) -> Self {
         Self { name, parent, members }
     }
 
@@ -200,12 +200,12 @@ impl HavokObjectType {
 }
 
 pub struct HavokObject {
-    pub object_type: Arc<HavokObjectType>,
+    pub object_type: Rc<HavokObjectType>,
     data: HashMap<usize, HavokValue>,
 }
 
 impl HavokObject {
-    pub fn new(object_type: Arc<HavokObjectType>, data: HashMap<usize, HavokValue>) -> Self {
+    pub fn new(object_type: Rc<HavokObjectType>, data: HashMap<usize, HavokValue>) -> Self {
         Self { object_type, data }
     }
 

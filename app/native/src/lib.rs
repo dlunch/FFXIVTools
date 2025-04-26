@@ -3,18 +3,10 @@
 #![allow(clippy::unnecessary_mut_passed)]
 #![cfg(not(test))]
 
-use napi::{CallContext, JsObject, Result};
-use napi_derive::{js_function, module_exports};
+use napi::Result;
+use napi_derive::napi;
 
-#[module_exports]
-fn init(mut exports: JsObject) -> Result<()> {
-    exports.create_named_method("create", create)?;
+#[napi]
+fn create() -> Result<()> {
     Ok(())
-}
-
-#[js_function(0)]
-fn create(ctx: CallContext) -> Result<JsObject> {
-    let result = ctx.env.create_object()?;
-
-    Ok(result)
 }

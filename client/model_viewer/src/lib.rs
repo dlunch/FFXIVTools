@@ -52,21 +52,22 @@ pub fn main() {
 
         match event {
             event::Event::MainEventsCleared => app.request_redraw(),
-            event::Event::WindowEvent { event, .. } => match event {
-                WindowEvent::KeyboardInput {
-                    input:
-                        event::KeyboardInput {
-                            virtual_keycode: Some(event::VirtualKeyCode::Escape),
-                            state: event::ElementState::Pressed,
-                            ..
-                        },
-                    ..
-                }
-                | WindowEvent::CloseRequested => {
-                    *control_flow = ControlFlow::Exit;
-                }
-                _ => {}
-            },
+            event::Event::WindowEvent {
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            event::KeyboardInput {
+                                virtual_keycode: Some(event::VirtualKeyCode::Escape),
+                                state: event::ElementState::Pressed,
+                                ..
+                            },
+                        ..
+                    }
+                    | WindowEvent::CloseRequested,
+                ..
+            } => {
+                *control_flow = ControlFlow::Exit;
+            }
             event::Event::RedrawRequested(_) => {
                 app.redraw();
             }

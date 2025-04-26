@@ -1,4 +1,4 @@
-use alloc::{borrow::ToOwned, str, sync::Arc, vec, vec::Vec};
+use alloc::{borrow::ToOwned, rc::Rc, str, vec, vec::Vec};
 use core::cell::RefCell;
 
 use hashbrown::HashMap;
@@ -40,10 +40,10 @@ impl HavokTagType {
 
 pub struct HavokBinaryTagFileReader<'a> {
     file_version: u8,
-    remembered_strings: Vec<Arc<str>>,
-    remembered_types: Vec<Arc<HavokObjectType>>,
-    remembered_objects: Vec<Arc<RefCell<HavokObject>>>,
-    objects: Vec<Arc<RefCell<HavokObject>>>,
+    remembered_strings: Vec<Rc<str>>,
+    remembered_types: Vec<Rc<HavokObjectType>>,
+    remembered_objects: Vec<Rc<RefCell<HavokObject>>>,
+    objects: Vec<Rc<RefCell<HavokObject>>>,
     reader: ByteReader<'a>,
 }
 
@@ -56,8 +56,8 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
     fn new(reader: ByteReader<'a>) -> Self {
         let file_version = 0;
-        let remembered_strings = vec![Arc::from("string"), Arc::from("")];
-        let remembered_types = vec![Arc::new(HavokObjectType::new(Arc::from("object"), None, Vec::new()))];
+        let remembered_strings = vec![Rc::from("string"), Rc::from("")];
+        let remembered_types = vec![Rc::new(HavokObjectType::new(Rc::from("object"), None, Vec::new()))];
         let remembered_objects = Vec::new();
         let objects = Vec::new();
 
@@ -85,15 +85,15 @@ impl<'a> HavokBinaryTagFileReader<'a> {
                     self.file_version = self.read_packed_int() as u8;
                     assert!(self.file_version == 3, "Unimplemented version");
                     self.remembered_objects
-                        .push(Arc::new(RefCell::new(HavokObject::new(self.remembered_types[0].clone(), HashMap::new()))))
+                        .push(Rc::new(RefCell::new(HavokObject::new(self.remembered_types[0].clone(), HashMap::new()))))
                 }
                 HavokTagType::Type => {
                     let object_type = self.read_type();
-                    self.remembered_types.push(Arc::new(object_type));
+                    self.remembered_types.push(Rc::new(object_type));
                 }
                 HavokTagType::Backref => panic!(),
                 HavokTagType::ObjectRemember => {
-                    let object = Arc::new(RefCell::new(self.read_object()));
+                    let object = Rc::new(RefCell::new(self.read_object()));
 
                     self.remembered_objects.push(object.clone());
                     self.objects.push(object);
@@ -166,7 +166,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
 
                 let mut result_objects = Vec::new();
                 for _ in 0..array_len {
-                    let object = Arc::new(RefCell::new(HavokObject::new(target_type.clone(), HashMap::new())));
+                    let object = Rc::new(RefCell::new(HavokObject::new(target_type.clone(), HashMap::new())));
 
                     result_objects.push(object.clone());
                     self.objects.push(object);
@@ -241,14 +241,14 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         HavokObjectType::new(name, Some(parent), members)
     }
 
-    fn read_string(&mut self) -> Arc<str> {
+    fn read_string(&mut self) -> Rc<str> {
         let length = self.read_packed_int();
         if length < 0 {
             return self.remembered_strings[-length as usize].clone();
         }
 
-        let result = Arc::from(str::from_utf8(self.reader.read_bytes(length as usize)).unwrap().to_owned());
-        self.remembered_strings.push(Arc::clone(&result));
+        let result = Rc::from(str::from_utf8(self.reader.read_bytes(length as usize)).unwrap().to_owned());
+        self.remembered_strings.push(Rc::clone(&result));
 
         result
     }
@@ -293,7 +293,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
         }
     }
 
-    fn find_type(&self, type_name: &str) -> Arc<HavokObjectType> {
+    fn find_type(&self, type_name: &str) -> Rc<HavokObjectType> {
         self.remembered_types.iter().find(|&x| &*x.name == type_name).unwrap().clone()
     }
 

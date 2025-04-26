@@ -148,7 +148,7 @@ impl ExFieldType {
             7 => ExFieldType::UInt32,
             9 => ExFieldType::Float,
             11 => ExFieldType::Quad,
-            25..=core::u16::MAX => ExFieldType::PackedBool,
+            25..=u16::MAX => ExFieldType::PackedBool,
             _ => panic!(),
         }
     }
