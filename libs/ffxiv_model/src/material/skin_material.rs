@@ -3,7 +3,7 @@ use alloc::{sync::Arc, vec::Vec};
 use eng::render::{Material, Renderer, Resource};
 use hashbrown::HashMap;
 
-use crate::{shader_holder::ShaderType, Context};
+use crate::{Context, shader_holder::ShaderType};
 
 pub struct SkinMaterial {}
 

@@ -9,9 +9,9 @@ use log::debug;
 use tokio::{fs, task, time};
 
 use eng::{
+    App,
     ecs::World,
     render::{ArcballCameraController, CameraComponent, PerspectiveCamera, Renderer},
-    App,
 };
 use ffxiv_model::{BodyId, Character, Context, Customization, Equipment, ModelPart};
 use sqpack::SqPackPackage;

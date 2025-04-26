@@ -3,7 +3,7 @@ use core::mem::size_of;
 
 use sqpack::{Package, Result};
 
-use util::{cast, cast_array, SliceByteOrderExt};
+use util::{SliceByteOrderExt, cast, cast_array};
 
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq)]

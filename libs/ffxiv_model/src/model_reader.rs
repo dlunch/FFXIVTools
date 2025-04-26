@@ -1,6 +1,6 @@
 use alloc::{format, string::String, sync::Arc, vec::Vec};
 
-use futures::{future, FutureExt};
+use futures::{FutureExt, future};
 
 use eng::render::{Renderer, Texture};
 use ffxiv_parser::{Mdl, Mtrl};

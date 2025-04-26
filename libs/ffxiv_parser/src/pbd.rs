@@ -5,7 +5,7 @@ use glam::Mat4;
 use hashbrown::HashMap;
 
 use sqpack::{Package, Result};
-use util::{cast, cast_array, StrExt};
+use util::{StrExt, cast, cast_array};
 
 #[repr(C)]
 struct PreBoneDeformerItem {

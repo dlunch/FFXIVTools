@@ -5,12 +5,12 @@ use std::io::Cursor;
 
 use anyhow::anyhow;
 use axum::{
+    Json, Router, TypedHeader,
     extract::{Extension, Path},
     headers::ContentType,
     http::StatusCode,
     response::IntoResponse,
     routing::get,
-    Json, Router, TypedHeader,
 };
 use futures::{
     future,

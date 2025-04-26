@@ -1,4 +1,4 @@
-use yew::prelude::{html, Component, Context, Html};
+use yew::prelude::{Component, Context, Html, html};
 
 pub struct Content {}
 

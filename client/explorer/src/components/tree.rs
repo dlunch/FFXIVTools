@@ -1,7 +1,7 @@
 use std::boxed::Box;
 use std::collections::HashSet;
 
-use yew::prelude::{html, Callback, Component, Context, Html, Properties};
+use yew::prelude::{Callback, Component, Context, Html, Properties, html};
 
 pub trait TreeData: std::clone::Clone + std::cmp::PartialEq {
     fn render(&self) -> Html;

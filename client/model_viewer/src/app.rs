@@ -1,7 +1,7 @@
 use core::cell::RefCell;
 
 use winit::window::Window;
-use yew::prelude::{html, Component, Context, Html, NodeRef};
+use yew::prelude::{Component, Context, Html, NodeRef, html};
 
 pub struct App {
     pub canvas: NodeRef,

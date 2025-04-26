@@ -1,6 +1,6 @@
 use alloc::collections::BTreeMap;
 
-use yew::prelude::{html, Component, Context, Html, Properties};
+use yew::prelude::{Component, Context, Html, Properties, html};
 
 pub struct List {}
 

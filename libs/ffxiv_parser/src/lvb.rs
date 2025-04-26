@@ -2,7 +2,7 @@ use alloc::{borrow::ToOwned, string::String, vec::Vec};
 use core::mem::size_of;
 
 use sqpack::{Package, Result};
-use util::{cast, SliceByteOrderExt, StrExt};
+use util::{SliceByteOrderExt, StrExt, cast};
 
 #[repr(C)]
 struct LvbHeader {

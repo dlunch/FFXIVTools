@@ -44,7 +44,7 @@ async fn do_download(
     use futures::channel::oneshot::channel;
     use js_sys::Uint8Array;
     use wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::{spawn_local, JsFuture};
+    use wasm_bindgen_futures::{JsFuture, spawn_local};
     use web_sys::{Request, RequestInit, RequestMode, Response};
 
     let (sender, receiver) = channel();

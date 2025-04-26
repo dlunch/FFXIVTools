@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 
 use futures::{
-    stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
+    stream::{FuturesUnordered, TryStreamExt},
 };
 use hashbrown::HashMap;
 

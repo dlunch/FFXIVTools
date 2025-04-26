@@ -116,6 +116,9 @@ mod test {
         ];
         let ffxiv_string = FfxivString::new(&raw);
         let result = ffxiv_string.decode();
-        assert_eq!(result, "Increases EXP earned from battle, crafting, and gathering when level 10 or below.\n<Unknown type=\"72\" payload=\"[242, 1, 248]\" /><Unknown type=\"73\" payload=\"[242, 1, 249]\" />EXP Bonus:<Unknown type=\"73\" payload=\"[1]\" /><Unknown type=\"72\" payload=\"[1]\" /> +20%");
+        assert_eq!(
+            result,
+            "Increases EXP earned from battle, crafting, and gathering when level 10 or below.\n<Unknown type=\"72\" payload=\"[242, 1, 248]\" /><Unknown type=\"73\" payload=\"[242, 1, 249]\" />EXP Bonus:<Unknown type=\"73\" payload=\"[1]\" /><Unknown type=\"72\" payload=\"[1]\" /> +20%"
+        );
     }
 }

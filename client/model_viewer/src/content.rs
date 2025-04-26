@@ -4,7 +4,7 @@ use glam::Vec3;
 use hashbrown::HashMap;
 use winit::window::Window;
 
-use common::{regions, WasmPackage};
+use common::{WasmPackage, regions};
 use eng::{
     ecs::World,
     render::{ArcballCameraController, CameraComponent, PerspectiveCamera, Renderer},

@@ -2,7 +2,7 @@ use alloc::{borrow::ToOwned, format, string::String, vec::Vec};
 use core::mem::size_of;
 
 use sqpack::{Package, Result};
-use util::{cast, cast_array, SliceByteOrderExt, StrExt};
+use util::{SliceByteOrderExt, StrExt, cast, cast_array};
 
 #[repr(C)]
 struct MtrlHeader {

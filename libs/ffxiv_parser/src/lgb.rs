@@ -4,7 +4,7 @@ use core::mem::size_of;
 use serde::{Serialize, Serializer};
 
 use sqpack::{Package, Result};
-use util::{cast, SliceByteOrderExt, StrExt};
+use util::{SliceByteOrderExt, StrExt, cast};
 
 #[repr(C)]
 struct LgbHeader {

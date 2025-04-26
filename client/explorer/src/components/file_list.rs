@@ -1,4 +1,4 @@
-use yew::prelude::{html, Callback, Component, Context, Html, Properties};
+use yew::prelude::{Callback, Component, Context, Html, Properties, html};
 
 use wasm_bindgen_futures::spawn_local;
 

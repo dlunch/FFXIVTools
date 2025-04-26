@@ -1,6 +1,6 @@
 use alloc::{collections::BTreeMap, vec::Vec};
 
-use futures::{future, FutureExt};
+use futures::{FutureExt, future};
 
 use sqpack::{Package, Result, SqPackReaderError};
 

@@ -1,8 +1,8 @@
 use alloc::{format, string::String, sync::Arc};
 
 use futures::{
-    stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
+    stream::{FuturesUnordered, TryStreamExt},
 };
 use glam::Mat4;
 use hashbrown::HashMap;

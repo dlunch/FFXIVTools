@@ -6,7 +6,7 @@ use hashbrown::HashSet;
 use phf::phf_map;
 
 use sqpack::{Package, Result};
-use util::{cast, cast_array, SliceByteOrderExt, StrExt};
+use util::{SliceByteOrderExt, StrExt, cast, cast_array};
 
 #[repr(C)]
 struct MdlHeader {
@@ -371,10 +371,6 @@ impl Mdl {
 
     fn get_attribute_mask(attribute: &str) -> usize {
         let item = ATTRIBUTES.get(attribute);
-        if let Some(x) = item {
-            *x
-        } else {
-            0
-        }
+        if let Some(x) = item { *x } else { 0 }
     }
 }

@@ -2,7 +2,7 @@
 name = "model_viewer_standalone"
 version = "0.1.0"
 authors = ["Inseok Lee <dlunch@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 [features]
 
@@ -13,9 +13,9 @@ futures = { version = "^0.3" }
 glam = { version = "^0.21" }
 pretty_env_logger = { version = "^0.4" }
 log = { version = "^0.4" }
-hashbrown = { version = "^0.12"}
+hashbrown = { version = "^0.12" }
 
-eng = { version = "^0.1", git = "https://github.com/dlunch/eng"}
+eng = { version = "^0.1", git = "https://github.com/dlunch/eng" }
 sqpack = { version = "^0.1", features = ["std"], git = "https://github.com/dlunch/sqpack" }
 sqpack_extension = { version = "^0.1", features = ["std"], path = "../../libs/sqpack_extension" }
 ffxiv_model = { version = "^0.1", path = "../../libs/ffxiv_model" }

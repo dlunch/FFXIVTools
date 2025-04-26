@@ -3,14 +3,14 @@ mod ffxiv_data;
 use std::{error::Error, net::SocketAddr};
 
 use axum::{
+    Router, TypedHeader,
     headers::{self, Header, HeaderName, HeaderValue},
     response::{AppendHeaders, IntoResponse},
     routing::get,
-    Router, TypedHeader,
 };
 use http::{
-    header::{self, VARY},
     Method,
+    header::{self, VARY},
 };
 use tower::ServiceBuilder;
 use tower_http::{catch_panic::CatchPanicLayer, cors::CorsLayer, set_header::SetResponseHeaderLayer};

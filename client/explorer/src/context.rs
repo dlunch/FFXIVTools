@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use common::{regions, WasmPackage};
+use common::{WasmPackage, regions};
 
 use crate::file_list::FileList;
 

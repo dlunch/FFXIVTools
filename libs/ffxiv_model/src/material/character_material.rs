@@ -5,7 +5,7 @@ use hashbrown::HashMap;
 use eng::render::{Material, Renderer, Resource, Texture, TextureFormat};
 use ffxiv_parser::{Mtrl, Stm};
 
-use crate::{shader_holder::ShaderType, Context};
+use crate::{Context, shader_holder::ShaderType};
 
 pub struct CharacterMaterial {}
 

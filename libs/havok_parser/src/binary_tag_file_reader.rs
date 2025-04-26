@@ -286,11 +286,7 @@ impl<'a> HavokBinaryTagFileReader<'a> {
             result |= ((byte as u32) & 0xffff_ff7f) << shift;
             shift += 7;
         }
-        if neg == 1 {
-            -(result as HavokInteger)
-        } else {
-            result as HavokInteger
-        }
+        if neg == 1 { -(result as HavokInteger) } else { result as HavokInteger }
     }
 
     fn find_type(&self, type_name: &str) -> Rc<HavokObjectType> {

@@ -2,7 +2,7 @@ use alloc::{format, vec::Vec};
 use core::mem::size_of;
 
 use sqpack::{Package, Result};
-use util::{cast, SliceByteOrderExt};
+use util::{SliceByteOrderExt, cast};
 
 use super::definition::{ExRowType, ExhColumnDefinition, ExhHeader, ExhPage};
 use crate::Language;

@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use futures::{
-    stream::{FuturesUnordered, TryStreamExt},
     FutureExt,
+    stream::{FuturesUnordered, TryStreamExt},
 };
 use log::debug;
 
@@ -56,11 +56,7 @@ impl ExtractedFileProvider for ExtractedFileProviderLocal {
         let path = self.find_path(hash).ok()?;
         let metadata = tokio::fs::metadata(path).await;
 
-        if let Ok(metadata) = metadata {
-            Some(metadata.len())
-        } else {
-            None
-        }
+        if let Ok(metadata) = metadata { Some(metadata.len()) } else { None }
     }
 
     async fn read_files(&self, references: &[&SqPackFileReference]) -> Result<Vec<(SqPackFileHash, Vec<u8>)>> {

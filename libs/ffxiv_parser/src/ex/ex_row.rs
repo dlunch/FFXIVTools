@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use serde::{ser::SerializeSeq, ser::SerializeTuple, Serialize, Serializer};
+use serde::{Serialize, Serializer, ser::SerializeSeq, ser::SerializeTuple};
 
 use super::definition::{ExFieldType, ExhColumnDefinition};
 use crate::ffxiv_string::FfxivString;
