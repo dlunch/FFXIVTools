@@ -1,15 +1,8 @@
 # FFXIVTools
 
-Reimplementation of <https://ffxiv.dlunch.net> in rust.
+Personal FFXIV tools
 
-- Latest `master` branch preview: <https://ffxiv-dev-new.dlunch.net> (Placeholder)
-- Latest stable: <https://ffxiv-new.dlunch.net> (Placeholder)
-
-# Status
-
-Nothing is working on web.
-
-Basic rendering works on PC
+https://ffxiv.dlunch.net (TBD)
 
 ![](https://github.com/dlunch/FFXIVTools/raw/master/screenshots/200521.png)
 
