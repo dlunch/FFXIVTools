@@ -669,7 +669,7 @@ dependencies = [
 [[package]]
 name = "eng"
 version = "0.1.0"
-source = "git+https://github.com/dlunch/eng#b2f652ced14ad608f67dd47897bdcc6735468a3e"
+source = "git+https://github.com/dlunch/eng#d7ef42b92e9674082ee8d09d5ebca7c372ff2046"
 dependencies = [
  "glam",
  "hashbrown",
