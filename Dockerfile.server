@@ -12,7 +12,7 @@ RUN cargo chef cook --release --recipe-path recipe.json --package server
 COPY . .
 RUN cargo build -p server --release
 
-FROM debian:stretch-slim
+FROM debian:bookworm-slim
 COPY --from=builder /src/target/release/server /server/
 
 EXPOSE 8000
