@@ -38,7 +38,7 @@ async fn mdl_test() -> Result<()> {
 
     {
         let bone_names = mdl.bone_names(0).collect::<Vec<_>>();
-        assert_eq!(bone_names[0], "j_asi_a_l");
+        assert_eq!(bone_names[0], "j_kusu_b_r");
     }
 
     let materials = mdl.material_paths().collect::<Vec<_>>();

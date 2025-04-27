@@ -57,9 +57,9 @@ struct ModelHeader {
 }
 
 #[repr(C)]
-struct BoneInfo {
-    bone_index: [u16; 64],
-    count: u32,
+struct BoneCount {
+    pub bone_count: u16,
+    pub _unk1: u16,
 }
 
 #[repr(u8)]
@@ -357,15 +357,25 @@ impl Mdl {
     pub fn bone_names(&self, index: u16) -> impl Iterator<Item = &str> {
         let mdl_header = cast::<MdlHeader>(&self.data[self.mdl_header_offset..]);
 
-        let bone_info_offset = self.bone_names_offset + (mdl_header.bone_count as usize) * 4;
+        let bone_counts_offset = self.bone_names_offset + (mdl_header.bone_count as usize) * 4;
         let bone_name_offsets = cast_array::<u32>(&self.data[self.bone_names_offset..]);
 
-        let bone_infos = cast_array::<BoneInfo>(&self.data[bone_info_offset..]);
-        let bone_info = &bone_infos[index as usize];
+        let bone_counts = cast_array::<BoneCount>(&self.data[bone_counts_offset..]);
 
-        (0..bone_info.count as usize).map(move |x| {
-            str::from_null_terminated_utf8(&self.data[self.string_block_offset + bone_name_offsets[bone_info.bone_index[x] as usize] as usize..])
-                .unwrap()
+        let mut cursor = self.bone_names_offset + (mdl_header.bone_info_count as usize) * size_of::<u32>();
+
+        for i in 0..index {
+            cursor += bone_counts[i as usize].bone_count as usize * size_of::<u16>();
+            if bone_counts[i as usize].bone_count % 2 == 1 {
+                cursor += size_of::<u16>(); // align
+            }
+        }
+
+        let bone_indices = cast_array::<u16>(&self.data[cursor..]);
+
+        (0..bone_counts[index as usize].bone_count as usize).map(move |i| {
+            let offset = bone_name_offsets[bone_indices[i] as usize] as usize;
+            str::from_null_terminated_utf8(&self.data[self.string_block_offset + offset..]).unwrap()
         })
     }
 
