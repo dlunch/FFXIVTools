@@ -49,6 +49,7 @@ impl ExData {
             Language::ChineseSimplified => "_chs",
             Language::ChineseTraditional => "_cht",
             Language::Korean => "_ko",
+            Language::TraditionalChinese => "_tc",
         }
     }
 }
