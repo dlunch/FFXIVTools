@@ -1,32 +1,32 @@
 name: Security audit
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo index
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo build
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-{{ matrix.rust }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v2
         with:
-          submodules: "recursive"
+          submodules: 'recursive'
 
       - uses: actions-rs/audit-check@v1
         with:
