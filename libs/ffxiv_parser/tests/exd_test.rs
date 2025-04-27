@@ -16,14 +16,14 @@ async fn exd_test() -> Result<()> {
         let languages = ex.languages();
 
         {
-            let row = ex.index(0, languages[0]).unwrap();
-            assert_eq!(row.string(1).decode(), "ADV");
+            let row = ex.index(1, languages[0]).unwrap();
+            assert_eq!(row.string(1).decode(), "GLA");
             assert_eq!(row.uint8(3), 30);
-            assert_eq!(row.int8(4), -1);
-            assert_eq!(row.uint16(9), 100);
-            assert_eq!(row.int32(28), 0);
-            assert!(!row.bool(45));
-            assert!(!row.bool(46));
+            assert_eq!(row.int8(4), 1);
+            assert_eq!(row.uint16(9), 130);
+            assert_eq!(row.uint8(28), 1);
+            assert_eq!(row.uint8(45), 1);
+            assert_eq!(row.uint8(46), 0);
         }
 
         {
@@ -32,9 +32,9 @@ async fn exd_test() -> Result<()> {
             assert_eq!(row.uint8(3), 31);
             assert_eq!(row.int8(4), 25);
             assert_eq!(row.uint16(9), 105);
-            assert_eq!(row.int32(28), 0);
-            assert!(row.bool(45));
-            assert!(!row.bool(46));
+            assert_eq!(row.uint8(28), 36);
+            assert_eq!(row.uint8(45), 5);
+            assert_eq!(row.uint8(46), 5);
         }
     }
 

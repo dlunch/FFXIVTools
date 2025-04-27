@@ -13,9 +13,9 @@ async fn classjob_test() -> Result<()> {
     let pack = SqPackReaderExtractedFile::new(provider);
 
     let ex = WrappedEx::<ClassJob>::new(&pack).await?;
-    let row = ex.index(0, Language::English).unwrap();
+    let row = ex.index(1, Language::English).unwrap();
 
-    assert_eq!(row.name(), "adventurer");
+    assert_eq!(row.name(), "gladiator");
 
     Ok(())
 }
