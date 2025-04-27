@@ -14,7 +14,7 @@ axum = { version = "^0.5", features = ["headers"] }
 chrono = { version = "^0.4" }
 tower-http = { version = "0.3", features = ["cors", "set-header", "catch-panic"] }
 tower = { version = "^0.4" }
-http = { version = "^0.2" }
+http = { version = "^1.3" }
 hyper = { version = "^0.14" }
 serde = { version = "^1.0" }
 serde_json = { version = "^1.0" }
