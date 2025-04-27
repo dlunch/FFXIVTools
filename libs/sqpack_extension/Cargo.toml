@@ -10,7 +10,7 @@ doctest = false
 [features]
 default = []
 std = ["sqpack/std", "tokio"]
-test_local = []
+test_local = ["std"]
 
 [dependencies]
 cfg-if = { version = "^1.0", default-features = false }
