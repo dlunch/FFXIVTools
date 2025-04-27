@@ -51,7 +51,7 @@ jobs:
 
       - name: Install required packages
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt update && sudo apt install -y libwayland-dev libxkbcommon-dev
+        run: sudo apt update && sudo apt install -y libwayland-dev libxkbcommon-dev libfontconfig-dev
 
       - uses: actions-rs/cargo@v1
         with:
