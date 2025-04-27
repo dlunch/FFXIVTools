@@ -85,7 +85,7 @@ impl<'a> FfxivString<'a> {
             _ => {
                 let payload = &self.data[*cursor..*cursor + markup_size];
                 *cursor += markup_size;
-                format!("<Unknown type=\"{}\" payload=\"{:?}\" />", markup_type, payload)
+                format!("<Unknown type=\"{markup_type}\" payload=\"{payload:?}\" />")
             }
         };
 

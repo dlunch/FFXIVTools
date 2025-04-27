@@ -47,7 +47,7 @@ impl Component for FileList {
                     let result = files
                         .into_iter()
                         .map(|x| {
-                            let new_key = if key.is_empty() { x.clone() } else { format!("{}/{}", key, x) };
+                            let new_key = if key.is_empty() { x.clone() } else { format!("{key}/{x}") };
 
                             TreeItem {
                                 key: new_key,

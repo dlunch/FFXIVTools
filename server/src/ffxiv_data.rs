@@ -32,7 +32,7 @@ async fn ex_to_json(package: &dyn Package, language: Option<Language>, ex_name: 
         if ex.languages()[0] == Language::None {
             vec![Language::None]
         } else {
-            if !ex.languages().iter().any(|&x| x == language) {
+            if !ex.languages().contains(&language) {
                 return Err(anyhow!("Language not found"));
             }
             vec![language]

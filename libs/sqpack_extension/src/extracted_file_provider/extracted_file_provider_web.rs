@@ -104,10 +104,10 @@ impl ExtractedFileProviderWeb {
     }
 
     async fn download(&self, uri: &str) -> Result<Vec<u8>> {
-        debug!("Fetching {}", uri);
+        debug!("Fetching {uri}");
 
         let result = do_download(uri, &self.progress_callback).await.map_err(|x| {
-            debug!("Error downloading file, {:?}", x);
+            debug!("Error downloading file, {x:?}");
 
             SqPackReaderError::NoSuchFile
         })?;

@@ -34,7 +34,7 @@ async fn setup(world: &mut World) {
         BatchedPackage::new(SqPackPackage::new(Path::new(path)).unwrap())
     } else {
         let provider = ExtractedFileProviderWeb::with_progress("https://ffxiv-data.dlunch.net/compressed/all/", |current, total| {
-            debug!("{}/{}", current, total)
+            debug!("{current}/{total}")
         });
         BatchedPackage::new(SqPackReaderExtractedFile::new(provider))
     };

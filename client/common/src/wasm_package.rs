@@ -15,7 +15,7 @@ pub struct WasmPackage {
 impl WasmPackage {
     pub async fn new(region: &Region, base_url: &str) -> Self {
         let uri = format!("{}_{}", region.name, region.version);
-        let provider = ExtractedFileProviderWeb::new(&format!("{}/{}/", base_url, uri));
+        let provider = ExtractedFileProviderWeb::new(&format!("{base_url}/{uri}/"));
 
         let result = Arc::new(BatchedPackage::new(SqPackReaderExtractedFile::new(provider)));
         let package = result.clone();

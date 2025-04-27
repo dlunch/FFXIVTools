@@ -40,9 +40,9 @@ async fn main() -> io::Result<()> {
                             .await
                             .map_err(|x| io::Error::new(io::ErrorKind::NotFound, x.to_string()))?;
                         let data = raw_file.into_extracted();
-                        let path = format!("{}/{}", folder_hash, file_hash);
+                        let path = format!("{folder_hash}/{file_hash}");
 
-                        println!("{}", path);
+                        println!("{path}");
                         fs::write(path, data).await?;
 
                         Ok::<_, io::Error>(())

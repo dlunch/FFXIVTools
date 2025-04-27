@@ -1,4 +1,4 @@
-use alloc::{sync::Arc, vec::Vec};
+use alloc::{rc::Rc, vec::Vec};
 use core::cell::RefCell;
 
 use crate::{animation_binding::HavokAnimationBinding, object::HavokObject, skeleton::HavokSkeleton};
@@ -9,7 +9,7 @@ pub struct HavokAnimationContainer {
 }
 
 impl HavokAnimationContainer {
-    pub fn new(object: Arc<RefCell<HavokObject>>) -> Self {
+    pub fn new(object: Rc<RefCell<HavokObject>>) -> Self {
         let root = object.borrow();
 
         let raw_skeletons = root.get("skeletons").as_array();

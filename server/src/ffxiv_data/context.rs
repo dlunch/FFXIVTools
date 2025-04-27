@@ -28,7 +28,7 @@ impl ContextImpl {
                 Some((path, split.next()?.to_owned(), split.next()?.parse::<usize>().unwrap()))
             })
             .sorted_by_key(|(_, region, version)| REGIONS.iter().position(|x| x == region).unwrap() * 1000 + version)
-            .map(|(path, region, version)| (path, format!("{}_{}", region, version)))
+            .map(|(path, region, version)| (path, format!("{region}_{version}")))
             .rev()
             .collect::<Vec<_>>();
 

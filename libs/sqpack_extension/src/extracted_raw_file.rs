@@ -57,8 +57,6 @@ impl ExtractedSqPackRawFile for SqPackRawFile {
 
     #[cfg(feature = "std")]
     fn into_extracted(self) -> Vec<u8> {
-        use core::iter;
-
         let mut result = Vec::with_capacity(self.uncompressed_size as usize + size_of::<ExtractedFileHeader>());
         result.extend(self.uncompressed_size.to_le_bytes().iter());
         result.extend((self.header.len() as u32).to_le_bytes().iter());
@@ -69,7 +67,7 @@ impl ExtractedSqPackRawFile for SqPackRawFile {
             result.extend(&block[0..block_size]);
 
             let rounded_size = round_up(block_size, 4);
-            result.extend(iter::repeat(0).take(rounded_size - block_size));
+            result.extend(std::iter::repeat_n(0, rounded_size - block_size));
         }
 
         result

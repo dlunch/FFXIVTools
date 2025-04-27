@@ -22,7 +22,7 @@ impl Component for App {
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::FileSelected(x) => {
-                debug!("{}", x);
+                debug!("{x}");
 
                 true
             }

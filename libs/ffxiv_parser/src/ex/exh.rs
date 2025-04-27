@@ -17,7 +17,7 @@ pub struct ExHeader {
 
 impl ExHeader {
     pub async fn new(package: &dyn Package, name: &str) -> Result<Self> {
-        let data = package.read_file(&format!("exd/{}.exh", name)).await?;
+        let data = package.read_file(&format!("exd/{name}.exh")).await?;
 
         let header = cast::<ExhHeader>(&data);
 

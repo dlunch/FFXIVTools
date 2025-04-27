@@ -127,10 +127,7 @@ impl ModelReader {
                 path = &material_path[14..]
             )
         } else {
-            format!(
-                "chara/equipment/e{:04}/material/v{:04}{}",
-                equipment_id, equipment_variant_id, material_path
-            )
+            format!("chara/equipment/e{equipment_id:04}/material/v{equipment_variant_id:04}{material_path}")
         }
     }
 }
