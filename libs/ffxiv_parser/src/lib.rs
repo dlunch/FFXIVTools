@@ -45,6 +45,7 @@ impl Language {
             5 => Language::ChineseSimplified,
             6 => Language::ChineseTraditional,
             7 => Language::Korean,
+            8 => Language::TraditionalChinese,
 
             x => panic!("Invalid language: {x}"),
         }
