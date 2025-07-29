@@ -7,7 +7,7 @@ edition = "2024"
 [features]
 
 [dependencies]
-winit = { version = "^0.27", features = ["wayland", "x11"] }
+winit = { version = "^0.30", features = ["wayland", "x11"] }
 tokio = { version = "^1.13", features = ["full"] }
 futures = { version = "^0.3" }
 glam = { version = "^0.21" }
